@@ -3,7 +3,8 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "schematicCollections": ["angular-eslint"]
+    "schematicCollections": ["angular-eslint"],
+    "analytics": false
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -53,7 +54,12 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": [
+              "src/styles.scss",
+              "node_modules/@fontsource/ubuntu/latin-700.css",
+              "node_modules/@fontsource/quicksand/latin-500.css",
+              "node_modules/@fontsource/quicksand/latin-600.css"
+            ]
           },
           "configurations": {
             "production": {
