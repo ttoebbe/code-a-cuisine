@@ -1,0 +1,8 @@
+// Mobile-first breakpoint mixin. Base styles apply to mobile (< 768px);
+// `@include desktop` overrides on wider viewports.
+
+@mixin desktop {
+  @media (min-width: 768px) {
+    @content;
+  }
+}

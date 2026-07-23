@@ -1,0 +1,44 @@
+@use '../../styles/mixins' as *;
+
+.header {
+  display: flex;
+  align-items: center;
+  min-height: var(--header-height-mobile);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+
+  @include desktop {
+    min-height: var(--header-height-desktop);
+    padding: var(--space-4) var(--space-6);
+  }
+}
+
+.header__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.header__logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--color-cream);
+  font-size: 24px;
+  line-height: 1;
+
+  @include desktop {
+    width: 48px;
+    height: 48px;
+    font-size: 28px;
+  }
+}
+
+.header__logo-text {
+  font: var(--font-h5-semi);
+  color: var(--color-cream);
+}

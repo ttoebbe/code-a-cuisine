@@ -4,7 +4,7 @@
   display: block;
 }
 
-.home {
+.library {
   max-width: var(--content-max-width);
   margin: 0 auto;
   padding: var(--space-7) var(--space-5);
@@ -14,18 +14,18 @@
   }
 }
 
-.home__title {
+.library__title {
   font: var(--font-h3);
   color: var(--color-olive-green);
   margin-bottom: var(--space-4);
 }
 
-.home__lead {
+.library__lead {
   font: var(--font-body-16);
   margin-bottom: var(--space-3);
 }
 
-.home__note {
+.library__note {
   font: var(--font-small-text);
   color: var(--color-green-middle);
 }
