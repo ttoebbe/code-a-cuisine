@@ -14,7 +14,6 @@ export interface RecipeIngredient {
 
 /**
  * A single cooking step in the chronological plan.
- * assignedChef is 1-based (1..request.cooks).
  * Steps sharing the same parallelGroupId run in parallel;
  * parallelGroupId=null means the step is serial.
  */
@@ -22,6 +21,10 @@ export interface RecipeStep {
   order: number;
   title: string;
   description: string;
+  /**
+   * Chef performing this step. 1-based index into the range 1..Recipe.cooks.
+   * Always set (never null). When Recipe.cooks === 1, this is constant 1.
+   */
   assignedChef: number;
   parallelGroupId: number | null;
 }
