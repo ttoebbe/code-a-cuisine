@@ -1,15 +1,22 @@
 <div class="like">
   <p class="like__text">
     <strong class="like__question">Just finished this meal?</strong>
-    <span class="like__hint">Give it a heart, so that the others know this is delicious.</span>
+    <span class="like__hint">
+      @if (recipeId() === null) {
+        Save it to the cookbook first, then you can give it a heart.
+      } @else {
+        Give it a heart, so that the others know this is delicious.
+      }
+    </span>
   </p>
 
   <button
     type="button"
     class="like__button"
     aria-label="Like this recipe"
+    [disabled]="!isEnabled()"
     [attr.aria-pressed]="liked()"
-    (click)="toggle()"
+    (click)="like()"
   >
     <img
       [src]="liked() ? '/img/recipe-view/heart-filled.png' : '/img/recipe-view/heart-outline.png'"
@@ -18,4 +25,15 @@
       height="48"
     />
   </button>
+
+  @if (total() !== null) {
+    <p class="like__count">
+      <span class="visually-hidden">Likes:</span>
+      {{ total() }}
+    </p>
+  }
+
+  @if (failed()) {
+    <p class="like__error" role="alert">Your like could not be saved. Please try again.</p>
+  }
 </div>

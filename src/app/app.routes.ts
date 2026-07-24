@@ -20,8 +20,8 @@ export const routes: Routes = [
     title: 'Recipe results · Code à Cuisine',
   },
   {
-    // The back link of a suggestion leads to the result list; the same view is
-    // reused from the cookbook later on with backTo: 'cookbook'.
+    // A suggestion is addressed by its position in the result list and its
+    // back link leads there; the cookbook route below reuses the same view.
     path: 'results/:index',
     loadComponent: () => import('./recipe-view/recipe-view').then((m) => m.RecipeView),
     canActivate: [hasResultsGuard],
@@ -31,7 +31,15 @@ export const routes: Routes = [
   {
     path: 'library',
     loadComponent: () => import('./library/library').then((m) => m.Library),
-    title: 'Library · Code à Cuisine',
+    title: 'Cookbook · Code à Cuisine',
+  },
+  {
+    // A stored recipe is addressed by its Firestore document id, so the view
+    // survives a reload and the link can be shared.
+    path: 'library/:id',
+    loadComponent: () => import('./recipe-view/recipe-view').then((m) => m.RecipeView),
+    data: { backTo: 'cookbook' },
+    title: 'Recipe · Code à Cuisine',
   },
   {
     path: 'imprint',

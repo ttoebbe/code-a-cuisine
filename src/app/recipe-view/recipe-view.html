@@ -1,6 +1,6 @@
 <nav class="recipe-view__nav" aria-label="Back">
   <a class="recipe-view__back" [routerLink]="backLink()">
-    <img src="/img/arrow-left.png" alt="" width="20" height="20" />
+    <img src="/img/arrow-left.png" alt="" width="22" height="15" />
     <span class="recipe-view__back-text">{{ backLabel() }}</span>
   </a>
 </nav>
@@ -8,16 +8,16 @@
 <div class="recipe-view">
   @if (recipe(); as recipe) {
     <article class="recipe-view__card">
-      <app-recipe-summary [recipe]="recipe" />
+      <app-recipe-summary [recipe]="recipe" [likeCount]="likeCount()" />
       <app-recipe-ingredients
         [yourIngredients]="recipe.yourIngredients"
         [extraIngredients]="recipe.extraIngredients"
       />
       <app-recipe-directions [steps]="recipe.steps" [cooks]="recipe.cooks" />
-      @if (backTo() === 'results') {
+      @if (!isFromCookbook()) {
         <app-recipe-save [recipe]="recipe" (saved)="onSaved($event)" />
       }
-      <app-recipe-like />
+      <app-recipe-like [recipeId]="recipeId()" [likeCount]="likeCount()" />
     </article>
 
     <aside class="recipe-view__cross-sell">
@@ -30,13 +30,12 @@
         Generate new recipe <span aria-hidden="true">→</span>
       </a>
     </p>
+  } @else if (isLoading()) {
+    <p class="recipe-view__loading">Loading recipe…</p>
   } @else {
     <section class="recipe-view__missing" aria-labelledby="recipe-missing-title">
       <h1 class="recipe-view__missing-title" id="recipe-missing-title">Recipe not available</h1>
-      <p class="recipe-view__missing-text">
-        This suggestion is no longer part of the current results. Generate a new recipe to start
-        over.
-      </p>
+      <p class="recipe-view__missing-text">{{ missingText() }}</p>
       <a class="recipe-view__cross-sell-link" routerLink="/generator">Back to the generator</a>
     </section>
   }
