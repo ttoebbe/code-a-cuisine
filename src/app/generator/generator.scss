@@ -1,0 +1,31 @@
+@use '../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+.generator {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5);
+
+  @include desktop {
+    padding: var(--space-8) var(--space-6);
+  }
+}
+
+.generator__title {
+  font: var(--font-h3);
+  color: var(--color-olive-green);
+  margin-bottom: var(--space-4);
+}
+
+.generator__lead {
+  font: var(--font-body-16);
+  margin-bottom: var(--space-3);
+}
+
+.generator__note {
+  font: var(--font-small-text);
+  color: var(--color-green-middle);
+}

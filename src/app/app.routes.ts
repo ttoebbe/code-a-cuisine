@@ -8,6 +8,11 @@ export const routes: Routes = [
     title: 'Code à Cuisine',
   },
   {
+    path: 'generator',
+    loadComponent: () => import('./generator/generator').then((m) => m.Generator),
+    title: 'Generator · Code à Cuisine',
+  },
+  {
     path: 'library',
     loadComponent: () => import('./library/library').then((m) => m.Library),
     title: 'Library · Code à Cuisine',

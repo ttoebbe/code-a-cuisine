@@ -1,5 +1,20 @@
-<section class="home">
-  <h1 class="home__title">Home</h1>
-  <p class="home__lead">AI-powered recipe generator.</p>
-  <p class="home__note">Full hero screen ships in a later phase.</p>
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__content">
+    <div class="hero__intro">
+      <p class="hero__eyebrow">AI-Powered recipe generator</p>
+      <h1 id="hero-title" class="hero__title">Code à Cuisine</h1>
+      <a routerLink="/generator" class="hero__cta">Get started</a>
+    </div>
+    <div class="hero__cross-sell">
+      <p class="hero__cross-sell-title">Hungry for inspiration?</p>
+      <a routerLink="/library" class="hero__cross-sell-link">
+        Go to cookbook <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+  <div class="hero__plates" aria-hidden="true">
+    <div class="hero__plate hero__plate--1"></div>
+    <div class="hero__plate hero__plate--2"></div>
+    <div class="hero__plate hero__plate--3"></div>
+  </div>
 </section>
