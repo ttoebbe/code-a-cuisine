@@ -113,29 +113,53 @@
     width: auto;
     align-self: stretch;
     min-height: 520px;
+    // Reference size the plate offsets are derived from, so the stack keeps its
+    // proportions on every viewport instead of drifting apart.
+    --plate-size: min(34vw, 494px);
   }
 }
 
+// Plates scale with the viewport but are capped at their native export size,
+// so the food photos are never upscaled. They bleed off the right hero edge.
 .hero__plate {
   position: absolute;
-  right: -25%;
-  aspect-ratio: 1 / 1;
-  border-radius: var(--radius-full);
-  background: var(--color-cream);
-  opacity: 0.35;
+  left: 8%;
+  width: min(68vw, 280px);
+  height: auto;
+  max-width: none;
+
+  @include desktop {
+    left: auto;
+    right: -20px;
+  }
 }
 
 .hero__plate--1 {
-  top: 4%;
-  width: 90%;
+  top: -2%;
+
+  @include desktop {
+    top: 50%;
+    width: min(34vw, 480px);
+    margin-top: calc(var(--plate-size) * -1.418);
+  }
 }
 
 .hero__plate--2 {
-  top: 34%;
-  width: 105%;
+  top: 32%;
+
+  @include desktop {
+    top: 50%;
+    width: var(--plate-size);
+    margin-top: calc(var(--plate-size) * -0.553);
+  }
 }
 
 .hero__plate--3 {
-  bottom: 4%;
-  width: 95%;
+  top: 68%;
+
+  @include desktop {
+    top: 50%;
+    width: min(34vw, 493px);
+    margin-top: calc(var(--plate-size) * 0.131);
+  }
 }

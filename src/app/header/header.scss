@@ -17,23 +17,13 @@
 .header__logo {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
 }
 
-.header__logo-icon {
-  width: 32px;
-  height: 32px;
-  color: var(--color-cream);
-  flex-shrink: 0;
+.header__logo-image {
+  width: 100px;
+  height: auto;
 
   @include desktop {
-    width: 40px;
-    height: 40px;
+    width: 142px;
   }
-}
-
-.header__logo-text {
-  font: var(--font-h5-semi);
-  line-height: 1.1;
-  color: var(--color-cream);
 }
