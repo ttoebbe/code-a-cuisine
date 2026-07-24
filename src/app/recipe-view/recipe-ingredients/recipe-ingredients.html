@@ -1,0 +1,72 @@
+<section class="ingredients" aria-labelledby="ingredients-title">
+  <div class="ingredients__banner">
+    <img
+      class="ingredients__banner-image"
+      src="/img/recipe-view/banner-ingredients.png"
+      alt=""
+      width="1152"
+      height="148"
+    />
+    <h2 class="ingredients__title" id="ingredients-title">Ingredients</h2>
+  </div>
+
+  <div
+    class="ingredients__columns"
+    id="ingredients-body"
+    [class.ingredients__columns--collapsed]="!expanded()"
+  >
+    <div class="ingredients__column">
+      <h3 class="ingredients__subtitle">Your ingredients</h3>
+      <ul class="ingredients__list">
+        @for (ingredient of yourIngredients(); track ingredient.name) {
+          <li class="ingredients__item">
+            <span class="ingredients__amount">{{ amountLabel(ingredient) }}</span>
+            <span class="ingredients__name">
+              {{ ingredient.name }}
+              @if (ingredient.note) {
+                <span class="ingredients__note">({{ ingredient.note }})</span>
+              }
+            </span>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <div class="ingredients__column">
+      <h3 class="ingredients__subtitle">Extra ingredients</h3>
+      <ul class="ingredients__list">
+        @for (ingredient of extraIngredients(); track ingredient.name) {
+          <li class="ingredients__item">
+            <span class="ingredients__amount">{{ amountLabel(ingredient) }}</span>
+            <span class="ingredients__name">
+              {{ ingredient.name }}
+              @if (ingredient.note) {
+                <span class="ingredients__note">({{ ingredient.note }})</span>
+              }
+            </span>
+          </li>
+        } @empty {
+          <li class="ingredients__item ingredients__item--empty">
+            Nothing to buy — everything is already in your kitchen.
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+
+  <button
+    type="button"
+    class="ingredients__toggle"
+    aria-controls="ingredients-body"
+    [attr.aria-expanded]="expanded()"
+    (click)="toggle()"
+  >
+    {{ expanded() ? 'Hide ingredients' : 'Show ingredients' }}
+    <img
+      [src]="expanded() ? '/img/arrow-drop-up.png' : '/img/arrow-drop-down.png'"
+      alt=""
+      width="20"
+      height="20"
+    />
+  </button>
+</section>

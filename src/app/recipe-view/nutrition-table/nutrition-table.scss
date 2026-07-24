@@ -1,0 +1,46 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.nutrition__title {
+  margin-bottom: var(--space-2);
+  color: var(--color-green-dark);
+  font: var(--font-body-16);
+
+  @include desktop {
+    font: 500 18px/1.4 var(--font-family-body);
+  }
+}
+
+// Scrolls inside its own box on narrow screens instead of widening the page.
+.nutrition__table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--color-green-dark);
+  font: var(--font-body-16);
+  text-align: left;
+
+  th,
+  td {
+    padding: var(--space-1) var(--space-3) var(--space-1) 0;
+    white-space: nowrap;
+  }
+
+  thead th {
+    font-weight: 600;
+  }
+
+  tbody th {
+    font-weight: 500;
+  }
+}
+
+.nutrition__scope:not(:empty) {
+  padding-right: var(--space-4);
+}

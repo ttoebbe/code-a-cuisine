@@ -1,0 +1,21 @@
+<dialog #dialog class="error-dialog" aria-labelledby="error-dialog-title" (close)="dismiss.emit()">
+  <button type="button" class="error-dialog__close" aria-label="Close" (click)="dialog.close()">
+    <span aria-hidden="true">×</span>
+  </button>
+
+  <h2 class="error-dialog__title" id="error-dialog-title">
+    <span class="error-dialog__title-line">{{ presentation().title }}</span>
+    <span class="error-dialog__title-line">{{ presentation().subtitle }}</span>
+  </h2>
+
+  <p class="error-dialog__message">{{ message() }}</p>
+
+  @if (retryHint(); as hint) {
+    <p class="error-dialog__hint">{{ hint }}</p>
+  }
+
+  <button type="button" class="error-dialog__action" (click)="onAction()">
+    {{ presentation().actionLabel }}
+    <span class="error-dialog__arrow" aria-hidden="true">→</span>
+  </button>
+</dialog>

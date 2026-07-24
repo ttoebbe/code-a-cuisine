@@ -1,0 +1,112 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+// Cream block at the top of the recipe card: stacked on mobile, two columns
+// with the meta data on the right from tablet up.
+.summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-cream);
+
+  @include desktop {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: var(--space-6);
+    padding: var(--space-6);
+  }
+}
+
+.summary__time {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  color: var(--color-green-dark);
+  font: var(--font-body-16);
+
+  @include desktop {
+    font: 500 18px/1.4 var(--font-family-body);
+  }
+}
+
+.summary__title {
+  margin-bottom: var(--space-4);
+  color: var(--color-green-middle);
+  font: 600 28px/1.15 var(--font-family-body);
+
+  @include desktop {
+    font: 600 48px/1.1 var(--font-family-body);
+  }
+}
+
+.summary__cooks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.summary__cooks-label {
+  color: var(--color-green-dark);
+  font: var(--font-body-16);
+
+  @include desktop {
+    font: 500 18px/1.4 var(--font-family-body);
+  }
+}
+
+.summary__chefs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// min-width keeps the nutrition table scrolling inside its own box instead of
+// stretching the grid column.
+.summary__meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+
+  // The design puts the chips above the nutrition block on desktop and below
+  // it on mobile, so only the order flips.
+  @include desktop {
+    align-items: flex-end;
+    text-align: right;
+  }
+}
+
+.summary__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  order: 2;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include desktop {
+    order: 0;
+    justify-content: flex-end;
+  }
+}
+
+.summary__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-chip);
+  color: var(--color-green-dark);
+  font: var(--font-body-16);
+}

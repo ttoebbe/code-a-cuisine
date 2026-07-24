@@ -1,0 +1,21 @@
+<article class="recipe-card">
+  <p class="recipe-card__caption">
+    <img src="/img/results/icon-cloche.png" alt="" width="20" height="14" />
+    {{ caption() }}
+  </p>
+
+  <h2 class="recipe-card__title">{{ recipe().title }}</h2>
+
+  <p class="recipe-card__time">
+    <img src="/img/preferences/schedule.png" alt="" width="20" height="20" />
+    Cooking time: {{ cookingTime() }}
+  </p>
+
+  <a
+    class="recipe-card__link"
+    [routerLink]="['/results', index()]"
+    [attr.aria-label]="'View recipe: ' + recipe().title"
+  >
+    View
+  </a>
+</article>

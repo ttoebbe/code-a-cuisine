@@ -1,0 +1,84 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+.directions__banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+
+  @include desktop {
+    margin-bottom: var(--space-5);
+  }
+}
+
+.directions__banner-image {
+  width: 100%;
+  height: auto;
+}
+
+.directions__title {
+  position: absolute;
+  color: var(--color-green-middle);
+  font: 600 22px/1.2 var(--font-family-body);
+
+  @include desktop {
+    font: 600 32px/1.2 var(--font-family-body);
+  }
+}
+
+// Two columns on desktop: steps of the same parallel group end up next to each
+// other, serial steps span the full width and close the row.
+.directions__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0 var(--space-2);
+  list-style: none;
+
+  @include desktop {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6) var(--space-7);
+    padding: 0 var(--space-6);
+  }
+}
+
+.directions__list--collapsed {
+  display: none;
+
+  @include desktop {
+    display: grid;
+  }
+}
+
+.directions__item--full {
+  @include desktop {
+    grid-column: 1 / -1;
+  }
+}
+
+.directions__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 44px;
+  margin-top: var(--space-3);
+  color: var(--color-green-middle);
+  font: var(--font-body-16);
+
+  @include desktop {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
+}

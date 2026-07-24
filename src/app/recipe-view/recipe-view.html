@@ -1,0 +1,40 @@
+<nav class="recipe-view__nav" aria-label="Back">
+  <a class="recipe-view__back" [routerLink]="backLink()">
+    <img src="/img/arrow-left.png" alt="" width="20" height="20" />
+    <span class="recipe-view__back-text">{{ backLabel() }}</span>
+  </a>
+</nav>
+
+<div class="recipe-view">
+  @if (recipe(); as recipe) {
+    <article class="recipe-view__card">
+      <app-recipe-summary [recipe]="recipe" />
+      <app-recipe-ingredients
+        [yourIngredients]="recipe.yourIngredients"
+        [extraIngredients]="recipe.extraIngredients"
+      />
+      <app-recipe-directions [steps]="recipe.steps" [cooks]="recipe.cooks" />
+      <app-recipe-like />
+    </article>
+
+    <aside class="recipe-view__cross-sell">
+      <p class="recipe-view__cross-sell-text">Find inspiration for your next culinary adventure!</p>
+      <a class="recipe-view__cross-sell-link" routerLink="/library">Cookbook</a>
+    </aside>
+
+    <p class="recipe-view__regenerate">
+      <a class="recipe-view__regenerate-link" routerLink="/generator">
+        Generate new recipe <span aria-hidden="true">→</span>
+      </a>
+    </p>
+  } @else {
+    <section class="recipe-view__missing" aria-labelledby="recipe-missing-title">
+      <h1 class="recipe-view__missing-title" id="recipe-missing-title">Recipe not available</h1>
+      <p class="recipe-view__missing-text">
+        This suggestion is no longer part of the current results. Generate a new recipe to start
+        over.
+      </p>
+      <a class="recipe-view__cross-sell-link" routerLink="/generator">Back to the generator</a>
+    </section>
+  }
+</div>

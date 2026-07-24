@@ -1,0 +1,149 @@
+@use '../../styles/mixins' as *;
+
+// The result screen is the dark stage of the design, like the loading screen
+// it follows, and it carries the whole viewport height.
+:host {
+  display: block;
+  min-height: calc(100vh - var(--header-height-mobile));
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+
+  @include desktop {
+    min-height: calc(100vh - var(--header-height-desktop));
+  }
+}
+
+// Mobile stacks title, image, lead and chips; desktop puts the image next to
+// the text block.
+.results {
+  display: grid;
+  grid-template-areas:
+    'title'
+    'media'
+    'lead'
+    'filters'
+    'list'
+    'footnote';
+  max-width: calc(1088px + 2 * var(--space-4));
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+
+  @include desktop {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'title media'
+      'lead media'
+      'filters media'
+      'list list'
+      'footnote footnote';
+    align-items: start;
+    column-gap: var(--space-7);
+    max-width: calc(1088px + 2 * var(--space-6));
+    padding: var(--space-7) var(--space-6) var(--space-8);
+  }
+}
+
+.results__title {
+  grid-area: title;
+  margin-bottom: var(--space-4);
+  font: 600 32px/1.1 var(--font-family-body);
+
+  @include desktop {
+    margin-bottom: var(--space-5);
+    font: var(--font-h2);
+  }
+}
+
+.results__banner {
+  grid-area: media;
+  width: 100%;
+  max-width: 574px;
+  height: auto;
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-lg);
+
+  @include desktop {
+    justify-self: end;
+    margin-bottom: 0;
+  }
+}
+
+.results__lead {
+  grid-area: lead;
+  margin-bottom: var(--space-4);
+  font: 500 18px/1.4 var(--font-family-body);
+
+  @include desktop {
+    max-width: 46ch;
+    font: 500 20px/1.5 var(--font-family-body);
+  }
+}
+
+.results__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  grid-area: filters;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.results__filter {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-cream);
+  color: var(--color-green-middle);
+  font: var(--font-body-16);
+}
+
+.results__list {
+  display: grid;
+  grid-area: list;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  margin: var(--space-7) 0 0;
+  padding: 0;
+  list-style: none;
+
+  @include desktop {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+    margin-top: var(--space-8);
+  }
+}
+
+// Stretches every card to the tallest one, so the buttons line up.
+.results__item {
+  display: flex;
+}
+
+.results__footnote {
+  grid-area: footnote;
+  margin-top: var(--space-6);
+  text-align: center;
+
+  @include desktop {
+    margin-top: var(--space-7);
+    text-align: right;
+  }
+}
+
+.results__regenerate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  font: var(--font-body-16);
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-cream);
+    outline-offset: 2px;
+  }
+}

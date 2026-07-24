@@ -1,0 +1,24 @@
+:host {
+  display: inline-flex;
+}
+
+// Chef 1 keeps the muted green of the design, chef 2 the warm peach.
+.chef-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-mist);
+  color: var(--color-green-dark);
+  font: 500 16px/1.4 var(--font-family-body);
+  white-space: nowrap;
+}
+
+.chef-badge--2 {
+  background: var(--color-peach);
+}
+
+// Third chef: the design stops at two, sage keeps the row readable.
+.chef-badge--3 {
+  background: var(--color-sage);
+}

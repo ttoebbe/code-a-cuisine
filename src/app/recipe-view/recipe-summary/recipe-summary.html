@@ -1,0 +1,38 @@
+<header class="summary">
+  <div class="summary__main">
+    <p class="summary__time">
+      <img src="/img/preferences/schedule.png" alt="" width="20" height="20" />
+      Cooking time: {{ cookingTime() }}
+    </p>
+
+    <h1 class="summary__title">{{ recipe().title }}</h1>
+
+    <div class="summary__cooks">
+      <span class="summary__cooks-label">Cooking persons: {{ recipe().cooks }}</span>
+      <ul class="summary__chefs">
+        @for (chef of chefs(); track chef) {
+          <li><app-chef-badge [chef]="chef" /></li>
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="summary__meta">
+    <ul class="summary__chips">
+      @if (dietLabel(); as diet) {
+        <li class="summary__chip">{{ diet }}</li>
+      }
+      <li class="summary__chip">{{ timeLabel() }}</li>
+      <li class="summary__chip">{{ cuisineLabel() }}</li>
+      @if (likeCount() !== null) {
+        <li class="summary__chip">
+          <img src="/img/recipe-view/favorite.png" alt="" width="17" height="15" />
+          <span class="visually-hidden">Likes:</span>
+          {{ likeCount() }}
+        </li>
+      }
+    </ul>
+
+    <app-nutrition-table [nutrition]="recipe().nutrition" [portions]="recipe().portions" />
+  </div>
+</header>

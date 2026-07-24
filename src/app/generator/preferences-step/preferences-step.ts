@@ -4,6 +4,7 @@ import {
   GeneratorStateService,
   PORTIONS_RANGE,
 } from '../../services/generator-state.service';
+import { RecipeGenerationService } from '../../services/recipe-generation.service';
 import { ChipGroup } from './chip-group/chip-group';
 import { CUISINE_OPTIONS, DIET_OPTIONS, TIME_OPTIONS } from './preference-options';
 import { StepperField } from './stepper-field/stepper-field';
@@ -22,6 +23,7 @@ import { StepperField } from './stepper-field/stepper-field';
 })
 export class PreferencesStep {
   protected readonly state = inject(GeneratorStateService);
+  private readonly generation = inject(RecipeGenerationService);
 
   protected readonly portionsRange = PORTIONS_RANGE;
   protected readonly cooksRange = COOKS_RANGE;
@@ -30,11 +32,11 @@ export class PreferencesStep {
   protected readonly dietOptions = DIET_OPTIONS;
 
   /**
-   * Records the generation request without leaving the page.
+   * Hands the assembled request to the n8n workflow.
    * @param event Native submit event of the preferences form.
    */
   protected onSubmit(event: Event): void {
     event.preventDefault();
-    this.state.requestGeneration();
+    this.generation.generate();
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 import type { CuisineStyle, Diet, TimeCategory } from '../models/recipe-filters.types';
-import type { RequestIngredient } from '../models/recipe-request.interface';
+import type { RecipeRequest, RequestIngredient } from '../models/recipe-request.interface';
 
 /** Inclusive range of servings a recipe may be generated for (Lastenheft). */
 export const PORTIONS_RANGE = { min: 1, max: 12 } as const;
@@ -31,7 +31,6 @@ export class GeneratorStateService {
   private readonly timeCategoryChoice = signal<TimeCategory | null>(null);
   private readonly cuisineChoice = signal<CuisineStyle | null>(null);
   private readonly dietChoice = signal<Diet | null>(null);
-  private readonly generationFlag = signal(false);
 
   /** Ingredients collected in step 1, in insertion order. */
   readonly ingredients = this.ingredientList.asReadonly();
@@ -50,12 +49,6 @@ export class GeneratorStateService {
 
   /** Chosen diet, null until the user picks one. */
   readonly diet = this.dietChoice.asReadonly();
-
-  /**
-   * Placeholder until the n8n call ships: flipped by the generate button so the
-   * UI can react without the webhook being wired up yet.
-   */
-  readonly generationRequested = this.generationFlag.asReadonly();
 
   /** True as soon as the request holds at least one ingredient. */
   readonly hasIngredients = computed(() => this.ingredientList().length > 0);
@@ -138,8 +131,29 @@ export class GeneratorStateService {
     this.dietChoice.set(value);
   }
 
-  /** Marks the request as submitted; the webhook call follows in phase 3.5. */
-  requestGeneration(): void {
-    if (this.canGenerate()) this.generationFlag.set(true);
+  /**
+   * Assembles the payload for the n8n webhook.
+   * @returns The request, or null while the wizard is still incomplete.
+   */
+  buildRequest(): RecipeRequest | null {
+    const timeCategory = this.timeCategoryChoice();
+    const cuisine = this.cuisineChoice();
+    const diet = this.dietChoice();
+    if (timeCategory === null || cuisine === null || diet === null) return null;
+    if (!this.hasIngredients()) return null;
+    const { ingredients, portions, cooks } = this.readCounts();
+    return { ingredients, portions, cooks, timeCategory, cuisine, diet };
+  }
+
+  /**
+   * Snapshots the non-nullable part of the request.
+   * @returns Ingredients plus the two counter values.
+   */
+  private readCounts(): Pick<RecipeRequest, 'ingredients' | 'portions' | 'cooks'> {
+    return {
+      ingredients: this.ingredientList(),
+      portions: this.portionCount(),
+      cooks: this.cookCount(),
+    };
   }
 }

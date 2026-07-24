@@ -1,0 +1,30 @@
+<section class="results" aria-labelledby="results-title">
+  <h1 class="results__title" id="results-title">The recipe results</h1>
+
+  <img class="results__banner" src="/img/results/robot-arm.png" alt="" width="574" height="222" />
+
+  <p class="results__lead">
+    We took what you have and let our AI do the thinking. Here are 3 easy recipes you can make right
+    now!
+  </p>
+
+  <ul class="results__filters">
+    @for (filter of filters(); track filter) {
+      <li class="results__filter">{{ filter }}</li>
+    }
+  </ul>
+
+  <ul class="results__list">
+    @for (recipe of recipes(); track recipe.title) {
+      <li class="results__item">
+        <app-recipe-card [recipe]="recipe" [index]="$index" />
+      </li>
+    }
+  </ul>
+
+  <p class="results__footnote">
+    <a class="results__regenerate" routerLink="/generator">
+      Generate new recipe <span aria-hidden="true">→</span>
+    </a>
+  </p>
+</section>

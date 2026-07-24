@@ -1,0 +1,43 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+.step__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.step__title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--color-green-dark);
+  font: 500 18px/1.3 var(--font-family-body);
+
+  @include desktop {
+    font: 500 20px/1.3 var(--font-family-body);
+  }
+}
+
+// Cream disc around the step number, as in the design.
+.step__order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-cream);
+  font: var(--font-small-text);
+}
+
+.step__description {
+  color: var(--color-green-dark);
+  font: 500 16px/1.5 var(--font-family-body);
+}

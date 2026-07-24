@@ -1,0 +1,12 @@
+<div class="step__header">
+  <h3 class="step__title">
+    <span class="step__order">{{ step().order }}.</span>
+    {{ step().title }}
+  </h3>
+
+  @if (showChef()) {
+    <app-chef-badge [chef]="step().assignedChef" />
+  }
+</div>
+
+<p class="step__description">{{ step().description }}</p>

@@ -1,0 +1,94 @@
+@use '../../../styles/mixins' as *;
+
+// Native dialog keeps focus trapping and Esc for free; only its chrome is reset.
+.error-dialog {
+  position: relative;
+  width: min(420px, calc(100vw - 2 * var(--space-5)));
+  margin: auto;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+
+  @include desktop {
+    padding: var(--space-6);
+  }
+
+  &::backdrop {
+    background: rgb(16 49 11 / 60%);
+  }
+}
+
+.error-dialog__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  font: 500 24px/1 var(--font-family-body);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-cream);
+    outline-offset: 2px;
+  }
+}
+
+.error-dialog__title {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-4);
+  font: 500 28px/1.2 var(--font-family-body);
+}
+
+.error-dialog__title-line {
+  display: block;
+}
+
+.error-dialog__message {
+  font: var(--font-body-16);
+}
+
+.error-dialog__hint {
+  margin-top: var(--space-3);
+  font: var(--font-body-16);
+  font-weight: 600;
+}
+
+.error-dialog__action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  margin-top: var(--space-6);
+  padding: 0 var(--space-2);
+  color: inherit;
+  font: var(--font-body-16);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-cream);
+    outline-offset: 2px;
+  }
+}
+
+// Nudges only the arrow on hover, so the label itself does not move.
+.error-dialog__arrow {
+  transition: transform 0.2s ease;
+
+  .error-dialog__action:hover & {
+    transform: translateX(4px);
+  }
+}

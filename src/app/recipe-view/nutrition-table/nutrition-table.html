@@ -1,0 +1,26 @@
+<section class="nutrition" aria-labelledby="nutrition-title">
+  <h2 class="nutrition__title" id="nutrition-title">Nutritional information</h2>
+
+  <table class="nutrition__table">
+    <thead>
+      <tr>
+        <th class="nutrition__scope" scope="col"><span class="visually-hidden">Scope</span></th>
+        <th scope="col">Energy</th>
+        <th scope="col">Protein</th>
+        <th scope="col">Fat</th>
+        <th scope="col">Carbs</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.label) {
+        <tr>
+          <th class="nutrition__scope" scope="row">{{ row.label }}</th>
+          <td>{{ row.scope.kcal }} kcal</td>
+          <td>{{ row.scope.protein.grams }}g</td>
+          <td>{{ row.scope.fat.grams }}g</td>
+          <td>{{ row.scope.carbs.grams }}g</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>

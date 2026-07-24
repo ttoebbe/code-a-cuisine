@@ -1,0 +1,21 @@
+<div class="like">
+  <p class="like__text">
+    <strong class="like__question">Just finished this meal?</strong>
+    <span class="like__hint">Give it a heart, so that the others know this is delicious.</span>
+  </p>
+
+  <button
+    type="button"
+    class="like__button"
+    aria-label="Like this recipe"
+    [attr.aria-pressed]="liked()"
+    (click)="toggle()"
+  >
+    <img
+      [src]="liked() ? '/img/recipe-view/heart-filled.png' : '/img/recipe-view/heart-outline.png'"
+      alt=""
+      width="52"
+      height="48"
+    />
+  </button>
+</div>

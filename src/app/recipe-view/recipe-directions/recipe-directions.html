@@ -1,0 +1,40 @@
+<section class="directions" aria-labelledby="directions-title">
+  <div class="directions__banner">
+    <img
+      class="directions__banner-image"
+      src="/img/recipe-view/banner-directions.png"
+      alt=""
+      width="1143"
+      height="127"
+    />
+    <h2 class="directions__title" id="directions-title">Directions</h2>
+  </div>
+
+  <ol
+    class="directions__list"
+    id="directions-body"
+    [class.directions__list--collapsed]="!expanded()"
+  >
+    @for (step of steps(); track step.order) {
+      <li class="directions__item" [class.directions__item--full]="step.parallelGroupId === null">
+        <app-recipe-step [step]="step" [showChef]="showChef()" />
+      </li>
+    }
+  </ol>
+
+  <button
+    type="button"
+    class="directions__toggle"
+    aria-controls="directions-body"
+    [attr.aria-expanded]="expanded()"
+    (click)="toggle()"
+  >
+    {{ expanded() ? 'Hide directions' : 'Show directions' }}
+    <img
+      [src]="expanded() ? '/img/arrow-drop-up.png' : '/img/arrow-drop-down.png'"
+      alt=""
+      width="20"
+      height="20"
+    />
+  </button>
+</section>
