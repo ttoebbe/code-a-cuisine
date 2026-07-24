@@ -22,8 +22,8 @@ export const TIME_OPTIONS: readonly ChipOption<TimeCategory>[] = [
 export const CUISINE_OPTIONS: readonly ChipOption<CuisineStyle>[] = [
   { value: 'german', label: 'German' },
   { value: 'italian', label: 'Italian' },
-  { value: 'japanese', label: 'Japanese' },
   { value: 'indian', label: 'Indian' },
+  { value: 'japanese', label: 'Japanese' },
   { value: 'gourmet', label: 'Gourmet' },
   { value: 'fusion', label: 'Fusion' },
 ];
@@ -33,5 +33,5 @@ export const DIET_OPTIONS: readonly ChipOption<Diet>[] = [
   { value: 'vegetarian', label: 'Vegetarian' },
   { value: 'vegan', label: 'Vegan' },
   { value: 'keto', label: 'Keto' },
-  { value: 'none', label: 'No restriction' },
+  { value: 'none', label: 'No preferences' },
 ];
