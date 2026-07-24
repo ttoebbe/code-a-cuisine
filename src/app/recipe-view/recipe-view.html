@@ -14,6 +14,9 @@
         [extraIngredients]="recipe.extraIngredients"
       />
       <app-recipe-directions [steps]="recipe.steps" [cooks]="recipe.cooks" />
+      @if (backTo() === 'results') {
+        <app-recipe-save [recipe]="recipe" (saved)="onSaved($event)" />
+      }
       <app-recipe-like />
     </article>
 

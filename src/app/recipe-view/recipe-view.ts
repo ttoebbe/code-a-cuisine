@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RecipeGenerationService } from '../services/recipe-generation.service';
 import { RecipeDirections } from './recipe-directions/recipe-directions';
 import { RecipeIngredients } from './recipe-ingredients/recipe-ingredients';
 import { RecipeLike } from './recipe-like/recipe-like';
+import { RecipeSave } from './recipe-save/recipe-save';
 import { RecipeSummary } from './recipe-summary/recipe-summary';
 
 /** Where the back link of the recipe view leads. */
@@ -22,7 +23,7 @@ const BACK_LINKS: Record<RecipeOrigin, { path: string; label: string }> = {
  */
 @Component({
   selector: 'app-recipe-view',
-  imports: [RecipeDirections, RecipeIngredients, RecipeLike, RecipeSummary, RouterLink],
+  imports: [RecipeDirections, RecipeIngredients, RecipeLike, RecipeSave, RecipeSummary, RouterLink],
   templateUrl: './recipe-view.html',
   styleUrl: './recipe-view.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,4 +45,15 @@ export class RecipeView {
 
   /** Wording of the back link. */
   protected readonly backLabel = computed(() => BACK_LINKS[this.backTo()].label);
+
+  /** Document id of the suggestion once it was saved, null before that. */
+  protected readonly savedId = signal<string | null>(null);
+
+  /**
+   * Remembers under which document the suggestion was stored.
+   * @param id Document id reported by the save button.
+   */
+  protected onSaved(id: string): void {
+    this.savedId.set(id);
+  }
 }

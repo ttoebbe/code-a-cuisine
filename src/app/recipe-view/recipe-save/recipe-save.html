@@ -1,0 +1,23 @@
+<div class="save">
+  @if (status() === 'saved') {
+    <p class="save__done">
+      <strong class="save__question">Saved to the cookbook.</strong>
+      <span class="save__hint">Everybody can find and cook this recipe from now on.</span>
+    </p>
+    <a class="save__link" routerLink="/library">Open cookbook</a>
+  } @else {
+    <p class="save__text">
+      <strong class="save__question">Want to keep this recipe?</strong>
+      <span class="save__hint">Save it to the cookbook and come back to it any time.</span>
+    </p>
+    <button type="button" class="save__button" [disabled]="status() === 'saving'" (click)="save()">
+      {{ status() === 'saving' ? 'Saving…' : 'Save to cookbook' }}
+    </button>
+  }
+
+  @if (status() === 'error') {
+    <p class="save__error" role="alert">
+      Saving failed. Please check your connection and try again.
+    </p>
+  }
+</div>
