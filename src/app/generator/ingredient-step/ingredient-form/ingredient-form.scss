@@ -1,0 +1,174 @@
+@use '../../../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+// Mobile stacks label, field, suggestions, then the serving-size row.
+// Desktop lifts the serving-size group into a second column next to the name.
+.ingredient-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    'name-label'
+    'name-field'
+    'size-label'
+    'size-field'
+    'error';
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-sage);
+
+  @include desktop {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'name-label size-label'
+      'name-field size-field'
+      'error      error';
+    // Height of the design's card with an open suggestion list. Reserving it
+    // upfront lets the list overlay the free area instead of resizing the card.
+    min-height: 209px;
+    // Keeps the rows at their content height so the reserved space stays at the
+    // bottom of the card, where the suggestion list overlays it.
+    align-content: start;
+    column-gap: var(--space-6);
+    row-gap: var(--space-2);
+    padding: var(--space-5) var(--space-6);
+  }
+}
+
+.ingredient-form__label {
+  font: var(--font-small-label);
+  color: var(--color-green-dark);
+}
+
+.ingredient-form__label--name {
+  grid-area: name-label;
+}
+
+.ingredient-form__label--size {
+  grid-area: size-label;
+  align-self: end;
+}
+
+.ingredient-form__input {
+  height: 36px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-cream);
+  color: var(--color-green-dark);
+  font: 500 18px/36px var(--font-family-body);
+
+  &::placeholder {
+    color: color-mix(in srgb, var(--color-green-dark) 45%, transparent);
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
+}
+
+.ingredient-form__name {
+  grid-area: name-field;
+  position: relative;
+}
+
+.ingredient-form__input--name {
+  width: 100%;
+  padding: 0 var(--space-4);
+}
+
+.ingredient-form__input--amount {
+  width: 64px;
+  padding: 0 var(--space-3);
+  text-align: center;
+}
+
+// Fixed height for exactly three suggestion rows, drawn on top of the free card
+// area below the input. Overlaying instead of pushing keeps the card from
+// resizing while the user types.
+.ingredient-form__suggestions {
+  position: absolute;
+  top: 100%;
+  inset-inline: 0;
+  z-index: 1;
+  height: 84px;
+  padding: var(--space-2) var(--space-4) 0;
+  overflow: hidden;
+  background: var(--color-sage);
+}
+
+.ingredient-form__size {
+  grid-area: size-field;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ingredient-form__unit {
+  position: relative;
+  display: inline-flex;
+
+  // Design shows a small solid triangle instead of the native select arrow.
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: var(--space-3);
+    width: 0;
+    height: 0;
+    margin-top: -2px;
+    border-inline: 5px solid transparent;
+    border-top: 6px solid var(--color-green-dark);
+    pointer-events: none;
+  }
+}
+
+.ingredient-form__unit-select {
+  height: 36px;
+  padding: 0 var(--space-5) 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-cream);
+  color: var(--color-green-dark);
+  // One step below the other fields: the control sizes itself to its longest
+  // option ("milliliter"), which the design's "gram"-only width cannot hold.
+  font: 500 16px/36px var(--font-family-body);
+  appearance: none;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
+}
+
+.ingredient-form__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: var(--space-2);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
+}
+
+.ingredient-form__submit-icon {
+  width: 24px;
+  height: 24px;
+}
+
+// Always rendered so a validation message cannot shift the card.
+.ingredient-form__error {
+  grid-area: error;
+  min-height: 20px;
+  color: var(--color-error);
+  font: var(--font-body-16);
+}

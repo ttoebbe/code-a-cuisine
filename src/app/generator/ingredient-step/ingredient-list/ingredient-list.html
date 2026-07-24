@@ -1,0 +1,30 @@
+<section class="ingredient-list" aria-labelledby="ingredient-list-title">
+  <h2 class="ingredient-list__title" id="ingredient-list-title">List of your Ingredients</h2>
+
+  <ul class="ingredient-list__items">
+    @for (ingredient of ingredients(); track ingredient) {
+      <li class="ingredient-list__item">
+        <span class="ingredient-list__amount">{{ amountLabel(ingredient) }}</span>
+        <span class="ingredient-list__name">{{ ingredient.name }}</span>
+
+        <button
+          type="button"
+          class="ingredient-list__action"
+          [attr.aria-label]="'Edit ' + ingredient.name"
+          (click)="edit.emit($index)"
+        >
+          <img src="/img/preferences/edit.png" alt="" width="20" height="20" />
+        </button>
+
+        <button
+          type="button"
+          class="ingredient-list__action"
+          [attr.aria-label]="'Delete ' + ingredient.name"
+          (click)="remove.emit($index)"
+        >
+          <img src="/img/delete.png" alt="" width="20" height="20" />
+        </button>
+      </li>
+    }
+  </ul>
+</section>

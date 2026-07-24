@@ -1,31 +1,87 @@
 @use '../../styles/mixins' as *;
 
+// The generator route sits on the white surface from the design, unlike the
+// cream body background used elsewhere.
 :host {
   display: block;
-}
-
-.generator {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-  padding: var(--space-7) var(--space-5);
+  min-height: calc(100vh - var(--header-height-mobile));
+  background: var(--color-surface);
 
   @include desktop {
+    min-height: calc(100vh - var(--header-height-desktop));
+  }
+}
+
+// Design content area is 1086px wide at 1440, narrower than --content-max-width.
+// The max-width adds the horizontal padding on top of it.
+.generator {
+  max-width: calc(1088px + 2 * var(--space-4));
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+
+  @include desktop {
+    max-width: calc(1088px + 2 * var(--space-6));
     padding: var(--space-8) var(--space-6);
   }
 }
 
 .generator__title {
-  font: var(--font-h3);
-  color: var(--color-olive-green);
   margin-bottom: var(--space-4);
+  font: 600 32px/1.1 var(--font-family-body);
+  color: var(--color-green-middle);
+
+  @include desktop {
+    margin-bottom: var(--space-5);
+    font: var(--font-h2);
+    text-align: center;
+  }
 }
 
 .generator__lead {
-  font: var(--font-body-16);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-7);
+  font: 500 18px/1.3 var(--font-family-body);
+  color: var(--color-green-dark);
+
+  @include desktop {
+    font: var(--font-h5);
+    text-align: center;
+  }
 }
 
-.generator__note {
-  font: var(--font-small-text);
+.generator__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-sage);
+}
+
+.generator__placeholder-title {
+  font: var(--font-card-headline);
   color: var(--color-green-middle);
+}
+
+.generator__placeholder-text {
+  font: var(--font-body-16);
+  color: var(--color-green-dark);
+}
+
+.generator__back {
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-sm);
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+  font: 600 18px/1.2 var(--font-family-body);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--color-green-middle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-dark);
+    outline-offset: 2px;
+  }
 }

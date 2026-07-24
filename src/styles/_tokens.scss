@@ -8,6 +8,9 @@
   --color-green-dark: #10310b;
   --color-green-middle: #1e5515;
   --color-cream: #faf0e6;
+  --color-sage: #c4cfc4;
+  --color-surface: #ffffff;
+  --color-error: #8f2d1b;
 
   // Font families
   --font-family-brand: 'Ubuntu', system-ui, sans-serif;
@@ -15,6 +18,7 @@
 
   // Font shortcuts: font-weight / font-size / line-height family
   --font-h1: 700 104px/1 var(--font-family-brand);
+  --font-h2: 600 56px/1.1 var(--font-family-body);
   --font-h3: 600 48px/1 var(--font-family-body);
   --font-card-headline: 600 28px/1 var(--font-family-body);
   --font-h5: 500 24px/1 var(--font-family-body);
@@ -37,6 +41,7 @@
   // Radii
   --radius-sm: 4px;
   --radius-md: 8px;
+  --radius-lg: 16px;
   --radius-full: 999px;
 
   // Layout

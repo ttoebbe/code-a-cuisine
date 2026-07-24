@@ -1,0 +1,73 @@
+<form class="ingredient-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <label class="ingredient-form__label ingredient-form__label--name" for="ingredient-name">
+    Ingredient
+  </label>
+
+  <div class="ingredient-form__name">
+    <input
+      id="ingredient-name"
+      class="ingredient-form__input ingredient-form__input--name"
+      type="text"
+      role="combobox"
+      autocomplete="off"
+      aria-autocomplete="list"
+      formControlName="name"
+      [attr.aria-expanded]="isListboxOpen()"
+      [attr.aria-controls]="suggestionListId"
+      [attr.aria-activedescendant]="activeOptionId()"
+      (input)="onNameInput()"
+      (keydown)="onKeydown($event)"
+      (blur)="closeSuggestions()"
+    />
+
+    @if (isListboxOpen()) {
+      <div class="ingredient-form__suggestions">
+        <app-ingredient-suggestions
+          [suggestions]="suggestions()"
+          [activeIndex]="activeIndex()"
+          (pick)="pickSuggestion($event)"
+        />
+      </div>
+    }
+  </div>
+
+  <label class="ingredient-form__label ingredient-form__label--size" for="ingredient-amount">
+    Serving size
+  </label>
+
+  <div class="ingredient-form__size">
+    <input
+      id="ingredient-amount"
+      class="ingredient-form__input ingredient-form__input--amount"
+      type="text"
+      inputmode="numeric"
+      autocomplete="off"
+      placeholder="100"
+      formControlName="amount"
+    />
+
+    <span class="ingredient-form__unit">
+      <select class="ingredient-form__unit-select" formControlName="unit" aria-label="Unit">
+        @for (option of unitOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </span>
+
+    <button
+      type="submit"
+      class="ingredient-form__submit"
+      [attr.aria-label]="isEditing() ? 'Save ingredient' : 'Add ingredient'"
+    >
+      <img
+        class="ingredient-form__submit-icon"
+        [src]="isEditing() ? '/img/preferences/check.png' : '/img/plus.png'"
+        alt=""
+        width="24"
+        height="24"
+      />
+    </button>
+  </div>
+
+  <p class="ingredient-form__error" role="alert">{{ errorMessage() }}</p>
+</form>

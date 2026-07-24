@@ -1,0 +1,65 @@
+@use '../../../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+// Min-height keeps the empty card at its design size instead of collapsing
+// onto the heading.
+.ingredient-list {
+  min-height: 132px;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-sage);
+
+  @include desktop {
+    min-height: 209px;
+    padding: var(--space-6);
+  }
+}
+
+.ingredient-list__title {
+  margin-bottom: var(--space-4);
+  font: var(--font-small-label);
+  color: var(--color-green-dark);
+}
+
+.ingredient-list__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Fixed amount column so the ingredient names line up, as in the design.
+.ingredient-list__item {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  color: var(--color-green-dark);
+  font: 500 16px/1.4 var(--font-family-body);
+
+  @include desktop {
+    grid-template-columns: 72px minmax(0, 1fr) auto auto;
+    font: 500 18px/1.4 var(--font-family-body);
+  }
+}
+
+.ingredient-list__amount::before {
+  content: '•';
+  margin-right: var(--space-2);
+}
+
+.ingredient-list__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
+}

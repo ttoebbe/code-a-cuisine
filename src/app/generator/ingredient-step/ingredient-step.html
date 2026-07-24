@@ -1,0 +1,19 @@
+<div class="ingredient-step__columns">
+  <app-ingredient-form [editing]="editing()" (save)="onSave($event)" />
+  <app-ingredient-list
+    [ingredients]="state.ingredients()"
+    (edit)="onEdit($event)"
+    (remove)="onRemove($event)"
+  />
+</div>
+
+<div class="ingredient-step__actions">
+  <button
+    type="button"
+    class="ingredient-step__next"
+    [disabled]="!state.hasIngredients()"
+    (click)="next.emit()"
+  >
+    Next step
+  </button>
+</div>

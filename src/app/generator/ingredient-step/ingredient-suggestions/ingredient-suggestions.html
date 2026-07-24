@@ -1,0 +1,19 @@
+<ul class="suggestions" [id]="listId" role="listbox" aria-label="Ingredient suggestions">
+  @for (suggestion of suggestions(); track suggestion) {
+    <li class="suggestions__item" role="presentation">
+      <button
+        type="button"
+        role="option"
+        tabindex="-1"
+        class="suggestions__option"
+        [id]="optionId($index)"
+        [class.suggestions__option--active]="$index === activeIndex()"
+        [attr.aria-selected]="$index === activeIndex()"
+        (mousedown)="$event.preventDefault()"
+        (click)="pick.emit(suggestion)"
+      >
+        {{ suggestion }}
+      </button>
+    </li>
+  }
+</ul>

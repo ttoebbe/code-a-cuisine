@@ -1,0 +1,66 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+// Column split mirrors the design: input card 576px next to a 477px list card.
+.ingredient-step__columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: var(--space-6);
+
+  @include desktop {
+    grid-template-columns: 1.2fr 1fr;
+  }
+}
+
+.ingredient-step__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-7);
+
+  @include desktop {
+    justify-content: flex-end;
+  }
+}
+
+// Sized to the design's 105x52 (mobile) and 161x62 (desktop) button.
+.ingredient-step__next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 105px;
+  min-height: 52px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+  font: 600 18px/1.2 var(--font-family-body);
+  transition:
+    background 0.2s ease,
+    opacity 0.2s ease;
+
+  @include desktop {
+    min-width: 161px;
+    min-height: 62px;
+    padding: 0 var(--space-5);
+    font: var(--font-button);
+  }
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    background: var(--color-green-middle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-dark);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}

@@ -1,5 +1,21 @@
-<section class="generator">
-  <h1 class="generator__title">Generator</h1>
-  <p class="generator__lead">Enter your ingredients and get a recipe.</p>
-  <p class="generator__note">Full generator UI ships in a later phase.</p>
+<section class="generator" aria-labelledby="generator-title">
+  <h1 class="generator__title" id="generator-title">Generate recipe</h1>
+  <p class="generator__lead">
+    Got random stuff in your kitchen? Pop it in—we've got the perfect recipe waiting.
+  </p>
+
+  @switch (step()) {
+    @case (1) {
+      <app-ingredient-step (next)="goToStep(2)" />
+    }
+    @case (2) {
+      <div class="generator__placeholder">
+        <h2 class="generator__placeholder-title">Preferences</h2>
+        <p class="generator__placeholder-text">Step 2 ships in the next phase.</p>
+        <button type="button" class="generator__back" (click)="goToStep(1)">
+          Back to ingredients
+        </button>
+      </div>
+    }
+  }
 </section>

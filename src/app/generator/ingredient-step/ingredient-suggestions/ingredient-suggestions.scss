@@ -1,0 +1,30 @@
+:host {
+  display: block;
+}
+
+.suggestions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Row pitch is fixed so the reserved area in the form card always fits three
+// entries and the card never changes height while typing.
+.suggestions__option {
+  display: block;
+  width: 100%;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-green-dark);
+  font: 500 18px/28px var(--font-family-body);
+  text-align: left;
+
+  &:hover,
+  &:focus-visible {
+    background: color-mix(in srgb, var(--color-cream) 55%, transparent);
+  }
+}
+
+.suggestions__option--active {
+  background: color-mix(in srgb, var(--color-cream) 55%, transparent);
+}
