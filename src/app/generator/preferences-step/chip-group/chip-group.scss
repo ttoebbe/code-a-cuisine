@@ -70,8 +70,9 @@
     background 0.2s ease,
     color 0.2s ease;
 
+  // Kept tight enough for all six cuisine chips to share one row, as designed.
   @include desktop {
-    padding: var(--space-2) var(--space-5);
+    padding: var(--space-2) var(--space-4);
   }
 }
 

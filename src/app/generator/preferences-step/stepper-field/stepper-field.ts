@@ -12,8 +12,11 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StepperField {
-  /** Visible caption of the control, e.g. "Portions". */
+  /** Question shown above the control, e.g. "How many portions you need?". */
   readonly label = input.required<string>();
+
+  /** Unit shown next to the value, e.g. "Portions". */
+  readonly unitLabel = input.required<string>();
 
   /** Noun used in the button labels, e.g. "portions". */
   readonly unit = input.required<string>();

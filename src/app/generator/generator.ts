@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { IngredientStep } from './ingredient-step/ingredient-step';
 import { PreferencesStep } from './preferences-step/preferences-step';
 
@@ -19,6 +19,11 @@ export type WizardStep = 1 | 2;
 export class Generator {
   /** Step currently shown to the user. */
   protected readonly step = signal<WizardStep>(1);
+
+  /** Page title of the current step. */
+  protected readonly title = computed(() =>
+    this.step() === 1 ? 'Generate recipe' : 'Choose your preferences',
+  );
 
   /**
    * Switches the wizard to another step.

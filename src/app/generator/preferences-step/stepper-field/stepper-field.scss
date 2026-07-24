@@ -16,21 +16,20 @@
   color: var(--color-green-dark);
 }
 
+// The design places the controls straight on the page background: no pill,
+// just the square icon buttons around the value box and its unit.
 .stepper-field__control {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   min-height: 44px;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-full);
-  background: var(--color-cream);
 }
 
 .stepper-field__button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-1);
+  padding: var(--space-2);
   border-radius: var(--radius-sm);
   cursor: pointer;
 
@@ -47,8 +46,17 @@
 
 // Fixed width so stepping from 9 to 10 cannot shift the buttons sideways.
 .stepper-field__value {
-  min-width: 2.5ch;
+  min-width: 3ch;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-sage);
   text-align: center;
   color: var(--color-green-dark);
   font: 600 18px/1.2 var(--font-family-body);
+}
+
+.stepper-field__unit {
+  margin-right: var(--space-2);
+  color: var(--color-green-dark);
+  font: 500 18px/1.2 var(--font-family-body);
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import {
   COOKS_RANGE,
   GeneratorStateService,
@@ -22,9 +22,6 @@ import { StepperField } from './stepper-field/stepper-field';
 })
 export class PreferencesStep {
   protected readonly state = inject(GeneratorStateService);
-
-  /** Emits when the user returns to the ingredient step. */
-  readonly back = output<void>();
 
   protected readonly portionsRange = PORTIONS_RANGE;
   protected readonly cooksRange = COOKS_RANGE;

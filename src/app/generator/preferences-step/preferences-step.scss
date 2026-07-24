@@ -1,7 +1,30 @@
 @use '../../../styles/mixins' as *;
 
+// The design centres step 2 on a 720px column, narrower than the two-column
+// ingredient step it replaces.
 :host {
   display: block;
+  max-width: var(--content-max-width-narrow);
+  margin: 0 auto;
+}
+
+.preferences-step {
+  display: block;
+}
+
+// Both counters stay outside the card: stacked on mobile, side by side on
+// desktop, indented to line up with the card content.
+.preferences-step__counters {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+
+  @include desktop {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+    padding: 0 var(--space-5);
+  }
 }
 
 .preferences-step__card {
@@ -18,45 +41,13 @@
   }
 }
 
-// Both counters share one row as soon as there is room for them.
-.preferences-step__counters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-5) var(--space-7);
-}
-
 .preferences-step__actions {
   display: flex;
-  flex-direction: column-reverse;
-  align-items: stretch;
-  gap: var(--space-4);
+  justify-content: center;
+  margin-top: var(--space-6);
 
   @include desktop {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-}
-
-.preferences-step__back {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-2);
-  border-radius: var(--radius-button);
-  color: var(--color-green-dark);
-  font: 500 18px/1.2 var(--font-family-body);
-  cursor: pointer;
-
-  &:hover,
-  &:focus-visible {
-    text-decoration: underline;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-green-middle);
-    outline-offset: 2px;
+    margin-top: var(--space-7);
   }
 }
 

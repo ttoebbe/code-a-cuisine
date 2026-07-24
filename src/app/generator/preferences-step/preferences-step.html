@@ -1,7 +1,8 @@
-<form class="preferences-step__card" novalidate (submit)="onSubmit($event)">
+<form class="preferences-step" novalidate (submit)="onSubmit($event)">
   <div class="preferences-step__counters">
     <app-stepper-field
-      label="Portions"
+      label="How many portions you need?"
+      unitLabel="Portions"
       unit="portions"
       [value]="state.portions()"
       [min]="portionsRange.min"
@@ -9,7 +10,8 @@
       (valueChange)="state.setPortions($event)"
     />
     <app-stepper-field
-      label="Cooking helpers"
+      label="How many are cooking?"
+      unitLabel="Person"
       unit="cooking helpers"
       [value]="state.cooks()"
       [min]="cooksRange.min"
@@ -18,39 +20,36 @@
     />
   </div>
 
-  <app-chip-group
-    legend="Cooking time"
-    name="cooking-time"
-    icon="/img/preferences/schedule.png"
-    [options]="timeOptions"
-    [selected]="state.timeCategory()"
-    (pick)="state.setTimeCategory($event)"
-  />
+  <div class="preferences-step__card">
+    <app-chip-group
+      legend="Cooking time"
+      name="cooking-time"
+      icon="/img/preferences/schedule.png"
+      [options]="timeOptions"
+      [selected]="state.timeCategory()"
+      (pick)="state.setTimeCategory($event)"
+    />
 
-  <app-chip-group
-    legend="Cuisine"
-    name="cuisine"
-    icon="/img/preferences/public.png"
-    [options]="cuisineOptions"
-    [selected]="state.cuisine()"
-    (pick)="state.setCuisine($event)"
-  />
+    <app-chip-group
+      legend="Cuisine"
+      name="cuisine"
+      icon="/img/preferences/public.png"
+      [options]="cuisineOptions"
+      [selected]="state.cuisine()"
+      (pick)="state.setCuisine($event)"
+    />
 
-  <app-chip-group
-    legend="Diet"
-    name="diet"
-    icon="/img/preferences/fork-spoon.png"
-    [options]="dietOptions"
-    [selected]="state.diet()"
-    (pick)="state.setDiet($event)"
-  />
+    <app-chip-group
+      legend="Diet"
+      name="diet"
+      icon="/img/preferences/fork-spoon.png"
+      [options]="dietOptions"
+      [selected]="state.diet()"
+      (pick)="state.setDiet($event)"
+    />
+  </div>
 
   <div class="preferences-step__actions">
-    <button type="button" class="preferences-step__back" (click)="back.emit()">
-      <img src="/img/arrow-left.png" alt="" width="20" height="20" />
-      Ingredients
-    </button>
-
     <button type="submit" class="preferences-step__submit" [disabled]="!state.canGenerate()">
       Generate a recipe
     </button>

@@ -15,7 +15,7 @@ export interface ChipOption<T extends string> {
 export const TIME_OPTIONS: readonly ChipOption<TimeCategory>[] = [
   { value: 'quick', label: 'Quick', hint: 'up to 20 min' },
   { value: 'medium', label: 'Medium', hint: '20-45 min' },
-  { value: 'complex', label: 'Elaborate', hint: '45+ min' },
+  { value: 'complex', label: 'Complex', hint: '45+ min' },
 ];
 
 /** Cuisine styles offered as recipe-generation filter. */
