@@ -1,0 +1,33 @@
+<section class="most-liked" aria-labelledby="most-liked-title">
+  <h2 class="most-liked__title" id="most-liked-title">
+    Most liked recipes
+    <img src="/img/recipe-view/heart-outline.png" alt="" width="26" height="24" />
+  </h2>
+
+  @if (cards().length > 0) {
+    <ul class="most-liked__list">
+      @for (card of cards(); track card.id) {
+        <li class="most-liked__item">
+          <a class="most-liked__card" [routerLink]="['/library', card.id]">
+            <span class="most-liked__meta">
+              <span class="most-liked__time">
+                <img src="/img/preferences/schedule.png" alt="" width="20" height="20" />
+                Cooking time: {{ card.cookingTime }}
+              </span>
+              <span class="most-liked__likes">
+                <img src="/img/recipe-view/favorite.png" alt="" width="17" height="15" />
+                <span class="visually-hidden">Likes:</span>
+                {{ card.likeCount }}
+              </span>
+            </span>
+            <span class="most-liked__name">{{ card.title }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  } @else if (isLoading()) {
+    <p class="most-liked__note">Loading the favourites…</p>
+  } @else {
+    <p class="most-liked__note">No recipes in the cookbook yet.</p>
+  }
+</section>

@@ -1,5 +1,78 @@
-<section class="library">
-  <h1 class="library__title">Library</h1>
-  <p class="library__lead">Browse all generated recipes.</p>
-  <p class="library__note">Full cookbook UI ships in a later phase.</p>
-</section>
+<nav class="cookbook__nav" aria-label="Back">
+  <a class="cookbook__back" routerLink="/">
+    <img src="/img/arrow-left.png" alt="" width="22" height="15" />
+    <span class="cookbook__back-text">Back</span>
+  </a>
+</nav>
+
+<div class="cookbook">
+  <section class="cookbook__intro" aria-labelledby="cookbook-title">
+    <div class="cookbook__lead">
+      <h1 class="cookbook__title" id="cookbook-title">Cookbook</h1>
+      <p class="cookbook__text">
+        From quick bites to gourmet delights, explore them all in our ultimate cookbook and get
+        inspired for your next culinary adventure.
+      </p>
+    </div>
+
+    <app-most-liked-row [recipes]="mostLiked.value()" [isLoading]="mostLiked.isLoading()" />
+  </section>
+
+  <app-cuisine-filter [active]="activeCuisine()" />
+
+  <section class="cookbook__results" aria-labelledby="cookbook-list-title">
+    @if (activeCategory(); as category) {
+      <img
+        class="cookbook__banner"
+        [src]="category.banner"
+        alt=""
+        [width]="category.bannerWidth"
+        [height]="category.bannerHeight"
+      />
+    }
+
+    <h2 class="cookbook__list-title" id="cookbook-list-title">{{ listTitle() }}</h2>
+
+    @if (recipes().length > 0) {
+      <ul class="cookbook__list">
+        @for (recipe of recipes(); track recipe.id) {
+          <li class="cookbook__item"><app-cookbook-card [recipe]="recipe" /></li>
+        }
+      </ul>
+    }
+
+    @if (isLoading()) {
+      <p class="cookbook__note">Loading recipes…</p>
+    } @else if (hasFailed()) {
+      <p class="cookbook__note" role="alert">
+        The cookbook could not be loaded. Please check your connection.
+      </p>
+      <button type="button" class="cookbook__button" (click)="reload()">Try again</button>
+    } @else if (isEmpty()) {
+      <p class="cookbook__note">
+        No recipe here yet. Generate one and save it to fill the cookbook.
+      </p>
+    }
+
+    @if (hasMore()) {
+      <button
+        type="button"
+        class="cookbook__button"
+        [disabled]="isAppending()"
+        (click)="loadMore()"
+      >
+        {{ isAppending() ? 'Loading…' : 'Load more recipes' }}
+      </button>
+    }
+
+    @if (appendFailed()) {
+      <p class="cookbook__note" role="alert">Loading more recipes failed. Please try again.</p>
+    }
+  </section>
+
+  <p class="cookbook__footnote">
+    <a class="cookbook__generate" routerLink="/generator">
+      Generate new recipe <span aria-hidden="true">→</span>
+    </a>
+  </p>
+</div>

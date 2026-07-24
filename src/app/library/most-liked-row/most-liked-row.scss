@@ -1,0 +1,94 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.most-liked__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  color: var(--color-olive-green);
+  font: 600 22px/1.2 var(--font-family-body);
+
+  @include desktop {
+    font: var(--font-h5-semi);
+  }
+}
+
+// Horizontal rail: the design deliberately cuts the last card off.
+.most-liked__list {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0 0 var(--space-2);
+  overflow-x: auto;
+  list-style: none;
+  scroll-snap-type: x mandatory;
+}
+
+.most-liked__item {
+  flex: 0 0 auto;
+  width: 280px;
+  scroll-snap-align: start;
+
+  @include desktop {
+    width: 340px;
+  }
+}
+
+.most-liked__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-mist);
+  color: var(--color-green-dark);
+
+  &:hover,
+  &:focus-visible {
+    background: var(--color-chip);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
+}
+
+.most-liked__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.most-liked__time {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: var(--font-body-16);
+}
+
+.most-liked__likes {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-sage);
+  font: var(--font-body-16);
+}
+
+.most-liked__name {
+  color: var(--color-olive-green);
+  font: 600 20px/1.3 var(--font-family-body);
+}
+
+.most-liked__note {
+  font: var(--font-body-16);
+}

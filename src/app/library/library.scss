@@ -2,30 +2,202 @@
 
 :host {
   display: block;
-}
-
-.library {
-  max-width: var(--content-max-width);
-  margin: 0 auto;
-  padding: var(--space-7) var(--space-5);
+  min-height: calc(100vh - var(--header-height-mobile));
+  background: var(--color-surface);
 
   @include desktop {
-    padding: var(--space-8) var(--space-6);
+    min-height: calc(100vh - var(--header-height-desktop));
   }
 }
 
-.library__title {
-  font: var(--font-h3);
-  color: var(--color-olive-green);
-  margin-bottom: var(--space-4);
+.cookbook__nav {
+  padding: var(--space-4) var(--space-5) 0;
+
+  @include desktop {
+    padding: var(--space-5) var(--space-6) 0;
+  }
 }
 
-.library__lead {
-  font: var(--font-body-16);
-  margin-bottom: var(--space-3);
-}
-
-.library__note {
-  font: var(--font-small-text);
+.cookbook__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
   color: var(--color-green-middle);
+  font: 500 16px/1.2 var(--font-family-body);
+
+  &:hover .cookbook__back-text,
+  &:focus-visible .cookbook__back-text {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
+}
+
+.cookbook {
+  max-width: calc(1088px + 2 * var(--space-4));
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) var(--space-8);
+
+  @include desktop {
+    max-width: calc(1088px + 2 * var(--space-6));
+    padding: var(--space-5) var(--space-6) var(--space-8);
+  }
+}
+
+// Header panel of the design: claim on the left, favourites on the right.
+.cookbook__intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-mint);
+
+  @include desktop {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    gap: var(--space-7);
+    padding: var(--space-7);
+  }
+}
+
+.cookbook__title {
+  margin-bottom: var(--space-4);
+  color: var(--color-olive-green);
+  font: 600 40px/1.1 var(--font-family-body);
+
+  @include desktop {
+    font: var(--font-h3);
+  }
+}
+
+.cookbook__text {
+  color: var(--color-green-dark);
+  font: 500 18px/1.4 var(--font-family-body);
+
+  @include desktop {
+    max-width: 40ch;
+  }
+}
+
+app-cuisine-filter {
+  display: block;
+  margin-top: var(--space-7);
+
+  @include desktop {
+    margin-top: var(--space-8);
+  }
+}
+
+.cookbook__results {
+  margin-top: var(--space-7);
+
+  @include desktop {
+    margin-top: var(--space-8);
+  }
+}
+
+.cookbook__banner {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+.cookbook__list-title {
+  margin-bottom: var(--space-5);
+  color: var(--color-olive-green);
+  font: 600 28px/1.2 var(--font-family-body);
+
+  @include desktop {
+    font: var(--font-h5-semi);
+    font-size: 32px;
+  }
+}
+
+.cookbook__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include desktop {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+  }
+}
+
+.cookbook__item {
+  display: flex;
+}
+
+.cookbook__note {
+  margin-top: var(--space-5);
+  font: var(--font-body-16);
+}
+
+.cookbook__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  margin-top: var(--space-5);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-button);
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+  font: 600 18px/1.2 var(--font-family-body);
+  transition: background 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--color-green-middle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-dark);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    background: var(--color-chip);
+    color: var(--color-green-dark);
+    cursor: progress;
+  }
+}
+
+.cookbook__footnote {
+  margin-top: var(--space-7);
+  text-align: center;
+
+  @include desktop {
+    text-align: right;
+  }
+}
+
+.cookbook__generate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  color: var(--color-green-dark);
+  font: var(--font-body-16);
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
 }

@@ -1,0 +1,27 @@
+<article class="cookbook-card">
+  <p class="cookbook-card__time">
+    <img src="/img/preferences/schedule.png" alt="" width="20" height="20" />
+    Cooking time: {{ cookingTime() }}
+  </p>
+
+  <h3 class="cookbook-card__title">{{ recipe().title }}</h3>
+
+  <p class="cookbook-card__style">
+    <img src="/img/preferences/fork-spoon.png" alt="" width="18" height="20" />
+    {{ cuisineLabel() }}
+  </p>
+
+  <p class="cookbook-card__likes">
+    <img src="/img/recipe-view/favorite.png" alt="" width="17" height="15" />
+    <span class="visually-hidden">Likes:</span>
+    {{ recipe().likeCount }}
+  </p>
+
+  <a
+    class="cookbook-card__link"
+    [routerLink]="['/library', recipe().id]"
+    [attr.aria-label]="'View recipe: ' + recipe().title"
+  >
+    View
+  </a>
+</article>

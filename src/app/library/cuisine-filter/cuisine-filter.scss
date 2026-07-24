@@ -1,0 +1,76 @@
+@use '../../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+.cuisine-filter__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include desktop {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-7) var(--space-6);
+  }
+}
+
+.cuisine-filter__tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 4px;
+  }
+}
+
+.cuisine-filter__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-olive-green);
+  font: 600 22px/1.2 var(--font-family-body);
+
+  @include desktop {
+    font: var(--font-card-headline);
+  }
+}
+
+.cuisine-filter__icon {
+  width: 28px;
+  height: 28px;
+}
+
+// The photo keeps a fixed ratio so the grid never jumps while images arrive.
+.cuisine-filter__image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  transition: opacity 0.2s ease;
+}
+
+.cuisine-filter__tile:hover .cuisine-filter__image,
+.cuisine-filter__tile:focus-visible .cuisine-filter__image {
+  opacity: 0.85;
+}
+
+// The active category keeps its photo highlighted while the rest steps back.
+.cuisine-filter__tile--active {
+  .cuisine-filter__image {
+    outline: 3px solid var(--color-olive-green);
+    outline-offset: 3px;
+  }
+
+  .cuisine-filter__label {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}

@@ -1,0 +1,28 @@
+<nav class="cuisine-filter" aria-label="Recipe categories">
+  <ul class="cuisine-filter__list">
+    @for (category of categories; track category.value) {
+      <li class="cuisine-filter__item">
+        <a
+          class="cuisine-filter__tile"
+          [class.cuisine-filter__tile--active]="active() === category.value"
+          [routerLink]="['/library']"
+          [queryParams]="{ cuisine: active() === category.value ? null : category.value }"
+          [attr.aria-current]="active() === category.value ? 'true' : null"
+        >
+          <span class="cuisine-filter__label">
+            {{ category.label }}
+            <img class="cuisine-filter__icon" [src]="category.icon" alt="" width="28" height="28" />
+          </span>
+          <img
+            class="cuisine-filter__image"
+            [src]="category.image"
+            alt=""
+            width="400"
+            height="400"
+            loading="lazy"
+          />
+        </a>
+      </li>
+    }
+  </ul>
+</nav>
