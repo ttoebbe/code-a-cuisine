@@ -7,6 +7,7 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { routes } from './app.routes';
+import { provideFirestore } from './firebase/firestore.provider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,5 +15,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(withFetch()),
     provideRouter(routes, withComponentInputBinding()),
+    provideFirestore(),
   ],
 };

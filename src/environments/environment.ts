@@ -13,4 +13,19 @@ export const environment = {
    * Flip to true to work on the result screens without a running workflow.
    */
   useMockWebhook: false,
+  /**
+   * Web app config of the Firebase project that holds the recipe library.
+   * Copy the values from the Firebase console (Project settings > Your apps >
+   * SDK setup and configuration > Config). These keys are not secrets: they
+   * identify the project, access is governed by firestore.rules.
+   * See docs/firebase.md.
+   */
+  firebase: {
+    apiKey: 'TODO-firebase-api-key',
+    authDomain: 'TODO-project-id.firebaseapp.com',
+    projectId: 'TODO-project-id',
+    storageBucket: 'TODO-project-id.firebasestorage.app',
+    messagingSenderId: 'TODO-sender-id',
+    appId: 'TODO-app-id',
+  },
 };

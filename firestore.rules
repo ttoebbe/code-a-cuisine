@@ -1,0 +1,67 @@
+rules_version = '2';
+
+// Recipe library of Code à Cuisine. The app has no sign-in, so the rules carry
+// the whole protection: anybody may read and add a valid recipe, the only
+// permitted change is a single like, and nothing can ever be deleted.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Exact field list of a recipe document — mirrors the Recipe interface in
+    // src/app/models/recipe.interface.ts minus the document id.
+    function recipeKeys() {
+      return [
+        'title', 'cookingTimeMinutes', 'timeCategory', 'cuisine', 'diet',
+        'portions', 'cooks', 'yourIngredients', 'extraIngredients', 'steps',
+        'nutrition', 'createdAt', 'likeCount'
+      ];
+    }
+
+    // Rejects documents with missing or additional fields.
+    function hasRecipeShape(data) {
+      return data.keys().hasAll(recipeKeys()) && data.keys().hasOnly(recipeKeys());
+    }
+
+    // Scalar fields, including the value ranges from the Lastenheft.
+    function hasValidScalars(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.cookingTimeMinutes is int
+        && data.cookingTimeMinutes > 0 && data.cookingTimeMinutes <= 600
+        && data.timeCategory in ['quick', 'medium', 'complex']
+        && data.cuisine in ['german', 'italian', 'japanese', 'indian', 'gourmet', 'fusion']
+        && data.diet in ['vegetarian', 'vegan', 'keto', 'none']
+        && data.portions is int && data.portions >= 1 && data.portions <= 12
+        && data.cooks is int && data.cooks >= 1 && data.cooks <= 3;
+    }
+
+    // Lists and nested objects; extraIngredients is capped at 3 (User Story 7).
+    function hasValidContent(data) {
+      return data.yourIngredients is list && data.yourIngredients.size() > 0
+        && data.extraIngredients is list && data.extraIngredients.size() <= 3
+        && data.steps is list && data.steps.size() > 0 && data.steps.size() <= 40
+        && data.nutrition is map;
+    }
+
+    // A new recipe always starts unliked and carries the server clock, so the
+    // pagination cursor cannot be shifted by a wrong client time.
+    function isValidRecipe(data) {
+      return hasRecipeShape(data)
+        && hasValidScalars(data)
+        && hasValidContent(data)
+        && data.createdAt == request.time
+        && data.likeCount == 0;
+    }
+
+    // The only allowed write on an existing recipe: one like more.
+    function isLikeIncrement(before, after) {
+      return after.diff(before).affectedKeys().hasOnly(['likeCount'])
+        && after.likeCount == before.likeCount + 1;
+    }
+
+    match /recipes/{recipeId} {
+      allow read: if true;
+      allow create: if isValidRecipe(request.resource.data);
+      allow update: if isLikeIncrement(resource.data, request.resource.data);
+      allow delete: if false;
+    }
+  }
+}
