@@ -39,6 +39,11 @@ testem.log
 /typings
 __screenshots__/
 
+# Local credentials — the Firebase web config stays out of the repository.
+# Copy src/environments/firebase.config.example.ts over it, see docs/firebase.md.
+/src/environments/firebase.config.ts
+/src/environments/firebase.config.prod.ts
+
 # System files
 .DS_Store
 Thumbs.db

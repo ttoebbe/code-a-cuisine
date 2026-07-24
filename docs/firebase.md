@@ -4,24 +4,30 @@ Die Bibliothek (Cookbook) liegt in Firestore. Dieses Dokument beschreibt Einrich
 Indexe und die Testdaten. Das Datenmodell selbst steht in
 [`src/app/models/firebase-schema.md`](../src/app/models/firebase-schema.md).
 
-## Was du eintragen musst
+## Config eintragen (einmal pro Arbeitsplatz)
 
-Aus der Firebase-Console: **Projekt-Einstellungen → Deine Apps → Web-App → SDK-Konfiguration →
-Config**. Die sechs Werte in **beide** Environment-Dateien eintragen, dort stehen aktuell
-`TODO-…`-Platzhalter:
+Die Web-Config liegt in **`src/environments/firebase.config.ts`**. Diese Datei ist per
+`.gitignore` von der Versionierung ausgenommen und muss auf jedem Rechner lokal angelegt werden:
 
-| Wert                | Datei                                                                                                                               |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `apiKey`            | [`src/environments/environment.ts`](../src/environments/environment.ts) → `firebase`                                                |
-| `authDomain`        | dito                                                                                                                                |
-| `projectId`         | dito                                                                                                                                |
-| `storageBucket`     | dito                                                                                                                                |
-| `messagingSenderId` | dito                                                                                                                                |
-| `appId`             | dito                                                                                                                                |
-| alle sechs erneut   | [`src/environments/environment.prod.ts`](../src/environments/environment.prod.ts) (bis ein Prod-Projekt existiert: dieselben Werte) |
+1. `npm start` (oder `npm run build`) einmal ausführen — der `prestart`-Schritt legt die Datei aus
+   [`firebase.config.example.ts`](../src/environments/firebase.config.example.ts) an. Alternativ
+   von Hand kopieren.
+2. In der Firebase-Console: **Projekt-Einstellungen → Deine Apps → Web-App → SDK-Konfiguration →
+   Config**.
+3. Die sechs Werte (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`,
+   `appId`) anstelle der `TODO-…`-Platzhalter eintragen.
 
-Diese Keys sind **kein Geheimnis** — sie identifizieren nur das Projekt. Den Zugriff regeln
-ausschließlich die Security-Rules, deshalb dürfen sie im Repository stehen.
+`environment.ts` und `environment.prod.ts` importieren die Config nur — dort steht kein Key.
+Solange die Platzhalter drinstehen, läuft die App normal, nur die Bibliothek zeigt ihren
+Fehlerzustand.
+
+> Die Web-Config ist technisch kein Geheimnis — sie landet bei jedem Deployment im JS-Bundle.
+> Wir halten sie trotzdem aus dem öffentlichen Repository heraus. Der wirksame Schutz sind die
+> Security-Rules unten plus eine **HTTP-Referrer-Beschränkung** des API-Keys in der
+> Google-Cloud-Console (APIs & Dienste → Anmeldedaten → Browser-Key).
+>
+> Was **niemals** ins Repository darf, ist ein Service-Account-Key
+> (`firebase-adminsdk-….json`) — der umgeht sämtliche Rules. Das Seed-Skript braucht keinen.
 
 ## Einrichtung in der Console
 
@@ -76,8 +82,8 @@ npm run seed -- --dry-run # zeigt nur, was geschrieben würde
 ```
 
 - Voraussetzung: Die Firebase-Config ist eingetragen (sonst bricht das Skript mit einem Hinweis ab).
-- Das Skript liest die Config aus `environment.ts`; alternativ kann sie als JSON in der
-  Umgebungsvariablen `FIREBASE_CONFIG` stehen.
+- Das Skript liest die Config aus `src/environments/firebase.config.ts`; alternativ kann sie als
+  JSON in der Umgebungsvariablen `FIREBASE_CONFIG` stehen (z. B. für CI).
 - Likes werden wie in der App einzeln hochgezählt (0–8 pro Rezept), damit die „Most liked
   recipes"-Zeile gefüllt ist.
 

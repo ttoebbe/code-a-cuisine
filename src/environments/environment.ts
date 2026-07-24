@@ -1,3 +1,5 @@
+import { firebaseConfig } from './firebase.config';
+
 /**
  * Development environment. The n8n workflow runs in Docker on the local
  * machine, so the webhook lives on localhost. See docs/n8n-webhook.md.
@@ -14,18 +16,8 @@ export const environment = {
    */
   useMockWebhook: false,
   /**
-   * Web app config of the Firebase project that holds the recipe library.
-   * Copy the values from the Firebase console (Project settings > Your apps >
-   * SDK setup and configuration > Config). These keys are not secrets: they
-   * identify the project, access is governed by firestore.rules.
-   * See docs/firebase.md.
+   * Firebase project of the recipe library. The values live in the untracked
+   * firebase.config.ts, see docs/firebase.md.
    */
-  firebase: {
-    apiKey: 'TODO-firebase-api-key',
-    authDomain: 'TODO-project-id.firebaseapp.com',
-    projectId: 'TODO-project-id',
-    storageBucket: 'TODO-project-id.firebasestorage.app',
-    messagingSenderId: 'TODO-sender-id',
-    appId: 'TODO-app-id',
-  },
+  firebase: firebaseConfig,
 };

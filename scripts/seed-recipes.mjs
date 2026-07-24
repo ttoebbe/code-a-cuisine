@@ -7,12 +7,13 @@
  *   node scripts/seed-recipes.mjs            writes 30 recipes
  *   node scripts/seed-recipes.mjs --count 8  writes 8 recipes
  *
- * The Firebase config is read from src/environments/environment.ts, or from
- * the FIREBASE_CONFIG environment variable when it holds a JSON object.
+ * The Firebase config is read from the untracked
+ * src/environments/firebase.config.ts, or from the FIREBASE_CONFIG
+ * environment variable when it holds a JSON object.
  * Every write goes through the same rules as the app: recipes are created
  * unliked and the likes are added one increment at a time.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initializeApp } from 'firebase/app';
@@ -28,7 +29,7 @@ import {
 } from 'firebase/firestore';
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const ENVIRONMENT_FILE = resolve(PROJECT_ROOT, 'src/environments/environment.ts');
+const CONFIG_FILE = resolve(PROJECT_ROOT, 'src/environments/firebase.config.ts');
 
 /** Cooking times cycled through the seeded recipes, one per time category. */
 const COOKING_TIMES = [15, 25, 35, 55, 20];
@@ -173,10 +174,12 @@ const CUISINES = [
  */
 function readFirebaseConfig() {
   if (process.env.FIREBASE_CONFIG) return JSON.parse(process.env.FIREBASE_CONFIG);
-  const source = readFileSync(ENVIRONMENT_FILE, 'utf8');
-  const block = source.match(/firebase:\s*\{([\s\S]*?)\}/);
-  if (block === null) throw new Error(`No firebase block found in ${ENVIRONMENT_FILE}`);
-  return Object.fromEntries([...block[1].matchAll(/(\w+):\s*'([^']*)'/g)].map((m) => [m[1], m[2]]));
+  if (!existsSync(CONFIG_FILE)) {
+    throw new Error(`${CONFIG_FILE} is missing. Copy firebase.config.example.ts over it.`);
+  }
+  const source = readFileSync(CONFIG_FILE, 'utf8');
+  const entries = [...source.matchAll(/(\w+):\s*'([^']*)'/g)].map((m) => [m[1], m[2]]);
+  return Object.fromEntries(entries);
 }
 
 /**
