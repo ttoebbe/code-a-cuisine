@@ -1,0 +1,99 @@
+@use '../../../../styles/mixins' as *;
+
+:host {
+  display: block;
+}
+
+.chip-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.chip-group__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding: 0;
+  font: var(--font-small-label);
+  color: var(--color-green-dark);
+}
+
+.chip-group__icon {
+  width: 24px;
+  height: 24px;
+}
+
+.chip-group__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+// Anchors the hidden radio to its own chip, so focusing it never scrolls the
+// page away from the group.
+.chip-group__option {
+  position: relative;
+  display: flex;
+}
+
+// Taken out of the flow instead of hidden, so the radio keeps its focus and
+// arrow-key behaviour while the label carries the whole visual chip.
+.chip-group__input {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+// The border is always present so selecting a chip cannot change its size.
+.chip-group__chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: var(--color-cream);
+  color: var(--color-green-dark);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+
+  @include desktop {
+    padding: var(--space-2) var(--space-5);
+  }
+}
+
+.chip-group__label {
+  font: 500 16px/1.2 var(--font-family-body);
+}
+
+.chip-group__hint {
+  font: var(--font-small-text);
+}
+
+// Inverted chip marks the selection; the design does not show a selected state.
+.chip-group__input:checked + .chip-group__chip {
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+}
+
+.chip-group__input:focus-visible + .chip-group__chip {
+  outline: 2px solid var(--color-green-middle);
+  outline-offset: 2px;
+}
+
+.chip-group__input:not(:checked) + .chip-group__chip:hover {
+  background: color-mix(in srgb, var(--color-cream) 88%, var(--color-olive-green));
+}

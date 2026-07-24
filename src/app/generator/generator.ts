@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IngredientStep } from './ingredient-step/ingredient-step';
+import { PreferencesStep } from './preferences-step/preferences-step';
 
 /** Steps of the recipe generator wizard. */
 export type WizardStep = 1 | 2;
@@ -10,7 +11,7 @@ export type WizardStep = 1 | 2;
  */
 @Component({
   selector: 'app-generator',
-  imports: [IngredientStep],
+  imports: [IngredientStep, PreferencesStep],
   templateUrl: './generator.html',
   styleUrl: './generator.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

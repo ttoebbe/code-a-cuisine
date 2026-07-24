@@ -9,13 +9,7 @@
       <app-ingredient-step (next)="goToStep(2)" />
     }
     @case (2) {
-      <div class="generator__placeholder">
-        <h2 class="generator__placeholder-title">Preferences</h2>
-        <p class="generator__placeholder-text">Step 2 ships in the next phase.</p>
-        <button type="button" class="generator__back" (click)="goToStep(1)">
-          Back to ingredients
-        </button>
-      </div>
+      <app-preferences-step (back)="goToStep(1)" />
     }
   }
 </section>

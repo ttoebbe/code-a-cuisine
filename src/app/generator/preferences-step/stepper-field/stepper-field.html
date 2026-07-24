@@ -1,0 +1,27 @@
+<fieldset class="stepper-field">
+  <legend class="stepper-field__legend">{{ label() }}</legend>
+
+  <div class="stepper-field__control">
+    <button
+      type="button"
+      class="stepper-field__button"
+      [attr.aria-label]="'Decrease ' + unit()"
+      [disabled]="atMin()"
+      (click)="step(-1)"
+    >
+      <img src="/img/preferences/delete-box.png" alt="" width="24" height="24" />
+    </button>
+
+    <output class="stepper-field__value">{{ value() }}</output>
+
+    <button
+      type="button"
+      class="stepper-field__button"
+      [attr.aria-label]="'Increase ' + unit()"
+      [disabled]="atMax()"
+      (click)="step(1)"
+    >
+      <img src="/img/preferences/add-box.png" alt="" width="24" height="24" />
+    </button>
+  </div>
+</fieldset>
