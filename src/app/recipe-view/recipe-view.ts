@@ -79,7 +79,7 @@ export class RecipeView {
   );
 
   /** Likes of the recipe, null for a suggestion that is not stored yet. */
-  protected readonly likeCount = computed(() => this.storedRecipe()?.likeCount ?? null);
+  protected readonly likeCount = computed(() => this.readLikeCount());
 
   /** Document id of the recipe once it exists in the library. */
   protected readonly recipeId = computed(() => this.storedRecipe()?.id ?? this.savedId());
@@ -105,6 +105,17 @@ export class RecipeView {
    */
   protected onSaved(id: string): void {
     this.savedId.set(id);
+  }
+
+  /**
+   * Likes to display. A suggestion has none until it is saved, from then on
+   * it starts at zero like every fresh document.
+   * @returns Like count, or null while the recipe is not in the library.
+   */
+  private readLikeCount(): number | null {
+    const stored = this.storedRecipe();
+    if (stored !== null) return stored.likeCount;
+    return this.savedId() === null ? null : 0;
   }
 
   /**

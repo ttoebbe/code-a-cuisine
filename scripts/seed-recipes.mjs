@@ -36,6 +36,19 @@ const COOKING_TIMES = [15, 25, 35, 55, 20];
 /** Like counts cycled through the seeded recipes. */
 const LIKE_COUNTS = [8, 5, 3, 2, 1, 0];
 
+/** Step blueprints; {1} to {3} are replaced by the ingredient names. */
+const STEP_TEMPLATES = [
+  { title: 'Prepare the {1}', description: 'Weigh and prepare the {1}, then set it aside.' },
+  {
+    title: 'Cook the {2}',
+    description: 'Cook the {2} together with the {3} until everything is tender.',
+  },
+  {
+    title: 'Season and serve',
+    description: 'Combine both components, season to taste and serve straight away.',
+  },
+];
+
 /** Dummy recipes per cuisine; five titles each add up to 30 documents. */
 const CUISINES = [
   {
@@ -188,29 +201,26 @@ function toTimeCategory(minutes) {
 }
 
 /**
+ * Fills ingredient names into a step text; {1} is the first ingredient.
+ * @param text Template text of the step.
+ * @param ingredients Ingredients of the cuisine block.
+ * @returns Text with the placeholders replaced.
+ */
+function fillIngredientNames(text, ingredients) {
+  return text.replace(/\{(\d)\}/g, (_, place) => ingredients[place - 1].name.toLowerCase());
+}
+
+/**
  * Builds the three cooking steps of a seeded recipe.
  * @param cuisine Cuisine block the recipe belongs to.
  * @param cooks Number of chefs the steps are spread over.
  * @returns Steps in chronological order.
  */
 function buildSteps(cuisine, cooks) {
-  const [first, second, third] = cuisine.ingredients;
-  return [
-    {
-      title: `Prepare the ${first.name.toLowerCase()}`,
-      description: `Weigh and prepare the ${first.name.toLowerCase()}, then set it aside.`,
-    },
-    {
-      title: `Cook the ${second.name.toLowerCase()}`,
-      description: `Cook the ${second.name.toLowerCase()} together with the ${third.name.toLowerCase()} until everything is tender.`,
-    },
-    {
-      title: 'Season and serve',
-      description: 'Combine both components, season to taste and serve straight away.',
-    },
-  ].map((step, position) => ({
-    ...step,
+  return STEP_TEMPLATES.map((step, position) => ({
     order: position + 1,
+    title: fillIngredientNames(step.title, cuisine.ingredients),
+    description: fillIngredientNames(step.description, cuisine.ingredients),
     assignedChef: (position % cooks) + 1,
     parallelGroupId: null,
   }));
@@ -251,15 +261,26 @@ function buildNutrition(portions, position) {
 }
 
 /**
+ * Varies cooking time, servings and chefs across the seeded recipes.
+ * @param position Index of the title inside the cuisine.
+ * @returns Cooking time in minutes, servings and number of chefs.
+ */
+function buildProfile(position) {
+  return {
+    minutes: COOKING_TIMES[position % COOKING_TIMES.length],
+    portions: 2 + (position % 3),
+    cooks: 1 + (position % 2),
+  };
+}
+
+/**
  * Builds one dummy recipe.
  * @param cuisine Cuisine block the recipe belongs to.
  * @param position Index of the title inside the cuisine.
  * @returns Recipe in the shape of GeneratedRecipe.
  */
 function buildRecipe(cuisine, position) {
-  const minutes = COOKING_TIMES[position % COOKING_TIMES.length];
-  const portions = 2 + (position % 3);
-  const cooks = 1 + (position % 2);
+  const { minutes, portions, cooks } = buildProfile(position);
   return {
     title: cuisine.titles[position],
     cookingTimeMinutes: minutes,
