@@ -1,0 +1,246 @@
+// Builds the two importable n8n workflow JSON files from the Code-node scripts
+// in n8n/src/. Run with `node n8n/build-workflows.mjs`. Keeping the node code
+// in real .js files avoids hand-escaping multi-line scripts inside JSON.
+
+import { readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const read = (name) => readFileSync(join(here, 'src', name), 'utf8');
+
+const WEBHOOK = 'Receive recipe request';
+const ERROR_WORKFLOW_ID = 'codeacuisine-error-handler';
+const MAIN_WORKFLOW_ID = 'codeacuisine-generate-recipe';
+
+// Reflects the caller origin when allow-listed, else falls back to :4200.
+const CORS_ORIGIN =
+  "={{ ['http://localhost:4200','http://localhost:4300']" +
+  `.includes($('${WEBHOOK}').item.json.headers.origin) ? ` +
+  `$('${WEBHOOK}').item.json.headers.origin : 'http://localhost:4200' }}`;
+
+const corsHeaders = () => ({
+  entries: [
+    { name: 'Access-Control-Allow-Origin', value: CORS_ORIGIN },
+    { name: 'Vary', value: 'Origin' },
+  ],
+});
+
+const routeIsOk = () => ({
+  options: { caseSensitive: true, leftValue: '', typeValidation: 'strict', version: 2 },
+  conditions: [
+    {
+      id: 'route-ok',
+      leftValue: '={{ $json.route }}',
+      rightValue: 'ok',
+      operator: { type: 'string', operation: 'equals' },
+    },
+  ],
+  combinator: 'and',
+});
+
+const node = (name, type, typeVersion, position, parameters, extra = {}) => ({
+  parameters,
+  id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+  name,
+  type,
+  typeVersion,
+  position,
+  ...extra,
+});
+
+// --- main workflow ----------------------------------------------------------
+const mainNodes = [
+  node(
+    WEBHOOK,
+    'n8n-nodes-base.webhook',
+    2,
+    [-140, 300],
+    {
+      httpMethod: 'POST',
+      path: 'generate-recipe',
+      responseMode: 'responseNode',
+      options: { allowedOrigins: 'http://localhost:4200,http://localhost:4300' },
+    },
+    {
+      webhookId: 'generate-recipe',
+      notes:
+        'POST /webhook/generate-recipe. allowedOrigins answers the CORS preflight for the two dev origins. TODO(prod): add the deployed origin.',
+    },
+  ),
+  node(
+    'Validate & rate limit',
+    'n8n-nodes-base.code',
+    2,
+    [80, 300],
+    { jsCode: read('guard.js') },
+    {
+      notes:
+        'Server-side validation (independent of the frontend) and the daily cost cap: 3 recipes/IP, 12 system-wide. Reserves a slot before the LLM call.',
+    },
+  ),
+  node(
+    'Passed the guard?',
+    'n8n-nodes-base.if',
+    2.2,
+    [300, 300],
+    { conditions: routeIsOk(), options: {} },
+    {
+      notes: 'route=ok continues to the model; route=error goes straight to the error response.',
+    },
+  ),
+  node(
+    'Generate recipes (Claude)',
+    'n8n-nodes-base.httpRequest',
+    4.2,
+    [540, 200],
+    {
+      method: 'POST',
+      url: 'https://api.anthropic.com/v1/messages',
+      authentication: 'genericCredentialType',
+      genericAuthType: 'httpHeaderAuth',
+      sendHeaders: true,
+      headerParameters: { parameters: [{ name: 'anthropic-version', value: '2023-06-01' }] },
+      sendBody: true,
+      specifyBody: 'json',
+      jsonBody: '={{ $json.anthropicBody }}',
+      options: { timeout: 80000, response: { response: { neverError: true } } },
+    },
+    {
+      credentials: {
+        httpHeaderAuth: { id: 'anthropic-header-auth', name: 'Anthropic API key (x-api-key)' },
+      },
+      notes:
+        'Anthropic Messages API with forced tool use (emit_recipes) for schema-valid output. neverError keeps a non-2xx answer from failing the run so the daily quota still persists; the map node turns any unusable body into ai_failed.',
+    },
+  ),
+  node(
+    'Map AI answer to recipes',
+    'n8n-nodes-base.code',
+    2,
+    [760, 200],
+    { jsCode: read('map-ai.js') },
+    {
+      notes:
+        'Sanitises the model output into GeneratedRecipe[]; unusable output becomes an ai_failed envelope.',
+    },
+  ),
+  node(
+    'Recipes usable?',
+    'n8n-nodes-base.if',
+    2.2,
+    [980, 200],
+    { conditions: routeIsOk(), options: {} },
+    {
+      notes: 'route=ok returns the recipes; route=error returns the ai_failed envelope.',
+    },
+  ),
+  node(
+    'Respond: recipes',
+    'n8n-nodes-base.respondToWebhook',
+    1.1,
+    [1220, 120],
+    {
+      respondWith: 'json',
+      responseBody: "={{ { status: 'ok', recipes: $json.recipes } }}",
+      options: { responseCode: 200, responseHeaders: corsHeaders() },
+    },
+    { notes: 'Success envelope (status ok, three recipes) with CORS header.' },
+  ),
+  node(
+    'Respond: error',
+    'n8n-nodes-base.respondToWebhook',
+    1.1,
+    [1220, 380],
+    {
+      respondWith: 'json',
+      responseBody: '={{ $json.__error }}',
+      options: { responseCode: 200, responseHeaders: corsHeaders() },
+    },
+    {
+      notes:
+        'Error envelope from the JSON contract. HTTP 200 on purpose: the frontend reads the envelope from any status.',
+    },
+  ),
+];
+
+const mainConnections = {
+  [WEBHOOK]: { main: [[{ node: 'Validate & rate limit', type: 'main', index: 0 }]] },
+  'Validate & rate limit': { main: [[{ node: 'Passed the guard?', type: 'main', index: 0 }]] },
+  'Passed the guard?': {
+    main: [
+      [{ node: 'Generate recipes (Claude)', type: 'main', index: 0 }],
+      [{ node: 'Respond: error', type: 'main', index: 0 }],
+    ],
+  },
+  'Generate recipes (Claude)': {
+    main: [[{ node: 'Map AI answer to recipes', type: 'main', index: 0 }]],
+  },
+  'Map AI answer to recipes': { main: [[{ node: 'Recipes usable?', type: 'main', index: 0 }]] },
+  'Recipes usable?': {
+    main: [
+      [{ node: 'Respond: recipes', type: 'main', index: 0 }],
+      [{ node: 'Respond: error', type: 'main', index: 0 }],
+    ],
+  },
+};
+
+const mainWorkflow = {
+  id: MAIN_WORKFLOW_ID,
+  name: 'Code a Cuisine — Generate Recipe',
+  active: false,
+  nodes: mainNodes,
+  connections: mainConnections,
+  settings: { executionOrder: 'v1', errorWorkflow: ERROR_WORKFLOW_ID },
+  pinData: {},
+  meta: { templateCredsSetupCompleted: false },
+  tags: [],
+};
+
+// --- error handler workflow -------------------------------------------------
+const errorNodes = [
+  node(
+    'On workflow error',
+    'n8n-nodes-base.errorTrigger',
+    1,
+    [0, 0],
+    {},
+    {
+      notes: 'Fires when the recipe workflow throws an unhandled error.',
+    },
+  ),
+  node(
+    'Log the failure',
+    'n8n-nodes-base.code',
+    2,
+    [240, 0],
+    { jsCode: read('log-error.js') },
+    {
+      notes:
+        'Writes one readable line to the n8n log. Replace with an email/Slack node when a channel exists.',
+    },
+  ),
+];
+
+const errorWorkflow = {
+  id: ERROR_WORKFLOW_ID,
+  name: 'Code a Cuisine — Error Handler',
+  active: false,
+  nodes: errorNodes,
+  connections: {
+    'On workflow error': { main: [[{ node: 'Log the failure', type: 'main', index: 0 }]] },
+  },
+  settings: { executionOrder: 'v1' },
+  pinData: {},
+  tags: [],
+};
+
+writeFileSync(
+  join(here, 'generate-recipe.workflow.json'),
+  JSON.stringify(mainWorkflow, null, 2) + '\n',
+);
+writeFileSync(
+  join(here, 'error-handler.workflow.json'),
+  JSON.stringify(errorWorkflow, null, 2) + '\n',
+);
+console.log('Wrote generate-recipe.workflow.json and error-handler.workflow.json');

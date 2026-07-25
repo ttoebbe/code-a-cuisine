@@ -15,6 +15,12 @@ dieses Dokument beschreibt Endpunkt, Regeln und Fehlercodes drumherum.
 - Timeout im Frontend: 90 s (`environment.webhookTimeoutMs`)
 - Aufrufe ausschließlich über `RecipeApiService`, nie direkt aus Components
 
+> **Ist-Stand:** Der Workflow ist gebaut und liegt versioniert unter [`n8n/`](../n8n/). Aufbau,
+> Import, Anthropic-Key und die getroffenen Entscheidungen stehen in
+> [`n8n/README.md`](../n8n/README.md). Vor dem ersten echten Lauf müssen zwei Dinge in der n8n-UI
+> passieren: **(1)** den Anthropic-API-Key in die Credential `Anthropic API key (x-api-key)`
+> eintragen, **(2)** der Workflow „Code a Cuisine — Generate Recipe" muss **aktiv** sein.
+
 ### CORS
 
 Der Browser schickt vor dem POST einen Preflight (`OPTIONS`). Der n8n-Webhook-Node muss daher
@@ -86,6 +92,24 @@ Quota-Fehlern (ISO 8601), sonst `null`.
 HTTP-Status ist egal: Das Frontend liest die Fehler-Envelope sowohl aus einer 200er- als auch aus
 einer 4xx/5xx-Antwort. Nur wenn gar kein passender Body ankommt, fällt es auf `internal_error`
 zurück.
+
+## Umsetzung in n8n
+
+Der Node-Graph des Haupt-Workflows:
+
+```
+Webhook (POST generate-recipe)
+  → Validate & rate limit   (n8n/src/guard.js  — Validierung + Tages-Quota + Anthropic-Request)
+  → IF route == ok
+      ├─ true  → Generate recipes (Claude)  (HTTP, Anthropic Messages API, Tool Use, neverError)
+      │           → Map AI answer to recipes (n8n/src/map-ai.js)
+      │           → IF route == ok → Respond: recipes | Respond: error
+      └─ false → Respond: error
+```
+
+- **Alle** Antworten kommen als **HTTP 200** mit dem jeweiligen Envelope zurück (der `RecipeApiService`
+  liest den Erfolgs- wie den Fehler-Envelope aus einer 200er-Antwort). Details, Import und die
+  Entscheidungen zu LLM-Anbieter, Firestore und Quota: [`n8n/README.md`](../n8n/README.md).
 
 ## Regeln, die in n8n liegen
 
