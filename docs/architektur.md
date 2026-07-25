@@ -225,9 +225,7 @@ Der Kostenairbag begrenzt die LLM-Kosten hart und läuft **ausschließlich serve
 
 > Test-Hinweis: Ohne vorgelagerten Proxy setzt der Browser kein `x-forwarded-for`; auf `localhost`
 > landet daher alles im Bucket `unknown`. Das systemweite Limit (12/Tag) greift trotzdem und ist der
-> harte Deckel. (Randnotiz: [n8n/README.md](n8n/README.md) beschreibt an einer Stelle noch die frühere
-> Static-Data-Variante — maßgeblich ist der aktuelle Code in guard.js, also die Datei
-> `quota-state.json`.)
+> harte Deckel.
 
 Das Frontend **zeigt** den Quota-Status nur an — es **prüft** nichts selbst und führt keine
 Client-Zähler (Vorgabe aus [CLAUDE.md](CLAUDE.md), Quota-Regel).

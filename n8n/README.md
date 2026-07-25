@@ -80,7 +80,8 @@ Absicherung, und der Kostenairbag (rein in n8n) wird nicht angefasst.
 
 ### Tages-Quota / Kostenairbag (Aufgabe 4)
 
-Rein serverseitig im `guard.js`-Node, Zähler in `$getWorkflowStaticData('global')`:
+Rein serverseitig im `guard.js`-Node, Zähler in einer JSON-Datei auf dem n8n-Datenvolume
+(`/home/node/.n8n/quota-state.json`, Form `{ day, system, perIp }`):
 
 - **3 Rezepte pro IP pro Tag**, **12 systemweit pro Tag**, Reset um Mitternacht UTC
   (`retryAfter` = nächste UTC-Mitternacht).
@@ -89,15 +90,18 @@ Rein serverseitig im `guard.js`-Node, Zähler in `$getWorkflowStaticData('global
   sonst `x-real-ip`.
 - Ein Slot wird **vor** dem LLM-Aufruf reserviert, damit wiederholte Fehlversuche das Budget nicht
   aushöhlen. Der HTTP-Node läuft mit `neverError`, damit auch eine 4xx-Antwort von Anthropic die
-  Ausführung sauber beendet und die Static-Data (Zähler) persistiert.
+  Ausführung sauber beendet und der bereits verbuchte Zähler in der Datei erhalten bleibt.
 
 > **Lokaler Test-Hinweis:** Ohne vorgelagerten Proxy setzt der Browser kein `x-forwarded-for`; auf
 > `localhost` landen daher alle Anfragen im IP-Bucket `unknown`. Das systemweite Limit (12/Tag)
 > greift trotzdem und ist der harte Kostendeckel. Hinter einem echten Reverse-Proxy in Prod liefert
 > `x-forwarded-for` die echte Client-IP.
 
-Static Data persistiert nur bei **aktivem** Workflow und Produktions-Ausführungen (nicht im
-manuellen „Execute Workflow" der UI und nicht bei abgebrochenen Ausführungen).
+**Warum dateibasiert statt Static Data:** Die frühere Variante mit
+`$getWorkflowStaticData('global')` persistierte bei Webhook-Läufen nicht zuverlässig — ein harter
+Kostendeckel darf davon nicht abhängen. Der Zähler liegt deshalb in `quota-state.json`. Der
+Datei-Zugriff (`require('fs')`) ist über `NODE_FUNCTION_ALLOW_BUILTIN=fs` in der
+`docker-compose.yml` unter `~/n8n` freigeschaltet.
 
 ### Fehlerbenachrichtigung (Aufgabe 7)
 
