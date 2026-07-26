@@ -1,6 +1,6 @@
 import { InjectionToken, makeEnvironmentProviders, type EnvironmentProviders } from '@angular/core';
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { initializeFirestore, type Firestore } from 'firebase/firestore';
 import { environment } from '../../environments/environment';
 
 /**
@@ -12,11 +12,14 @@ export const FIRESTORE = new InjectionToken<Firestore>('Firestore of the recipe 
 /**
  * Boots the Firebase app once and hands out its Firestore instance.
  * Reuses an existing app so a hot reload does not initialise twice.
+ * Long polling is forced: WebKit accepts the streaming listen channel with a
+ * 200 but never delivers a chunk, so the cookbook hangs on "Loading recipes…"
+ * in Safari. Long polling is a little chattier but works in every engine.
  * @returns Firestore of the configured project.
  */
 function createFirestore(): Firestore {
   const app = getApps().length > 0 ? getApp() : initializeApp(environment.firebase);
-  return getFirestore(app);
+  return initializeFirestore(app, { experimentalForceLongPolling: true });
 }
 
 /**
