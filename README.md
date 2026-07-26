@@ -18,7 +18,8 @@ spricht Firestore direkt an. Details in [docs/architektur.md](docs/architektur.m
 
 ## Setup
 
-Voraussetzungen: Node 20+, npm, Docker (nur für echte Generierung).
+Voraussetzungen: Node `^20.19` / `^22.12` / `>=24` (Angular 21), npm, Docker (nur für echte
+Generierung).
 
 ```bash
 npm install
@@ -40,10 +41,10 @@ eintragen, siehe [docs/firebase.md](docs/firebase.md).
 ### n8n starten
 
 Der Workflow liegt versioniert unter [`n8n/`](n8n/) und wird in einen lokalen n8n-Container
-importiert:
+importiert. Der Container kommt aus der `docker-compose.yml` unter `~/n8n`:
 
 ```bash
-docker start n8n                     # Compose-Datei liegt unter ~/n8n
+cd ~/n8n && docker compose up -d     # danach: http://localhost:5678
 ```
 
 Import, Workflow-Aktivierung und das Eintragen des Anthropic-API-Keys sind Schritt für Schritt in

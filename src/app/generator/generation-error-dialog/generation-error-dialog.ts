@@ -57,6 +57,8 @@ export class GenerationErrorDialog {
    */
   constructor() {
     afterRenderEffect(() => {
+      // Tracked on purpose: reading the input is what re-runs this effect when
+      // the next error arrives. Without it the modal would only ever open once.
       this.error();
       const dialog = this.dialogRef().nativeElement;
       if (!dialog.open) dialog.showModal();
@@ -64,10 +66,9 @@ export class GenerationErrorDialog {
   }
 
   /**
-   * Closes the modal and then runs its primary action. The order matters: the
-   * action can drop this component from the template, and a dialog removed
-   * while still open keeps its slot in the browser's top layer — WebKit then
-   * refuses to open the next one.
+   * Closes the modal, then runs its primary action. Closing first keeps the
+   * call on an attached element: the action can drop this component from the
+   * template, and close() on a detached dialog never fires its close event.
    */
   protected onAction(): void {
     this.dialogRef().nativeElement.close();
