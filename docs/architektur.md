@@ -13,7 +13,7 @@ Kurzfassung des Stacks:
 - **Frontend:** Angular 21 im Browser (Standalone Components, Signals) — läuft **lokal** auf
   `http://localhost:4200` bzw. `4300`.
 - **Rezept-Generierung:** n8n-Workflow in Docker — läuft **lokal** auf `http://localhost:5678`.
-- **LLM:** Anthropic Messages API (`claude-sonnet-5`) — **extern**, wird nur von n8n aufgerufen.
+- **LLM:** Google Gemini API (`gemini-3.5-flash`) — **extern**, wird nur von n8n aufgerufen.
 - **Bibliothek:** Firebase Firestore — **extern**, wird nur vom Frontend angesprochen.
 
 ---
@@ -21,7 +21,7 @@ Kurzfassung des Stacks:
 ## 1. Gesamtarchitektur
 
 Zwei getrennte Pfade laufen sternförmig vom Browser aus. Der **Generierungspfad** geht über n8n zur
-Anthropic-API und zurück. Der **Bibliothekspfad** geht direkt vom Browser nach Firestore. Die beiden
+Gemini-API und zurück. Der **Bibliothekspfad** geht direkt vom Browser nach Firestore. Die beiden
 kreuzen sich nie im Backend — insbesondere schreibt n8n **nicht** nach Firestore (siehe unten).
 
 ```mermaid
@@ -36,8 +36,8 @@ flowchart TB
     hook["Webhook · POST /webhook/generate-recipe"]
   end
 
-  subgraph anthropic["Anthropic · EXTERN"]
-    claude["Messages API · Modell claude-sonnet-5"]
+  subgraph google["Google Gemini · EXTERN"]
+    gemini["generateContent · Modell gemini-3.5-flash"]
   end
 
   subgraph firebase["Firebase Firestore · EXTERN"]
@@ -48,8 +48,8 @@ flowchart TB
   ui --> libSvc
 
   apiSvc -- "POST RecipeRequest als JSON" --> hook
-  hook -- "HTTPS mit x-api-key" --> claude
-  claude -- "tool_use Block emit_recipes" --> hook
+  hook -- "HTTPS mit x-goog-api-key" --> gemini
+  gemini -- "JSON-Text nach responseSchema" --> hook
   hook -- "HTTP 200 mit Antwort-Envelope" --> apiSvc
 
   libSvc -- "addDoc · nur beim Bestaetigen" --> store
@@ -72,19 +72,19 @@ flowchart TB
   (`getDoc`/`getDocs` mit Paginierung und Kategoriefilter) und Like (`updateDoc` mit `increment(1)`).
 - **Webhook-Node in n8n** — nimmt den POST entgegen und beantwortet den CORS-Preflight für die zwei
   Dev-Origins. Alles Weitere passiert in den nachgelagerten Nodes (Abschnitt 2).
-- **Anthropic Messages API** — der einzige externe LLM-Aufruf, ausgelöst **nur** von n8n. Der
-  API-Key liegt als n8n-Credential (`x-api-key`), nie im Repo, nie im Browser.
+- **Google Gemini API** — der einzige externe LLM-Aufruf, ausgelöst **nur** von n8n. Der
+  API-Key liegt als n8n-Credential (`x-goog-api-key`), nie im Repo, nie im Browser.
 - **Firestore-Collection `recipes`** — die öffentliche Bibliothek. Da die App keine Anmeldung hat,
   tragen die **Security-Rules** ([firestore.rules](../firestore.rules)) die gesamte Absicherung.
 
 ### Was lokal und was extern läuft
 
-| Baustein             | Ort                         | Erreichbar über               |
-| -------------------- | --------------------------- | ----------------------------- |
-| Angular-App          | **lokal**, Browser          | `localhost:4200` / `4300`     |
-| n8n-Workflow         | **lokal**, Docker           | `localhost:5678`              |
-| Anthropic Claude     | **extern**, Anthropic-Cloud | HTTPS, nur aus n8n            |
-| Firestore-Bibliothek | **extern**, Google Cloud    | Firebase-SDK, nur aus Browser |
+| Baustein             | Ort                      | Erreichbar über               |
+| -------------------- | ------------------------ | ----------------------------- |
+| Angular-App          | **lokal**, Browser       | `localhost:4200` / `4300`     |
+| n8n-Workflow         | **lokal**, Docker        | `localhost:5678`              |
+| Google Gemini        | **extern**, Google-Cloud | HTTPS, nur aus n8n            |
+| Firestore-Bibliothek | **extern**, Google Cloud | Firebase-SDK, nur aus Browser |
 
 ### Warum n8n NICHT nach Firestore schreibt
 
@@ -114,16 +114,16 @@ flowchart TB
   recv["Receive recipe request · Webhook POST"]
   guard["Validate & rate limit · Code-Node guard.js"]
   ifGuard{"Passed the guard? · route gleich ok"}
-  claude["Generate recipes Claude · HTTP Anthropic · neverError"]
+  gemini["Generate recipes Gemini · HTTP Google · neverError"]
   mapai["Map AI answer to recipes · Code-Node map-ai.js"]
   ifUsable{"Recipes usable? · route gleich ok"}
   respOk["Respond: recipes · Envelope status ok"]
   respErr["Respond: error · Envelope status error"]
 
   recv --> guard --> ifGuard
-  ifGuard -- "ok" --> claude
+  ifGuard -- "ok" --> gemini
   ifGuard -- "error" --> respErr
-  claude --> mapai --> ifUsable
+  gemini --> mapai --> ifUsable
   ifUsable -- "ok" --> respOk
   ifUsable -- "error" --> respErr
 ```
@@ -143,24 +143,26 @@ Items und tut drei Dinge, in dieser Reihenfolge:
    und `diet`. Schlägt sie an, entsteht sofort ein `validation_failed`-Envelope und der LLM wird nie
    gerufen.
 2. **Quota reservieren** (`reserveQuota`, der Kostenairbag) — Details unten.
-3. **Anthropic-Request bauen** (`buildAnthropicBody`) — Details unten.
+3. **Gemini-Request bauen** (`buildGeminiBody`) — Details unten.
 
 Der Node emittiert entweder ein `route: ok`-Item (mit sauberem Request, CORS-Origin und fertigem
-Anthropic-Body) oder ein `route: error`-Item (mit `__error`-Envelope).
+Gemini-Body) oder ein `route: error`-Item (mit `__error`-Envelope).
 
 **Passed the guard?** — `IF`-Node auf `route == ok`. `ok` → weiter zum Modell; `error` → direkt zu
 **Respond: error**. Damit erreichen abgelehnte oder überzählige Anfragen den LLM nie.
 
-**Generate recipes (Claude)** — HTTP-Request-Node an `https://api.anthropic.com/v1/messages`.
-Auth über die Header-Credential `x-api-key`, dazu fest `anthropic-version: 2023-06-01`. Body ist der
-in guard.js gebaute `anthropicBody`. Wichtig: **`neverError: true`** — eine 4xx/5xx-Antwort von
-Anthropic bricht die Ausführung **nicht** ab, sondern fließt als Body weiter (damit der bereits
-reservierte Quota-Slot persistiert und der Map-Node sauber einen `ai_failed`-Envelope bauen kann).
-Timeout 80 s.
+**Generate recipes (Gemini)** — HTTP-Request-Node an
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent`. Das
+Modell steht bei Gemini in der **URL**, nicht im Body. Auth über die Header-Credential
+`x-goog-api-key`; weitere feste Header braucht der Node nicht. Body ist der in guard.js gebaute
+`geminiBody`. Wichtig: **`neverError: true`** — eine 4xx/5xx-Antwort von Google (inklusive einer
+Gemini-Quota-429) bricht die Ausführung **nicht** ab, sondern fließt als Body weiter (damit der
+bereits reservierte Quota-Slot persistiert und der Map-Node sauber einen `ai_failed`-Envelope bauen
+kann). Timeout 80 s.
 
 **Map AI answer to recipes** — Code-Node ([n8n/src/map-ai.js](../n8n/src/map-ai.js)). Packt die Rezepte
-aus der Tool-Use-Antwort aus, säubert jedes Feld auf die `GeneratedRecipe`-Form und prüft es. Bei
-jeder unbrauchbaren Antwort entsteht ein `ai_failed`-Envelope. Details unten.
+aus `candidates[0].content.parts[].text` aus, säubert jedes Feld auf die `GeneratedRecipe`-Form und
+prüft es. Bei jeder unbrauchbaren Antwort entsteht ein `ai_failed`-Envelope. Details unten.
 
 **Recipes usable?** — `IF`-Node auf `route == ok`. `ok` → **Respond: recipes**; `error` →
 **Respond: error**.
@@ -217,9 +219,9 @@ Der Kostenairbag begrenzt die LLM-Kosten hart und läuft **ausschließlich serve
 - **IP-Normalisierung** (`resolveIpKey`): Quelle ist `x-forwarded-for` (erster Eintrag), sonst
   `x-real-ip`. IPv4-mapped IPv6 (`::ffff:a.b.c.d`) → IPv4; IPv6 auf das `/64`-Präfix (erste vier
   Hextets); Zone-ID entfernt. Ohne erkennbare IP landet alles im Bucket `unknown`.
-- **Reservierung vor dem LLM-Aufruf**: Der Slot wird gezählt, **bevor** Claude gerufen wird. So
+- **Reservierung vor dem LLM-Aufruf**: Der Slot wird gezählt, **bevor** Gemini gerufen wird. So
   können wiederholte Fehlversuche das Budget nicht aushöhlen. Zusammen mit `neverError` am HTTP-Node
-  bleibt der Zähler auch bei einer Anthropic-Fehlerantwort verbucht.
+  bleibt der Zähler auch bei einer Google-Fehlerantwort verbucht.
 - Bei Überlauf: `quota_ip_exceeded` bzw. `quota_system_exceeded` mit passender `message` und
   `retryAfter`.
 
@@ -230,25 +232,39 @@ Der Kostenairbag begrenzt die LLM-Kosten hart und läuft **ausschließlich serve
 Das Frontend **zeigt** den Quota-Status nur an — es **prüft** nichts selbst und führt keine
 Client-Zähler (Vorgabe aus [CLAUDE.md](../CLAUDE.md), Quota-Regel).
 
-### Claude-Aufruf per Tool Use (emit_recipes erzwingt das Schema)
+### Gemini-Aufruf mit responseSchema (erzwungene JSON-Struktur)
 
-`buildAnthropicBody` baut einen Messages-API-Request, der die Struktur **erzwingt** statt zu hoffen:
+`buildGeminiBody` baut einen `generateContent`-Request, der die Struktur **erzwingt** statt zu hoffen:
 
-- `model: claude-sonnet-5`, `max_tokens: 8000`, dazu ein System-Prompt mit den harten Projektregeln
-  (Diät strikt, gewünschte Küche/Portionen/Köche, `timeCategory` passend zur Kochzeit, ≥ 70 % der
-  Nutzerzutaten wiederverwenden, max. 3 Zusatzzutaten, Arbeitsaufteilung bei `cooks > 1`, Nährwerte
-  für `perPortion` **und** `total`, alles auf Englisch).
-- Ein **Tool** `emit_recipes` mit `input_schema`, das exakt `{ recipes: [3 × GeneratedRecipe] }`
-  beschreibt (`minItems: 3, maxItems: 3`, verschachtelt Zutaten, Schritte, Nährwerte).
-- **`tool_choice: { type: 'tool', name: 'emit_recipes' }`** — das Modell **muss** dieses Tool
-  aufrufen. Damit kommt die Antwort nicht als Freitext, sondern als strukturierter `tool_use`-Block,
-  der dem Schema folgt. Das ist der Ersatz für „JSON-Mode" und macht die Weiterverarbeitung robust.
+- `systemInstruction` mit den harten Projektregeln (Diät strikt, gewünschte Küche/Portionen/Köche,
+  `timeCategory` passend zur Kochzeit, ≥ 70 % der Nutzerzutaten wiederverwenden, max. 3
+  Zusatzzutaten, Arbeitsaufteilung bei `cooks > 1`, Nährwerte für `perPortion` **und** `total`, alles
+  auf Englisch), dazu der konkrete Request als `contents`-User-Turn.
+- **`generationConfig.responseMimeType: "application/json"`** — das Modell antwortet garantiert mit
+  JSON statt Freitext.
+- **`generationConfig.responseSchema`** — exakt `GeneratedRecipe[]` mit `minItems: 3, maxItems: 3`,
+  verschachtelt Zutaten, Schritte und Nährwerte. Zusammen sind die beiden Felder der Ersatz für den
+  früheren Tool-Use-Zwang (`emit_recipes`).
+- `maxOutputTokens: 32000` — großzügig bemessen, weil drei vollständige Rezepte plus das interne
+  Denken des Modells sonst in `finishReason: MAX_TOKENS` laufen können.
+
+Zum **Schema-Dialekt**: Gemini erwartet eine OpenAPI-3.0-Teilmenge, nicht JSON Schema. Gegenüber dem
+früheren `input_schema` sind daher drei Dinge anders — **Felder und Wertebereiche bleiben identisch**:
+
+| Anthropic `input_schema`      | Gemini `responseSchema`            |
+| ----------------------------- | ---------------------------------- |
+| `type: 'string'` (klein)      | `type: 'STRING'` (Enum-Name, groß) |
+| `type: ['integer', 'null']`   | `type: 'INTEGER', nullable: true`  |
+| `additionalProperties: false` | entfällt (nicht unterstützt)       |
+| Wrapper `{ recipes: [...] }`  | direkt `ARRAY` auf oberster Ebene  |
 
 ### coerceRecipes in map-ai.js — warum das Auspacken nötig ist
 
-Trotz erzwungenem Schema ist die Tool-Eingabe in der Praxis nicht immer sauber die reine Liste.
-`extractRecipes` sucht im `content` den `tool_use`-Block mit Name `emit_recipes`; `coerceRecipes`
-wickelt dessen `input` dann rekursiv aus, weil Claude den Wert unterschiedlich verpackt hat:
+Trotz erzwungenem Schema ist die Modellantwort in der Praxis nicht immer sauber die reine Liste.
+`isRefused` sortiert zuerst unbrauchbare Antworten aus (siehe unten), `readAnswerText` verkettet dann
+die Text-Parts von `candidates[0].content.parts` (reine Denk-Parts mit `thought: true` werden
+übersprungen). `coerceRecipes` wickelt diesen Text rekursiv aus — die Funktion stammt unverändert aus
+der Claude-Zeit, weil der Wert dort unterschiedlich verpackt ankam:
 
 - schon die **Liste** selbst, oder
 - ein **`{ recipes: [...] }`**-Objekt, oder
@@ -261,6 +277,25 @@ gefundene Array-Ebene zurück, sonst `null`. Danach wird jedes Rezept mit `clean
 auf `g`/`ml`/`piece` normalisieren) und mit `isValidRecipe` geprüft. Nur wenn **genau drei** gültige
 Rezepte übrig bleiben, entsteht `route: ok`; sonst `ai_failed`. Dieses Säubern stellt sicher, dass die
 Ausgabe später auch die **Firestore-Rules** passiert.
+
+### Fehlerpfade der Gemini-Antwort (alle → `ai_failed`)
+
+`isRefused` in map-ai.js fängt vor dem Auspacken alle Formen ab, in denen Google keine verwertbare
+Antwort liefert. Der Vertrag zum Frontend kennt dafür genau **einen** Code, `ai_failed` (mit Retry-
+Angebot) — es kommen also keine neuen Fehlercodes hinzu:
+
+| Antwort von Google                            | Erkannt an                          |
+| --------------------------------------------- | ----------------------------------- |
+| HTTP-Fehler 4xx/5xx, inkl. Gemini-Quota (429) | `error` im Body (dank `neverError`) |
+| Prompt sicherheitsgeblockt                    | `promptFeedback.blockReason`        |
+| Keine Kandidaten geliefert                    | `candidates` leer oder fehlt        |
+| Abbruch (SAFETY, MAX_TOKENS, RECITATION)      | `finishReason !== 'STOP'`           |
+| Kandidat ohne nutzbaren Text                  | `readAnswerText` liefert `null`     |
+
+Wichtig zur Abgrenzung: Die **Gemini-Quota** (Googles eigenes Rate-Limit) ist etwas anderes als der
+Kostenairbag des Projekts. Läuft Googles Limit über, sieht der Nutzer `ai_failed`; läuft der
+Projekt-Deckel über, sieht er `quota_ip_exceeded` bzw. `quota_system_exceeded` — und der LLM wird gar
+nicht erst gerufen.
 
 ### Antwort-Envelope: immer HTTP 200, Feld `status` ok/error
 
@@ -301,14 +336,14 @@ sequenceDiagram
   actor User as Nutzer
   participant NG as Angular-App
   participant N8N as n8n Webhook · lokal
-  participant AI as Anthropic Claude · extern
+  participant AI as Google Gemini · extern
   participant FS as Firestore · extern
 
   User->>NG: Wizard ausfuellen und generieren
   NG->>N8N: POST RecipeRequest als JSON
   N8N->>N8N: Validierung und Quota-Slot reservieren
-  N8N->>AI: Messages API · Tool emit_recipes erzwungen
-  AI-->>N8N: tool_use Block mit 3 Rezepten
+  N8N->>AI: generateContent · responseSchema erzwungen
+  AI-->>N8N: JSON-Text mit 3 Rezepten
   N8N->>N8N: Map AI · auspacken und sanitisieren
   N8N-->>NG: HTTP 200 · status ok mit 3 Rezepten
   NG-->>User: Ergebnisliste und Rezeptansicht
@@ -331,10 +366,12 @@ sequenceDiagram
 2. **Angular → n8n:** `RecipeApiService.generateRecipes()` schickt den POST an
    `environment.recipeWebhookUrl` mit 90-s-Timeout.
 3. **n8n intern:** Guard validiert und reserviert einen Quota-Slot (siehe Abschnitt 2).
-4. **n8n → Anthropic:** HTTP-Node ruft die Messages API mit erzwungenem `emit_recipes`-Tool.
-5. **Anthropic → n8n:** Claude liefert den `tool_use`-Block mit drei Rezepten.
-6. **n8n intern:** Der Map-Node packt aus (`coerceRecipes`), säubert und prüft; drei gültige Rezepte →
-   `route: ok`.
+4. **n8n → Google:** HTTP-Node ruft `generateContent` mit `responseMimeType: application/json` und
+   dem `responseSchema` für `GeneratedRecipe[]`.
+5. **Google → n8n:** Gemini liefert den JSON-Text mit drei Rezepten in
+   `candidates[0].content.parts[].text`.
+6. **n8n intern:** Der Map-Node prüft auf Refusal (`isRefused`), liest den Text (`readAnswerText`),
+   packt aus (`coerceRecipes`), säubert und prüft; drei gültige Rezepte → `route: ok`.
 7. **n8n → Angular:** **Respond: recipes** antwortet HTTP 200 mit `{ status: 'ok', recipes }`.
 8. **Angular → Nutzer:** `applyResponse` legt die Rezepte in den Signals ab und navigiert auf
    `/results`. Die Vorschläge liegen **nur im Speicher** — ein Reload schickt bewusst zurück in den

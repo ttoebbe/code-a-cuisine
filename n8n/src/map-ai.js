@@ -1,4 +1,4 @@
-// Map node — turns the Anthropic tool-use answer into the RecipeResponse
+// Map node — turns the Gemini generateContent answer into the RecipeResponse
 // success envelope, sanitising every field so it satisfies the GeneratedRecipe
 // shape and the Firestore rules. On any unusable answer it emits an ai_failed
 // error envelope instead. Runs once for all items.
@@ -22,10 +22,11 @@ function fail() {
 }
 
 /**
- * Digs the recipe array out of a tool input. Claude sometimes wraps the value:
- * the input can already be the array, a { recipes } object, or a JSON string of
- * either — and it has been observed double-wrapped as { recipes: "<json>" }.
- * Unwraps strings and { recipes } layers until an array turns up.
+ * Digs the recipe array out of the model output. The value can already be the
+ * array, a { recipes } object, or a JSON string of either — and it has been
+ * observed double-wrapped as { recipes: "<json>" }. Unwraps strings and
+ * { recipes } layers until an array turns up. Kept from the Anthropic version:
+ * the robust unwrapping earned its keep there and costs nothing here.
  */
 function coerceRecipes(value, depth) {
   if (depth > 6) return null;
@@ -43,14 +44,29 @@ function coerceRecipes(value, depth) {
   return null;
 }
 
-/** Extracts the recipes array from the forced tool_use block, or null. */
-function extractRecipes(response) {
-  const content = Array.isArray(response.content) ? response.content : [];
-  const tool = content.find(
-    (block) =>
-      block.type === 'tool_use' && block.name === 'emit_recipes' && block.input !== undefined,
-  );
-  return tool ? coerceRecipes(tool.input, 0) : null;
+/**
+ * True when Google did not deliver a usable answer: an HTTP error body (the
+ * node runs with neverError, so 4xx/5xx — including a Gemini quota 429 — arrive
+ * here as { error }), a blocked prompt, or a candidate that stopped for any
+ * reason other than STOP (SAFETY, MAX_TOKENS, RECITATION).
+ */
+function isRefused(response) {
+  if (response.error) return true;
+  if (response.promptFeedback && response.promptFeedback.blockReason) return true;
+  const candidate = asArray(response.candidates)[0];
+  if (!candidate) return true;
+  return Boolean(candidate.finishReason && candidate.finishReason !== 'STOP');
+}
+
+/** The text parts of the first candidate, joined; thought parts are skipped. */
+function readAnswerText(response) {
+  const candidate = asArray(response.candidates)[0] || {};
+  const parts = asArray(candidate.content && candidate.content.parts);
+  const text = parts
+    .filter((part) => part && part.thought !== true && typeof part.text === 'string')
+    .map((part) => part.text)
+    .join('');
+  return text.trim() === '' ? null : text;
 }
 
 /** Coerces one ingredient to the RecipeIngredient shape (amount/unit nullable). */
@@ -127,7 +143,12 @@ function asArray(value) {
 }
 
 // --- main -------------------------------------------------------------------
-const rawRecipes = extractRecipes(answer);
+if (isRefused(answer)) return fail();
+
+const answerText = readAnswerText(answer);
+if (answerText === null) return fail();
+
+const rawRecipes = coerceRecipes(answerText, 0);
 if (!rawRecipes) return fail();
 
 const recipes = rawRecipes.slice(0, 3).map(cleanRecipe);

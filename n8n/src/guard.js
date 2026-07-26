@@ -1,6 +1,6 @@
 // Guard node — server-side request validation and the daily cost cap
 // (Kostenairbag). Runs once for all items. Emits either a "route: ok" item
-// carrying the sanitised request plus the ready-to-send Anthropic body, or a
+// carrying the sanitised request plus the ready-to-send Gemini body, or a
 // "route: error" item carrying the error envelope from the JSON contract.
 
 const ALLOWED_ORIGINS = ['http://localhost:4200', 'http://localhost:4300'];
@@ -14,6 +14,25 @@ const UNITS = ['g', 'ml', 'piece'];
 // Cost cap: how many recipes one IP and the whole system may generate per day.
 const PER_IP_LIMIT = 3;
 const SYSTEM_LIMIT = 12;
+
+// Generous output budget: three full recipes plus the model's internal
+// reasoning would otherwise hit finishReason MAX_TOKENS mid-answer.
+const MAX_OUTPUT_TOKENS = 32000;
+
+// Every field a GeneratedRecipe must carry; drives the responseSchema below.
+const RECIPE_FIELDS = [
+  'title',
+  'cookingTimeMinutes',
+  'timeCategory',
+  'cuisine',
+  'diet',
+  'portions',
+  'cooks',
+  'yourIngredients',
+  'extraIngredients',
+  'steps',
+  'nutrition',
+];
 
 const webhook = $input.first().json;
 const body = webhook.body || {};
@@ -139,97 +158,114 @@ function reserveQuota(requestHeaders) {
   return null;
 }
 
-/** Builds the Anthropic Messages API request with forced structured output. */
-function buildAnthropicBody(request) {
-  const macro = {
-    type: 'object',
-    additionalProperties: false,
+// The schema builders below speak Gemini's responseSchema dialect (an OpenAPI
+// 3.0 subset): upper-case type names, `nullable: true` instead of a union with
+// "null", and no `additionalProperties`. Fields and value ranges are unchanged
+// from the former Anthropic input_schema.
+
+/** One macro nutrient: grams plus its percent share of the energy. */
+function buildMacroSchema() {
+  return {
+    type: 'OBJECT',
     required: ['grams', 'percent'],
-    properties: { grams: { type: 'number' }, percent: { type: 'number' } },
+    properties: { grams: { type: 'NUMBER' }, percent: { type: 'NUMBER' } },
   };
-  const scope = {
-    type: 'object',
-    additionalProperties: false,
+}
+
+/** One nutrition scope (perPortion or total). */
+function buildScopeSchema() {
+  return {
+    type: 'OBJECT',
     required: ['kcal', 'protein', 'carbs', 'fat'],
-    properties: { kcal: { type: 'number' }, protein: macro, carbs: macro, fat: macro },
+    properties: {
+      kcal: { type: 'NUMBER' },
+      protein: buildMacroSchema(),
+      carbs: buildMacroSchema(),
+      fat: buildMacroSchema(),
+    },
   };
-  const ingredient = {
-    type: 'object',
-    additionalProperties: false,
+}
+
+/** One ingredient; amount, unit and note stay nullable as in the contract. */
+function buildIngredientSchema() {
+  return {
+    type: 'OBJECT',
     required: ['name', 'amount', 'unit', 'note'],
     properties: {
-      name: { type: 'string' },
-      amount: { type: ['number', 'null'] },
-      unit: { type: ['string', 'null'], enum: ['g', 'ml', 'piece', null] },
-      note: { type: ['string', 'null'] },
+      name: { type: 'STRING' },
+      amount: { type: 'NUMBER', nullable: true },
+      unit: { type: 'STRING', nullable: true, enum: UNITS },
+      note: { type: 'STRING', nullable: true },
     },
   };
-  const step = {
-    type: 'object',
-    additionalProperties: false,
+}
+
+/** One cooking step including the parallel-work fields. */
+function buildStepSchema() {
+  return {
+    type: 'OBJECT',
     required: ['order', 'title', 'description', 'assignedChef', 'parallelGroupId'],
     properties: {
-      order: { type: 'integer' },
-      title: { type: 'string' },
-      description: { type: 'string' },
-      assignedChef: { type: 'integer' },
-      parallelGroupId: { type: ['integer', 'null'] },
+      order: { type: 'INTEGER' },
+      title: { type: 'STRING' },
+      description: { type: 'STRING' },
+      assignedChef: { type: 'INTEGER' },
+      parallelGroupId: { type: 'INTEGER', nullable: true },
     },
   };
-  const recipe = {
-    type: 'object',
-    additionalProperties: false,
-    required: [
-      'title',
-      'cookingTimeMinutes',
-      'timeCategory',
-      'cuisine',
-      'diet',
-      'portions',
-      'cooks',
-      'yourIngredients',
-      'extraIngredients',
-      'steps',
-      'nutrition',
-    ],
-    properties: {
-      title: { type: 'string' },
-      cookingTimeMinutes: { type: 'integer' },
-      timeCategory: { type: 'string', enum: TIME_CATEGORIES },
-      cuisine: { type: 'string', enum: CUISINES },
-      diet: { type: 'string', enum: DIETS },
-      portions: { type: 'integer' },
-      cooks: { type: 'integer' },
-      yourIngredients: { type: 'array', minItems: 1, items: ingredient },
-      extraIngredients: { type: 'array', maxItems: 3, items: ingredient },
-      steps: { type: 'array', minItems: 1, items: step },
-      nutrition: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['perPortion', 'total'],
-        properties: { perPortion: scope, total: scope },
-      },
-    },
-  };
-  const schema = {
-    type: 'object',
-    additionalProperties: false,
-    required: ['recipes'],
-    properties: { recipes: { type: 'array', minItems: 3, maxItems: 3, items: recipe } },
-  };
+}
+
+/** The scalar half of a recipe: naming, timing and the requested numbers. */
+function buildRecipeScalars() {
   return {
-    model: 'claude-sonnet-5',
-    max_tokens: 8000,
-    system: buildSystemPrompt(),
-    tools: [
-      {
-        name: 'emit_recipes',
-        description: 'Return exactly three complete recipe suggestions.',
-        input_schema: schema,
-      },
-    ],
-    tool_choice: { type: 'tool', name: 'emit_recipes' },
-    messages: [{ role: 'user', content: buildUserPrompt(request) }],
+    title: { type: 'STRING' },
+    cookingTimeMinutes: { type: 'INTEGER' },
+    timeCategory: { type: 'STRING', enum: TIME_CATEGORIES },
+    cuisine: { type: 'STRING', enum: CUISINES },
+    diet: { type: 'STRING', enum: DIETS },
+    portions: { type: 'INTEGER' },
+    cooks: { type: 'INTEGER' },
+  };
+}
+
+/** The list half of a recipe: ingredients, steps and both nutrition scopes. */
+function buildRecipeLists() {
+  return {
+    yourIngredients: { type: 'ARRAY', minItems: 1, items: buildIngredientSchema() },
+    extraIngredients: { type: 'ARRAY', maxItems: 3, items: buildIngredientSchema() },
+    steps: { type: 'ARRAY', minItems: 1, items: buildStepSchema() },
+    nutrition: {
+      type: 'OBJECT',
+      required: ['perPortion', 'total'],
+      properties: { perPortion: buildScopeSchema(), total: buildScopeSchema() },
+    },
+  };
+}
+
+/** responseSchema: exactly three recipes as a plain GeneratedRecipe[] array. */
+function buildResponseSchema() {
+  return {
+    type: 'ARRAY',
+    minItems: 3,
+    maxItems: 3,
+    items: {
+      type: 'OBJECT',
+      required: RECIPE_FIELDS,
+      properties: Object.assign(buildRecipeScalars(), buildRecipeLists()),
+    },
+  };
+}
+
+/** Builds the Gemini generateContent request with forced structured output. */
+function buildGeminiBody(request) {
+  return {
+    systemInstruction: { parts: [{ text: buildSystemPrompt() }] },
+    contents: [{ role: 'user', parts: [{ text: buildUserPrompt(request) }] }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: buildResponseSchema(),
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+    },
   };
 }
 
@@ -246,7 +282,7 @@ function buildSystemPrompt() {
     '- When cooks > 1, split the work: assignedChef is between 1 and cooks, and steps that run at the same time share one parallelGroupId (an integer); serial steps use null.',
     '- Fill nutrition for both perPortion and total; each macro carries grams and its percent share of the energy, and total = perPortion * portions.',
     '- Write every title, step and note in English.',
-    'Call the emit_recipes tool with the result. Do not add prose.',
+    'Answer with the JSON array of exactly three recipes only — no prose, no code fences.',
   ].join('\n');
 }
 
@@ -277,4 +313,4 @@ const request = {
   diet: body.diet,
 };
 
-return [{ json: { route: 'ok', corsOrigin, request, anthropicBody: buildAnthropicBody(request) } }];
+return [{ json: { route: 'ok', corsOrigin, request, geminiBody: buildGeminiBody(request) } }];

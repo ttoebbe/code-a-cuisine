@@ -16,10 +16,10 @@ dieses Dokument beschreibt Endpunkt, Regeln und Fehlercodes drumherum.
 - Aufrufe ausschließlich über `RecipeApiService`, nie direkt aus Components
 
 > **Ist-Stand:** Der Workflow ist gebaut und liegt versioniert unter [`n8n/`](../n8n/). Aufbau,
-> Import, Anthropic-Key und die getroffenen Entscheidungen stehen in
+> Import, Gemini-Key und die getroffenen Entscheidungen stehen in
 > [`n8n/README.md`](../n8n/README.md). Vor dem ersten echten Lauf müssen zwei Dinge in der n8n-UI
-> passieren: **(1)** den Anthropic-API-Key in die Credential `Anthropic API key (x-api-key)`
-> eintragen, **(2)** der Workflow „Code a Cuisine — Generate Recipe" muss **aktiv** sein.
+> passieren: **(1)** den Google-API-Key in die Header-Auth-Credential `x-goog-api-key` eintragen,
+> **(2)** der Workflow „Code a Cuisine — Generate Recipe" muss **aktiv** sein.
 
 ### CORS
 
@@ -99,9 +99,9 @@ Der Node-Graph des Haupt-Workflows:
 
 ```
 Webhook (POST generate-recipe)
-  → Validate & rate limit   (n8n/src/guard.js  — Validierung + Tages-Quota + Anthropic-Request)
+  → Validate & rate limit   (n8n/src/guard.js  — Validierung + Tages-Quota + Gemini-Request)
   → IF route == ok
-      ├─ true  → Generate recipes (Claude)  (HTTP, Anthropic Messages API, Tool Use, neverError)
+      ├─ true  → Generate recipes (Gemini) (HTTP, generateContent, responseSchema, neverError)
       │           → Map AI answer to recipes (n8n/src/map-ai.js)
       │           → IF route == ok → Respond: recipes | Respond: error
       └─ false → Respond: error

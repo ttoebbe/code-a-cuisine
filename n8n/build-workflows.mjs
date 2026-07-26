@@ -13,6 +13,17 @@ const WEBHOOK = 'Receive recipe request';
 const ERROR_WORKFLOW_ID = 'codeacuisine-error-handler';
 const MAIN_WORKFLOW_ID = 'codeacuisine-generate-recipe';
 
+// LLM endpoint. The model sits in the URL (not in the body) on the Gemini API.
+const LLM_NODE = 'Generate recipes (Gemini)';
+const GEMINI_MODEL = 'gemini-3.5-flash';
+const GEMINI_URL =
+  'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent';
+// Header-auth credential holding x-goog-api-key, created by hand in the n8n UI.
+const GEMINI_CREDENTIAL = {
+  id: 'jzEzCDSaQv6klLvF',
+  name: 'Google Gemini API key (x-goog-api-key)',
+};
+
 // Reflects the caller origin when allow-listed, else falls back to :4200.
 const CORS_ORIGIN =
   "={{ ['http://localhost:4200','http://localhost:4300']" +
@@ -90,28 +101,24 @@ const mainNodes = [
     },
   ),
   node(
-    'Generate recipes (Claude)',
+    LLM_NODE,
     'n8n-nodes-base.httpRequest',
     4.2,
     [540, 200],
     {
       method: 'POST',
-      url: 'https://api.anthropic.com/v1/messages',
+      url: GEMINI_URL,
       authentication: 'genericCredentialType',
       genericAuthType: 'httpHeaderAuth',
-      sendHeaders: true,
-      headerParameters: { parameters: [{ name: 'anthropic-version', value: '2023-06-01' }] },
       sendBody: true,
       specifyBody: 'json',
-      jsonBody: '={{ $json.anthropicBody }}',
+      jsonBody: '={{ $json.geminiBody }}',
       options: { timeout: 80000, response: { response: { neverError: true } } },
     },
     {
-      credentials: {
-        httpHeaderAuth: { id: 'anthropic-header-auth', name: 'Anthropic API key (x-api-key)' },
-      },
+      credentials: { httpHeaderAuth: GEMINI_CREDENTIAL },
       notes:
-        'Anthropic Messages API with forced tool use (emit_recipes) for schema-valid output. neverError keeps a non-2xx answer from failing the run so the daily quota still persists; the map node turns any unusable body into ai_failed.',
+        'Gemini generateContent with responseMimeType application/json plus a responseSchema for schema-valid output. neverError keeps a non-2xx answer from failing the run so the daily quota still persists; the map node turns any unusable body into ai_failed.',
     },
   ),
   node(
@@ -169,11 +176,11 @@ const mainConnections = {
   'Validate & rate limit': { main: [[{ node: 'Passed the guard?', type: 'main', index: 0 }]] },
   'Passed the guard?': {
     main: [
-      [{ node: 'Generate recipes (Claude)', type: 'main', index: 0 }],
+      [{ node: LLM_NODE, type: 'main', index: 0 }],
       [{ node: 'Respond: error', type: 'main', index: 0 }],
     ],
   },
-  'Generate recipes (Claude)': {
+  [LLM_NODE]: {
     main: [[{ node: 'Map AI answer to recipes', type: 'main', index: 0 }]],
   },
   'Map AI answer to recipes': { main: [[{ node: 'Recipes usable?', type: 'main', index: 0 }]] },

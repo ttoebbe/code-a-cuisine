@@ -7,10 +7,10 @@ sie im JSON-Vertrag aus [`docs/n8n-webhook.md`](../docs/n8n-webhook.md) zurückg
 
 | Datei                           | Inhalt                                                           |
 | ------------------------------- | ---------------------------------------------------------------- |
-| `generate-recipe.workflow.json` | Haupt-Workflow (Webhook → Validierung/Quota → Claude → Antwort)  |
+| `generate-recipe.workflow.json` | Haupt-Workflow (Webhook → Validierung/Quota → Gemini → Antwort)  |
 | `error-handler.workflow.json`   | Error-Trigger-Workflow, loggt fehlgeschlagene Ausführungen       |
-| `src/guard.js`                  | Code-Node: Validierung + Tages-Quota + Anthropic-Request-Bau     |
-| `src/map-ai.js`                 | Code-Node: Claude-Antwort → `GeneratedRecipe[]` bzw. `ai_failed` |
+| `src/guard.js`                  | Code-Node: Validierung + Tages-Quota + Gemini-Request-Bau        |
+| `src/map-ai.js`                 | Code-Node: Gemini-Antwort → `GeneratedRecipe[]` bzw. `ai_failed` |
 | `src/log-error.js`              | Code-Node des Error-Handlers                                     |
 | `build-workflows.mjs`           | Generiert die beiden `*.workflow.json` aus den `src/`-Skripten   |
 
@@ -38,27 +38,52 @@ docker restart n8n          # nötig, damit die Produktions-Webhook-URL registri
 Die Workflow-IDs sind fest (`codeacuisine-generate-recipe`, `codeacuisine-error-handler`), damit der
 Haupt-Workflow den Error-Handler über `settings.errorWorkflow` referenzieren kann.
 
-## Anthropic-Key eintragen (Pflicht vor dem ersten echten Lauf)
+## Gemini-Key eintragen (Pflicht vor dem ersten echten Lauf)
 
-Der LLM-Aufruf nutzt die **HTTP-Header-Auth-Credential** `Anthropic API key (x-api-key)`
-(ID `anthropic-header-auth`). Sie wird beim Import mit einem Platzhalter angelegt. Den echten Key
-**nur in der n8n-UI** eintragen, nie ins Repo:
+Der LLM-Aufruf nutzt eine **HTTP-Header-Auth-Credential** mit dem Header-Namen **`x-goog-api-key`**.
+Sie wird **von Hand in der n8n-UI** angelegt (Credentials → New → _Header Auth_); ID und Name stehen
+in `build-workflows.mjs` unter `GEMINI_CREDENTIAL` und müssen zur Credential in n8n passen. Den
+echten Key nur in der n8n-UI eintragen, nie ins Repo:
 
-1. n8n öffnen → **Credentials** → `Anthropic API key (x-api-key)`.
-2. Feld **Value** auf den echten Anthropic-API-Key setzen (das Feld **Name** bleibt `x-api-key`).
-3. Speichern. Der `anthropic-version`-Header (`2023-06-01`) steckt fest im HTTP-Node.
+1. n8n öffnen → **Credentials** → die Gemini-Header-Auth-Credential.
+2. Feld **Name** = `x-goog-api-key`, Feld **Value** = der echte Google-AI-Studio-API-Key.
+3. Speichern. Weitere feste Header braucht der HTTP-Node nicht.
 
-Modell: `claude-sonnet-5`. Strukturierte Ausgabe erzwingt der Node über Anthropic **Tool Use**
-(`tool_choice` auf das Tool `emit_recipes`), dessen `input_schema` exakt `GeneratedRecipe[]` abbildet.
+Modell: `gemini-3.5-flash` — es steht bei Gemini in der **URL**
+(`…/v1beta/models/gemini-3.5-flash:generateContent`), nicht im Body. Strukturierte Ausgabe erzwingt
+der Node über `generationConfig.responseMimeType: "application/json"` plus ein `responseSchema`, das
+exakt `GeneratedRecipe[]` abbildet.
 
 ## Wichtige Entscheidungen
 
 ### LLM-Anbieter (Aufgabe 5)
 
-Anthropic Claude **Sonnet 5** über einen generischen HTTP-Request-Node (kein Provider-spezifischer
-Node). Grund: volle Kontrolle über Request-Body und Response-Schema, und der Key liegt in einer
-austauschbaren Header-Auth-Credential. In n8n waren keine LLM-Credentials vorhanden — der Key kommt
-also neu (siehe oben).
+**Google Gemini** (`gemini-3.5-flash`) über einen generischen HTTP-Request-Node (kein
+Provider-spezifischer Node). Grund: volle Kontrolle über Request-Body und Response-Schema, und der
+Key liegt in einer austauschbaren Header-Auth-Credential.
+
+> **Wechsel in Phase 6 (Vorgabe der Developer Akademie):** vorher Anthropic Claude (`claude-sonnet-5`,
+> Messages API, erzwungenes Tool `emit_recipes`). Umgestellt wurden nur der HTTP-Node, der
+> Request-Bau in `guard.js` und das Auslesen in `map-ai.js`. **Der JSON-Vertrag Angular ↔ n8n ist
+> unverändert** — am Frontend wurde keine Zeile angefasst.
+
+### Strukturierte Ausgabe: von Tool Use zu responseSchema
+
+Gemini erwartet für `responseSchema` eine **OpenAPI-3.0-Teilmenge**, nicht JSON Schema. Felder und
+Wertebereiche sind identisch zum früheren `input_schema`, die Schreibweise unterscheidet sich:
+
+| Anthropic `input_schema`      | Gemini `responseSchema`            |
+| ----------------------------- | ---------------------------------- |
+| `type: 'string'` (klein)      | `type: 'STRING'` (Enum-Name, groß) |
+| `type: ['integer', 'null']`   | `type: 'INTEGER', nullable: true`  |
+| `additionalProperties: false` | entfällt (nicht unterstützt)       |
+| Wrapper `{ recipes: [...] }`  | direkt `ARRAY` auf oberster Ebene  |
+
+`map-ai.js` liest die Antwort aus `candidates[0].content.parts[].text` (Denk-Parts mit
+`thought: true` werden übersprungen). Das robuste `coerceRecipes` aus der Claude-Zeit bleibt
+erhalten. Auf `ai_failed` gemappt werden: HTTP-Fehler und Gemini-Quota (`error` im Body, dank
+`neverError`), Safety-Block (`promptFeedback.blockReason`), leere `candidates` und jeder
+`finishReason` ungleich `STOP` (SAFETY, MAX_TOKENS, RECITATION).
 
 ### Firestore-Schreiben (Aufgabe 6)
 
@@ -89,7 +114,7 @@ Rein serverseitig im `guard.js`-Node, Zähler in einer JSON-Datei auf dem n8n-Da
   (erste vier Hextets) gruppiert, Zone-ID entfernt. Quelle: `x-forwarded-for` (erster Eintrag),
   sonst `x-real-ip`.
 - Ein Slot wird **vor** dem LLM-Aufruf reserviert, damit wiederholte Fehlversuche das Budget nicht
-  aushöhlen. Der HTTP-Node läuft mit `neverError`, damit auch eine 4xx-Antwort von Anthropic die
+  aushöhlen. Der HTTP-Node läuft mit `neverError`, damit auch eine 4xx-Antwort von Google die
   Ausführung sauber beendet und der bereits verbuchte Zähler in der Datei erhalten bleibt.
 
 > **Lokaler Test-Hinweis:** Ohne vorgelagerten Proxy setzt der Browser kein `x-forwarded-for`; auf

@@ -8,7 +8,7 @@ gemeinsame Firestore-Bibliothek („Cookbook") und können dort wiedergefunden u
 | Bereich            | Technik                                           | Läuft wo                       |
 | ------------------ | ------------------------------------------------- | ------------------------------ |
 | Frontend           | Angular 21 (Standalone Components, Signals), SCSS | lokal, `http://localhost:4200` |
-| Rezept-Generierung | n8n-Workflow in Docker → Anthropic Messages API   | lokal, `http://localhost:5678` |
+| Rezept-Generierung | n8n-Workflow in Docker → Google Gemini API        | lokal, `http://localhost:5678` |
 | Bibliothek         | Firebase Firestore (Collection `recipes`)         | extern                         |
 
 Die beiden Pfade kreuzen sich nie im Backend: n8n schreibt **nicht** nach Firestore, das Frontend
@@ -47,7 +47,7 @@ importiert. Der Container kommt aus der `docker-compose.yml` unter `~/n8n`:
 cd ~/n8n && docker compose up -d     # danach: http://localhost:5678
 ```
 
-Import, Workflow-Aktivierung und das Eintragen des Anthropic-API-Keys sind Schritt für Schritt in
+Import, Workflow-Aktivierung und das Eintragen des Google-API-Keys sind Schritt für Schritt in
 [`n8n/README.md`](n8n/README.md) beschrieben. Der Webhook hört danach auf
 `http://localhost:5678/webhook/generate-recipe`; das Frontend bezieht die URL ausschließlich aus
 `environment.recipeWebhookUrl`, nie hartcodiert.
