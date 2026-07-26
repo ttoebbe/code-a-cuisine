@@ -4,9 +4,9 @@ Diese Doku bildet die **tatsächliche** Struktur des Projekts ab, so wie sie im 
 n8n-Workflow steht — nichts Erfundenes. Sie ist zum vollständigen Nachvollziehen gedacht: erst das
 große Bild, dann der Workflow Node für Node, dann der Ablauf des Happy Path als Sequenz.
 
-Verwandte Dokumente: [docs/n8n-webhook.md](docs/n8n-webhook.md) (JSON-Vertrag),
-[docs/firebase.md](docs/firebase.md) (Bibliothek), [n8n/README.md](n8n/README.md) (Import und
-Entscheidungen), [CLAUDE.md](CLAUDE.md) (Projekt-Anweisungen).
+Verwandte Dokumente: [docs/n8n-webhook.md](n8n-webhook.md) (JSON-Vertrag),
+[docs/firebase.md](firebase.md) (Bibliothek), [n8n/README.md](../n8n/README.md) (Import und
+Entscheidungen), [CLAUDE.md](../CLAUDE.md) (Projekt-Anweisungen).
 
 Kurzfassung des Stacks:
 
@@ -61,13 +61,13 @@ flowchart TB
 
 - **Generator-Wizard und Rezeptansicht (`ui`)** — die sichtbare App. Kein Component ruft je direkt
   HTTP oder Firestore auf; alles läuft über die beiden Services darunter (Vorgabe aus
-  [CLAUDE.md](CLAUDE.md): keine `HttpClient`-Calls aus Components, dedizierter Service
+  [CLAUDE.md](../CLAUDE.md): keine `HttpClient`-Calls aus Components, dedizierter Service
   `providedIn: 'root'`).
-- **RecipeApiService** ([src/app/services/recipe-api.service.ts](src/app/services/recipe-api.service.ts)) —
+- **RecipeApiService** ([src/app/services/recipe-api.service.ts](../src/app/services/recipe-api.service.ts)) —
   einziger Einstieg zum Workflow. Nimmt die Webhook-URL aus `environment` (nie hartcodiert), setzt
   einen Timeout von 90 s und normalisiert **jeden** Fehler auf die `RecipeErrorResponse`-Envelope, die
   die UI schon versteht. Kann per `environment.useMockWebhook` auf lokale Fixtures umschalten.
-- **RecipeLibraryService** ([src/app/services/recipe-library.service.ts](src/app/services/recipe-library.service.ts)) —
+- **RecipeLibraryService** ([src/app/services/recipe-library.service.ts](../src/app/services/recipe-library.service.ts)) —
   einziger Einstieg zu Firestore (Collection `recipes`). Kapselt Speichern (`addDoc`), Lesen
   (`getDoc`/`getDocs` mit Paginierung und Kategoriefilter) und Like (`updateDoc` mit `increment(1)`).
 - **Webhook-Node in n8n** — nimmt den POST entgegen und beantwortet den CORS-Preflight für die zwei
@@ -75,7 +75,7 @@ flowchart TB
 - **Anthropic Messages API** — der einzige externe LLM-Aufruf, ausgelöst **nur** von n8n. Der
   API-Key liegt als n8n-Credential (`x-api-key`), nie im Repo, nie im Browser.
 - **Firestore-Collection `recipes`** — die öffentliche Bibliothek. Da die App keine Anmeldung hat,
-  tragen die **Security-Rules** ([firestore.rules](firestore.rules)) die gesamte Absicherung.
+  tragen die **Security-Rules** ([firestore.rules](../firestore.rules)) die gesamte Absicherung.
 
 ### Was lokal und was extern läuft
 
@@ -88,9 +88,9 @@ flowchart TB
 
 ### Warum n8n NICHT nach Firestore schreibt
 
-Bewusste Entscheidung (siehe [n8n/README.md](n8n/README.md), Aufgabe 6). Der Firestore-Write gehört
+Bewusste Entscheidung (siehe [n8n/README.md](../n8n/README.md), Aufgabe 6). Der Firestore-Write gehört
 ins Frontend und passiert **nur beim Bestätigen** eines Rezepts über
-[RecipeSave](src/app/recipe-view/recipe-save/recipe-save.ts) →
+[RecipeSave](../src/app/recipe-view/recipe-save/recipe-save.ts) →
 `RecipeLibraryService.saveRecipe()`. Gründe:
 
 - n8n liefert **drei** Vorschläge; gespeichert werden soll nur das **eine vom Nutzer bestätigte**.
@@ -105,7 +105,7 @@ ins Frontend und passiert **nur beim Bestätigen** eines Rezepts über
 
 ## 2. Der n8n-Workflow „Code a Cuisine — Generate Recipe"
 
-Quelle: [n8n/generate-recipe.workflow.json](n8n/generate-recipe.workflow.json). Der Workflow ist eine
+Quelle: [n8n/generate-recipe.workflow.json](../n8n/generate-recipe.workflow.json). Der Workflow ist eine
 lineare Kette mit zwei Weichen (`IF`-Nodes). Jeder Ausgang mündet in genau **einen** der beiden
 Antwort-Nodes.
 
@@ -135,7 +135,7 @@ responseNode` (die Antwort liefert später ein eigener Respond-Node). Über `all
 (`http://localhost:4200,http://localhost:4300`) beantwortet er den **CORS-Preflight** (`OPTIONS`) für
 die zwei Dev-Origins. TODO für Prod: deployte Origin ergänzen.
 
-**Validate & rate limit** — Code-Node ([n8n/src/guard.js](n8n/src/guard.js)). Läuft einmal für alle
+**Validate & rate limit** — Code-Node ([n8n/src/guard.js](../n8n/src/guard.js)). Läuft einmal für alle
 Items und tut drei Dinge, in dieser Reihenfolge:
 
 1. **Server-seitige Validierung** des Request-Bodys (`collectValidationErrors`): mindestens eine
@@ -158,7 +158,7 @@ Anthropic bricht die Ausführung **nicht** ab, sondern fließt als Body weiter (
 reservierte Quota-Slot persistiert und der Map-Node sauber einen `ai_failed`-Envelope bauen kann).
 Timeout 80 s.
 
-**Map AI answer to recipes** — Code-Node ([n8n/src/map-ai.js](n8n/src/map-ai.js)). Packt die Rezepte
+**Map AI answer to recipes** — Code-Node ([n8n/src/map-ai.js](../n8n/src/map-ai.js)). Packt die Rezepte
 aus der Tool-Use-Antwort aus, säubert jedes Feld auf die `GeneratedRecipe`-Form und prüft es. Bei
 jeder unbrauchbaren Antwort entsteht ein `ai_failed`-Envelope. Details unten.
 
@@ -174,7 +174,7 @@ CORS-Header. Erreicht wird er aus drei Richtungen: Guard-Fehler (`validation_fai
 
 ### Der zweite Workflow: Error-Handler
 
-Quelle: [n8n/error-handler.workflow.json](n8n/error-handler.workflow.json). Ein eigener Workflow, den
+Quelle: [n8n/error-handler.workflow.json](../n8n/error-handler.workflow.json). Ein eigener Workflow, den
 der Haupt-Workflow über `settings.errorWorkflow: codeacuisine-error-handler` referenziert.
 
 ```mermaid
@@ -187,7 +187,7 @@ flowchart LR
 - **On workflow error** — Error-Trigger, feuert nur bei einem **unerwarteten** Abbruch des
   Haupt-Workflows.
 - **Log the failure** — schreibt eine lesbare Zeile (`workflow`, `node`, `error`, `url`) per
-  `console.error` ins n8n-Log ([n8n/src/log-error.js](n8n/src/log-error.js)). Bewusst **ohne**
+  `console.error` ins n8n-Log ([n8n/src/log-error.js](../n8n/src/log-error.js)). Bewusst **ohne**
   Mailversand; der Node lässt sich später durch einen E-Mail-/Slack-Node ersetzen.
 
 Wichtig zur Abgrenzung: Die **erwarteten** Fehler (Validierung, Quota, KI) laufen **nicht** über den
@@ -228,7 +228,7 @@ Der Kostenairbag begrenzt die LLM-Kosten hart und läuft **ausschließlich serve
 > harte Deckel.
 
 Das Frontend **zeigt** den Quota-Status nur an — es **prüft** nichts selbst und führt keine
-Client-Zähler (Vorgabe aus [CLAUDE.md](CLAUDE.md), Quota-Regel).
+Client-Zähler (Vorgabe aus [CLAUDE.md](../CLAUDE.md), Quota-Regel).
 
 ### Claude-Aufruf per Tool Use (emit_recipes erzwingt das Schema)
 
@@ -265,7 +265,7 @@ Ausgabe später auch die **Firestore-Rules** passiert.
 ### Antwort-Envelope: immer HTTP 200, Feld `status` ok/error
 
 Beide Respond-Nodes antworten mit **`responseCode: 200`** — auch im Fehlerfall. Diskriminator ist das
-Feld `status` in der Envelope (`ok` vs. `error`), siehe [docs/n8n-webhook.md](docs/n8n-webhook.md).
+Feld `status` in der Envelope (`ok` vs. `error`), siehe [docs/n8n-webhook.md](n8n-webhook.md).
 Warum bewusst 200:
 
 - Der `RecipeApiService` liest **Erfolg wie Fehler aus demselben 200er-Body** — ein einziger,
@@ -275,7 +275,7 @@ Warum bewusst 200:
   steuern den passenden Dialog.
 - Erst wenn **gar kein** brauchbarer Body ankommt (z. B. Transport-/CORS-Fehler, Timeout), fällt das
   Frontend selbst auf `internal_error` zurück (`buildTransportError` in
-  [recipe-api.service.ts](src/app/services/recipe-api.service.ts)). `internal_error` kommt also **nie**
+  [recipe-api.service.ts](../src/app/services/recipe-api.service.ts)). `internal_error` kommt also **nie**
   aus n8n, sondern immer aus dem Client.
 
 ### CORS am Webhook
@@ -326,7 +326,7 @@ sequenceDiagram
 ### Ablauf im Detail
 
 1. **Nutzer → Angular:** Der Generator-Wizard sammelt Zutaten und Präferenzen; `generate()` in
-   [RecipeGenerationService](src/app/services/recipe-generation.service.ts) baut den `RecipeRequest`,
+   [RecipeGenerationService](../src/app/services/recipe-generation.service.ts) baut den `RecipeRequest`,
    setzt den Status auf `loading` (Ladeanimation) und ruft den `RecipeApiService`.
 2. **Angular → n8n:** `RecipeApiService.generateRecipes()` schickt den POST an
    `environment.recipeWebhookUrl` mit 90-s-Timeout.
@@ -340,12 +340,12 @@ sequenceDiagram
    `/results`. Die Vorschläge liegen **nur im Speicher** — ein Reload schickt bewusst zurück in den
    Wizard (es sind Vorschläge, keine gespeicherten Rezepte).
 9. **„Save to cookbook":** Erst hier entsteht ein Firestore-Dokument.
-   [RecipeSave](src/app/recipe-view/recipe-save/recipe-save.ts) ruft `saveRecipe()`;
+   [RecipeSave](../src/app/recipe-view/recipe-save/recipe-save.ts) ruft `saveRecipe()`;
    `buildRecipeDocument` ergänzt `createdAt: serverTimestamp()` und `likeCount: 0` und `addDoc`
    schreibt durch die **Security-Rules** (Feld-Whitelist, Wertebereiche, `createdAt == request.time`,
    `likeCount == 0`). Zurück kommt die Dokument-Id.
 10. **Like:** Nach dem Speichern ist der Like-Button aktiv
-    ([RecipeLike](src/app/recipe-view/recipe-like/recipe-like.ts)). Der Klick ruft `incrementLike()`
+    ([RecipeLike](../src/app/recipe-view/recipe-like/recipe-like.ts)). Der Klick ruft `incrementLike()`
     → `updateDoc(..., { likeCount: increment(1) })`. Die Rules erlauben als einzige Änderung genau
     `likeCount + 1`; der Zähler lebt auf dem Server, sodass parallele Likes sich addieren statt sich
     zu überschreiben. Ein Delete ist nie erlaubt.
@@ -356,17 +356,17 @@ sequenceDiagram
 
 Alles oben ist aus diesen Dateien abgeleitet:
 
-- [n8n/generate-recipe.workflow.json](n8n/generate-recipe.workflow.json),
-  [n8n/error-handler.workflow.json](n8n/error-handler.workflow.json)
-- [n8n/src/map-ai.js](n8n/src/map-ai.js), [n8n/src/log-error.js](n8n/src/log-error.js),
-  [n8n/README.md](n8n/README.md)
-- [docs/n8n-webhook.md](docs/n8n-webhook.md), [docs/firebase.md](docs/firebase.md)
-- [src/app/services/recipe-api.service.ts](src/app/services/recipe-api.service.ts),
-  [src/app/services/recipe-generation.service.ts](src/app/services/recipe-generation.service.ts),
-  [src/app/services/recipe-library.service.ts](src/app/services/recipe-library.service.ts),
-  [src/app/services/recipe-document.ts](src/app/services/recipe-document.ts)
-- [src/app/recipe-view/recipe-save/recipe-save.ts](src/app/recipe-view/recipe-save/recipe-save.ts),
-  [src/app/recipe-view/recipe-like/recipe-like.ts](src/app/recipe-view/recipe-like/recipe-like.ts),
-  [src/app/recipe-view/recipe-view.ts](src/app/recipe-view/recipe-view.ts)
-- [src/environments/environment.ts](src/environments/environment.ts),
-  [firestore.rules](firestore.rules), [CLAUDE.md](CLAUDE.md)
+- [n8n/generate-recipe.workflow.json](../n8n/generate-recipe.workflow.json),
+  [n8n/error-handler.workflow.json](../n8n/error-handler.workflow.json)
+- [n8n/src/map-ai.js](../n8n/src/map-ai.js), [n8n/src/log-error.js](../n8n/src/log-error.js),
+  [n8n/README.md](../n8n/README.md)
+- [docs/n8n-webhook.md](n8n-webhook.md), [docs/firebase.md](firebase.md)
+- [src/app/services/recipe-api.service.ts](../src/app/services/recipe-api.service.ts),
+  [src/app/services/recipe-generation.service.ts](../src/app/services/recipe-generation.service.ts),
+  [src/app/services/recipe-library.service.ts](../src/app/services/recipe-library.service.ts),
+  [src/app/services/recipe-document.ts](../src/app/services/recipe-document.ts)
+- [src/app/recipe-view/recipe-save/recipe-save.ts](../src/app/recipe-view/recipe-save/recipe-save.ts),
+  [src/app/recipe-view/recipe-like/recipe-like.ts](../src/app/recipe-view/recipe-like/recipe-like.ts),
+  [src/app/recipe-view/recipe-view.ts](../src/app/recipe-view/recipe-view.ts)
+- [src/environments/environment.ts](../src/environments/environment.ts),
+  [firestore.rules](../firestore.rules), [CLAUDE.md](../CLAUDE.md)
