@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  afterNextRender,
+  afterRenderEffect,
   computed,
   input,
   output,
@@ -50,14 +50,28 @@ export class GenerationErrorDialog {
   /** Quota reset hint, null for every non-quota error. */
   protected readonly retryHint = computed(() => formatRetryAfter(this.error().retryAfter));
 
+  /**
+   * Opens the modal for every error, not just the first render. When a retry
+   * fails again before the template has dropped the dialog, the component is
+   * reused instead of recreated, and a one-shot open would leave it closed.
+   */
   constructor() {
-    afterNextRender(() => this.dialogRef().nativeElement.showModal());
+    afterRenderEffect(() => {
+      this.error();
+      const dialog = this.dialogRef().nativeElement;
+      if (!dialog.open) dialog.showModal();
+    });
   }
 
-  /** Runs the primary action of the dialog and lets the modal close. */
+  /**
+   * Closes the modal and then runs its primary action. The order matters: the
+   * action can drop this component from the template, and a dialog removed
+   * while still open keeps its slot in the browser's top layer — WebKit then
+   * refuses to open the next one.
+   */
   protected onAction(): void {
-    this.emitAction(this.presentation().action);
     this.dialogRef().nativeElement.close();
+    this.emitAction(this.presentation().action);
   }
 
   /**
