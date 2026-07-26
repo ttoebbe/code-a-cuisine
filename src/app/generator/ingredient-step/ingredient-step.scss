@@ -5,13 +5,15 @@
 }
 
 // Column split mirrors the design: input card 576px next to a 477px list card.
+// Below 1024px both cards stay stacked — side by side the ingredient input and
+// the serving-size row no longer fit next to each other.
 .ingredient-step__columns {
   display: grid;
   grid-template-columns: 1fr;
   align-items: start;
   gap: var(--space-6);
 
-  @include desktop {
+  @include wide {
     grid-template-columns: 1.2fr 1fr;
   }
 }

@@ -6,3 +6,11 @@
     @content;
   }
 }
+
+// Second step for layouts that need more room than a portrait tablet offers,
+// e.g. the two-column ingredient step.
+@mixin wide {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}
