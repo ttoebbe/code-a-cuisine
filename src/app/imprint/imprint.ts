@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 /**
  * Imprint page. Structure follows German §5 TMG requirements; concrete
@@ -10,5 +10,6 @@ import { Component } from '@angular/core';
   imports: [],
   templateUrl: './imprint.html',
   styleUrl: './imprint.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Imprint {}
