@@ -204,14 +204,20 @@ der Haupt-Workflow über `settings.errorWorkflow: codeacuisine-error-handler` re
 flowchart LR
   err["On workflow error · Error Trigger"]
   log["Log the failure · Code-Node log-error.js"]
-  err --> log
+  mail["Email the failure · Send Email ueber SMTP"]
+  err --> log --> mail
 ```
 
 - **On workflow error** — Error-Trigger, feuert nur bei einem **unerwarteten** Abbruch des
   Haupt-Workflows.
 - **Log the failure** — schreibt eine lesbare Zeile (`workflow`, `node`, `error`, `url`) per
-  `console.error` ins n8n-Log ([n8n/src/log-error.js](../n8n/src/log-error.js)). Bewusst **ohne**
-  Mailversand; der Node lässt sich später durch einen E-Mail-/Slack-Node ersetzen.
+  `console.error` ins n8n-Log und reicht die Einzelfelder an den Mail-Node weiter
+  ([n8n/src/log-error.js](../n8n/src/log-error.js)).
+- **Email the failure** — Send-Email-Node an `toebbe.thomas@outlook.de`. Betreff trägt Workflow-Name
+  und Fehlertext, der Body zusätzlich gescheiterten Node, Execution-Id, Zeitstempel, Execution-Link
+  und Stacktrace. Die SMTP-Credential wird nur **referenziert**; Zugangsdaten stehen ausschließlich
+  in der n8n-UI (siehe [n8n/README.md](../n8n/README.md)). Mit `onError: continueRegularOutput`
+  bleibt die Log-Zeile die Rückfallebene, wenn der Mailserver nicht erreichbar ist.
 
 Wichtig zur Abgrenzung: Die **erwarteten** Fehler (Validierung, Quota, KI) laufen **nicht** über den
 Error-Handler. Sie kommen als regulärer Envelope über **Respond: error** zurück. Der Error-Handler

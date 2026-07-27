@@ -5,14 +5,14 @@ sie im JSON-Vertrag aus [`docs/n8n-webhook.md`](../docs/n8n-webhook.md) zurückg
 
 ## Dateien
 
-| Datei                           | Inhalt                                                           |
-| ------------------------------- | ---------------------------------------------------------------- |
-| `generate-recipe.workflow.json` | Haupt-Workflow (Webhook → Validierung/Quota → Gemini → Antwort)  |
-| `error-handler.workflow.json`   | Error-Trigger-Workflow, loggt fehlgeschlagene Ausführungen       |
-| `src/guard.js`                  | Code-Node: Validierung + Tages-Quota + Gemini-Request-Bau        |
-| `src/map-ai.js`                 | Code-Node: Gemini-Antwort → `GeneratedRecipe[]` bzw. `ai_failed` |
-| `src/log-error.js`              | Code-Node des Error-Handlers                                     |
-| `build-workflows.mjs`           | Generiert die beiden `*.workflow.json` aus den `src/`-Skripten   |
+| Datei                           | Inhalt                                                            |
+| ------------------------------- | ----------------------------------------------------------------- |
+| `generate-recipe.workflow.json` | Haupt-Workflow (Webhook → Validierung/Quota → Gemini → Antwort)   |
+| `error-handler.workflow.json`   | Error-Trigger-Workflow: loggt und mailt fehlgeschlagene Läufe     |
+| `src/guard.js`                  | Code-Node: Validierung + Tages-Quota + Gemini-Request-Bau         |
+| `src/map-ai.js`                 | Code-Node: Gemini-Antwort → `GeneratedRecipe[]` bzw. `ai_failed`  |
+| `src/log-error.js`              | Code-Node des Error-Handlers, flacht die Fehlerdaten für die Mail |
+| `build-workflows.mjs`           | Generiert die beiden `*.workflow.json` aus den `src/`-Skripten    |
 
 Die Workflow-JSONs werden **generiert**. Nach einer Änderung an einem `src/`-Skript neu bauen:
 
@@ -38,6 +38,10 @@ docker restart n8n          # nötig, damit die Produktions-Webhook-URL registri
 Die Workflow-IDs sind fest (`codeacuisine-generate-recipe`, `codeacuisine-error-handler`), damit der
 Haupt-Workflow den Error-Handler über `settings.errorWorkflow` referenzieren kann.
 
+Beide Credentials (Gemini-Header-Auth und SMTP) müssen **vor** dem Import in der n8n-UI existieren,
+sonst zeigen die Nodes nach dem Import eine leere Credential-Auswahl — siehe die zwei Abschnitte
+unten.
+
 ## Gemini-Key eintragen (Pflicht vor dem ersten echten Lauf)
 
 Der LLM-Aufruf nutzt eine **HTTP-Header-Auth-Credential** mit dem Header-Namen **`x-goog-api-key`**.
@@ -53,6 +57,25 @@ Modell: `gemini-3.5-flash` — es steht bei Gemini in der **URL**
 (`…/v1beta/models/gemini-3.5-flash:generateContent`), nicht im Body. Strukturierte Ausgabe erzwingt
 der Node über `generationConfig.responseMimeType: "application/json"` plus ein `responseSchema`, das
 exakt `GeneratedRecipe[]` abbildet.
+
+## SMTP-Credential eintragen (für die Fehler-Mail)
+
+Der Error-Handler verschickt die Fehlermeldung per **Send-Email-Node** an
+`toebbe.thomas@outlook.de`. Der Node **referenziert** nur eine SMTP-Credential — Host, Port,
+Benutzer und Passwort werden **von Hand in der n8n-UI** eingetragen und stehen **nirgends im Repo**.
+
+1. n8n öffnen → **Credentials** → **New** → _SMTP_.
+2. Name exakt `Code a Cuisine SMTP (error mails)` — er muss zu `SMTP_CREDENTIAL` in
+   `build-workflows.mjs` passen, sonst findet der importierte Node die Credential nicht.
+3. Host/Port/User/Passwort des Mailkontos eintragen (bei Outlook: `smtp-mail.outlook.com`,
+   Port 587, STARTTLS) und speichern.
+4. Im Workflow **Code a Cuisine — Error Handler** den Node **Email the failure** öffnen und prüfen,
+   dass die Credential ausgewählt ist. Danach einmal **Test step** ausführen.
+
+Absender und Empfänger sind beide `toebbe.thomas@outlook.de` (`ALERT_MAILBOX` in
+`build-workflows.mjs`) — die meisten SMTP-Server lassen als Absender nur das authentifizierte Konto
+zu. Der Node läuft mit `onError: continueRegularOutput`: ist der Mailserver nicht erreichbar,
+scheitert der Error-Handler nicht zusätzlich, und die **Log-Zeile bleibt als Rückfallebene**.
 
 ## Wichtige Entscheidungen
 
@@ -129,10 +152,20 @@ Datei-Zugriff (`require('fs')`) ist über `NODE_FUNCTION_ALLOW_BUILTIN=fs` in de
 
 ### Fehlerbenachrichtigung (Aufgabe 7)
 
-Der Error-Handler (`error-handler.workflow.json`) fängt unerwartete Abbrüche des Haupt-Workflows und
-schreibt eine Log-Zeile (`log-error.js`). Auf Wunsch von Thomas vorerst **ohne Mailversand** — der
-Log-Node lässt sich später durch einen E-Mail-/Slack-Node ersetzen. Erwartete Fehler (Validierung,
-Quota, KI) laufen nicht über den Error-Handler, sondern kommen als Envelope zurück.
+Der Error-Handler (`error-handler.workflow.json`) fängt unerwartete Abbrüche des Haupt-Workflows.
+Kette: **On workflow error → Log the failure → Email the failure**.
+
+- **Log the failure** (`log-error.js`) schreibt die Zeile `[code-a-cuisine] workflow failed | …` per
+  `console.error` ins n8n-Log und flacht die Trigger-Daten auf Einzelfelder (`workflow`, `node`,
+  `error`, `stack`, `executionId`, `executionUrl`, `mode`, `failedAt`) für den Mail-Node ab.
+- **Email the failure** schickt diese Felder an `toebbe.thomas@outlook.de`. Betreff:
+  `[Code a Cuisine] <Workflow> failed: <Fehlermeldung>`; Body: Workflow, gescheiterter Node,
+  Fehlertext, Execution-Id samt Modus, Zeitstempel, Link auf die Execution und der Stacktrace.
+  Zugangsdaten stehen ausschließlich in der n8n-Credential (siehe Abschnitt oben).
+
+Die Log-Ausgabe bleibt **zusätzlich** bestehen: Sie ist die Rückfallebene, wenn der Mailversand
+selbst scheitert (`onError: continueRegularOutput`). Erwartete Fehler (Validierung, Quota, KI) laufen
+nicht über den Error-Handler, sondern kommen als Envelope über **Respond: error** zurück.
 
 ## Schneller Rauch-Test (ohne echten Key)
 

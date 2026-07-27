@@ -7,7 +7,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const read = (name) => readFileSync(join(here, 'src', name), 'utf8');
+// Normalises CRLF away so the generated JSON is identical on every platform.
+const read = (name) => readFileSync(join(here, 'src', name), 'utf8').replace(/\r\n/g, '\n');
 
 const WEBHOOK = 'Receive recipe request';
 const ERROR_WORKFLOW_ID = 'codeacuisine-error-handler';
@@ -23,6 +24,27 @@ const GEMINI_CREDENTIAL = {
   id: 'jzEzCDSaQv6klLvF',
   name: 'Google Gemini API key (x-goog-api-key)',
 };
+
+// Failure notification. The SMTP credential is only referenced here; host,
+// user and password are typed into the n8n UI and never live in this repo.
+const ALERT_MAILBOX = 'toebbe.thomas@outlook.de';
+const SMTP_CREDENTIAL = {
+  id: 'codeacuisine-smtp',
+  name: 'Code a Cuisine SMTP (error mails)',
+};
+
+// Plain-text body of the alert. The fields come from log-error.js, which runs
+// right before and flattens the Error Trigger payload.
+const ALERT_MAIL_BODY = [
+  '={{ "A workflow of Code a Cuisine stopped with an unhandled error.\\n\\n"',
+  '+ "Workflow:     " + $json.workflow + "\\n"',
+  '+ "Failed node:  " + $json.node + "\\n"',
+  '+ "Error:        " + $json.error + "\\n"',
+  '+ "Execution:    " + $json.executionId + " (" + $json.mode + ")\\n"',
+  '+ "Time (UTC):   " + $json.failedAt + "\\n"',
+  '+ "Open in n8n:  " + $json.executionUrl + "\\n\\n"',
+  '+ "Stack trace:\\n" + ($json.stack || "not reported") }}',
+].join('\n  ');
 
 // Reflects the caller origin when allow-listed, else falls back to :4200.
 const CORS_ORIGIN =
@@ -224,7 +246,27 @@ const errorNodes = [
     { jsCode: read('log-error.js') },
     {
       notes:
-        'Writes one readable line to the n8n log. Replace with an email/Slack node when a channel exists.',
+        'Writes one readable line to the n8n log and hands the single fields to the mail node.',
+    },
+  ),
+  node(
+    'Email the failure',
+    'n8n-nodes-base.emailSend',
+    2.1,
+    [480, 0],
+    {
+      fromEmail: ALERT_MAILBOX,
+      toEmail: ALERT_MAILBOX,
+      subject: '={{ "[Code a Cuisine] " + $json.workflow + " failed: " + $json.error }}',
+      emailFormat: 'text',
+      text: ALERT_MAIL_BODY,
+      options: {},
+    },
+    {
+      credentials: { smtp: SMTP_CREDENTIAL },
+      notes:
+        'Sends the failure to the maintainer. The SMTP credential is filled in by hand in the n8n UI; no access data lives in the repo. The log line above stays as the fallback when the mail server is unreachable.',
+      onError: 'continueRegularOutput',
     },
   ),
 ];
@@ -236,6 +278,7 @@ const errorWorkflow = {
   nodes: errorNodes,
   connections: {
     'On workflow error': { main: [[{ node: 'Log the failure', type: 'main', index: 0 }]] },
+    'Log the failure': { main: [[{ node: 'Email the failure', type: 'main', index: 0 }]] },
   },
   settings: { executionOrder: 'v1' },
   pinData: {},

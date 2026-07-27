@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Log node of the shared error handler. The Error Trigger hands over the\n// failed execution; we write one readable line to the n8n log so an unexpected\n// crash in the recipe workflow is visible without a mail server. Swap this for\n// an email/Slack node once a channel is available (see n8n/README.md).\n\nconst trigger = $input.first().json;\nconst execution = trigger.execution || {};\nconst workflow = trigger.workflow || {};\n\nconst line = [\n  '[code-a-cuisine] workflow failed',\n  'workflow=' + (workflow.name || workflow.id || 'unknown'),\n  'node=' + (execution.lastNodeExecuted || 'unknown'),\n  'error=' + (execution.error && execution.error.message ? execution.error.message : 'unknown'),\n  'url=' + (execution.url || 'n/a'),\n].join(' | ');\n\nconsole.error(line);\n\nreturn [{ json: { logged: true, line } }];\n"
+        "jsCode": "// Log node of the shared error handler. The Error Trigger hands over the\n// failed execution; we write one readable line to the n8n log so an unexpected\n// crash stays visible even when the mail server is unreachable. The node also\n// hands the single fields down to the Send Email node that follows.\n\nconst trigger = $input.first().json;\nconst execution = trigger.execution || {};\nconst workflow = trigger.workflow || {};\n\nconst failure = {\n  workflow: workflow.name || workflow.id || 'unknown',\n  node: execution.lastNodeExecuted || 'unknown',\n  error: execution.error && execution.error.message ? execution.error.message : 'unknown',\n  stack: execution.error && execution.error.stack ? execution.error.stack : '',\n  executionId: execution.id || 'unknown',\n  executionUrl: execution.url || 'n/a',\n  mode: execution.mode || 'unknown',\n  failedAt: new Date().toISOString(),\n};\n\nconst line = [\n  '[code-a-cuisine] workflow failed',\n  'workflow=' + failure.workflow,\n  'node=' + failure.node,\n  'error=' + failure.error,\n  'url=' + failure.executionUrl,\n].join(' | ');\n\nconsole.error(line);\n\nreturn [{ json: Object.assign({ logged: true, line }, failure) }];\n"
       },
       "id": "log-the-failure",
       "name": "Log the failure",
@@ -27,7 +27,33 @@
         240,
         0
       ],
-      "notes": "Writes one readable line to the n8n log. Replace with an email/Slack node when a channel exists."
+      "notes": "Writes one readable line to the n8n log and hands the single fields to the mail node."
+    },
+    {
+      "parameters": {
+        "fromEmail": "toebbe.thomas@outlook.de",
+        "toEmail": "toebbe.thomas@outlook.de",
+        "subject": "={{ \"[Code a Cuisine] \" + $json.workflow + \" failed: \" + $json.error }}",
+        "emailFormat": "text",
+        "text": "={{ \"A workflow of Code a Cuisine stopped with an unhandled error.\\n\\n\"\n  + \"Workflow:     \" + $json.workflow + \"\\n\"\n  + \"Failed node:  \" + $json.node + \"\\n\"\n  + \"Error:        \" + $json.error + \"\\n\"\n  + \"Execution:    \" + $json.executionId + \" (\" + $json.mode + \")\\n\"\n  + \"Time (UTC):   \" + $json.failedAt + \"\\n\"\n  + \"Open in n8n:  \" + $json.executionUrl + \"\\n\\n\"\n  + \"Stack trace:\\n\" + ($json.stack || \"not reported\") }}",
+        "options": {}
+      },
+      "id": "email-the-failure",
+      "name": "Email the failure",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        0
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "codeacuisine-smtp",
+          "name": "Code a Cuisine SMTP (error mails)"
+        }
+      },
+      "notes": "Sends the failure to the maintainer. The SMTP credential is filled in by hand in the n8n UI; no access data lives in the repo. The log line above stays as the fallback when the mail server is unreachable.",
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -36,6 +62,17 @@
         [
           {
             "node": "Log the failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log the failure": {
+      "main": [
+        [
+          {
+            "node": "Email the failure",
             "type": "main",
             "index": 0
           }
