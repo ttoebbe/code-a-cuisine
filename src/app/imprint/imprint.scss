@@ -34,3 +34,14 @@
   font: var(--font-body-16);
   color: var(--color-green-dark);
 }
+
+.imprint__link {
+  color: var(--color-green-middle);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
+}
