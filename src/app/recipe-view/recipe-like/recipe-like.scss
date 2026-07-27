@@ -4,26 +4,30 @@
   display: block;
 }
 
+// Text left, heart right on one row — as in the design on both screen sizes.
 .like {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   padding: 0 var(--space-2);
 
   @include desktop {
+    justify-content: center;
     gap: var(--space-5);
   }
 }
 
 .like__text {
   display: flex;
+  flex: 1 1 180px;
   flex-direction: column;
   gap: var(--space-1);
+  min-width: 0;
   color: var(--color-green-dark);
 
   @include desktop {
+    flex: 0 1 auto;
     flex-direction: row;
     align-items: baseline;
     gap: var(--space-3);

@@ -19,7 +19,10 @@
       <h3 class="ingredients__subtitle">Your ingredients</h3>
       <ul class="ingredients__list">
         @for (ingredient of yourIngredients(); track ingredient.name) {
-          <li class="ingredients__item">
+          <li
+            class="ingredients__item"
+            [class.ingredients__item--unmeasured]="amountLabel(ingredient) === ''"
+          >
             <span class="ingredients__amount">{{ amountLabel(ingredient) }}</span>
             <span class="ingredients__name">
               {{ ingredient.name }}
@@ -36,7 +39,10 @@
       <h3 class="ingredients__subtitle">Extra ingredients</h3>
       <ul class="ingredients__list">
         @for (ingredient of extraIngredients(); track ingredient.name) {
-          <li class="ingredients__item">
+          <li
+            class="ingredients__item"
+            [class.ingredients__item--unmeasured]="amountLabel(ingredient) === ''"
+          >
             <span class="ingredients__amount">{{ amountLabel(ingredient) }}</span>
             <span class="ingredients__name">
               {{ ingredient.name }}

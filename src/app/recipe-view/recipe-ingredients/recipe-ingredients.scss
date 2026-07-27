@@ -90,6 +90,14 @@
   margin-right: var(--space-2);
 }
 
+// A qualitative entry ("Herbs") has no amount, so its name moves up next to
+// the bullet instead of leaving an empty column, as in the design. Declared
+// after .ingredients__item so it overrides the fixed column on both sizes.
+.ingredients__item--unmeasured {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0;
+}
+
 // The empty state has no amount column to align to.
 .ingredients__item--empty {
   display: block;
