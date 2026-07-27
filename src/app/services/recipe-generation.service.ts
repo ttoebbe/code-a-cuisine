@@ -5,25 +5,29 @@ import type { RecipeErrorResponse, RecipeResponse } from '../models/recipe-respo
 import type { GeneratedRecipe } from '../models/recipe.interface';
 import { GeneratorStateService } from './generator-state.service';
 import { RecipeApiService } from './recipe-api.service';
+import { RecipeLibraryService } from './recipe-library.service';
 
 /** Lifecycle of one generation run. */
 export type GenerationStatus = 'idle' | 'loading' | 'success' | 'error';
 
 /**
  * Runs the recipe generation and holds its outcome for the result screens.
- * The suggestions live in memory only: they are proposals until the user
- * confirms one, so a reload deliberately sends the user back to the wizard.
+ * Every suggestion is written to the library as soon as it arrives (User
+ * Story 12), so the result screens show recipes that already exist in the
+ * cookbook and can be liked right away.
  */
 @Injectable({ providedIn: 'root' })
 export class RecipeGenerationService {
   private readonly api = inject(RecipeApiService);
   private readonly wizard = inject(GeneratorStateService);
+  private readonly library = inject(RecipeLibraryService);
   private readonly router = inject(Router);
 
   private readonly statusState = signal<GenerationStatus>('idle');
   private readonly recipeList = signal<GeneratedRecipe[]>([]);
   private readonly errorState = signal<RecipeErrorResponse | null>(null);
   private readonly lastRequest = signal<RecipeRequest | null>(null);
+  private readonly savedIdList = signal<(string | null)[]>([]);
 
   /** Current state of the run, drives the loading screen and the error dialog. */
   readonly status = this.statusState.asReadonly();
@@ -42,6 +46,12 @@ export class RecipeGenerationService {
 
   /** True once suggestions are available to show. */
   readonly hasResults = computed(() => this.recipeList().length > 0);
+
+  /**
+   * True when at least one suggestion of the run did not reach the library.
+   * The results are shown either way; this only drives a discreet notice.
+   */
+  readonly hasSaveFailure = computed(() => this.savedIdList().some((id) => id === null));
 
   /** Sends the collected request to n8n and routes to the results on success. */
   generate(): void {
@@ -63,6 +73,15 @@ export class RecipeGenerationService {
     return this.recipeList()[index] ?? null;
   }
 
+  /**
+   * Reads the library id a suggestion was stored under.
+   * @param index Zero-based position in the result list.
+   * @returns The document id, or null while the write is pending or failed.
+   */
+  savedIdAt(index: number): string | null {
+    return this.savedIdList()[index] ?? null;
+  }
+
   /** Closes the error dialog and returns the wizard to its editable state. */
   dismissError(): void {
     if (this.statusState() === 'error') this.statusState.set('idle');
@@ -75,10 +94,13 @@ export class RecipeGenerationService {
     this.recipeList.set([]);
     this.errorState.set(null);
     this.lastRequest.set(null);
+    this.savedIdList.set([]);
   }
 
   /**
-   * Stores the workflow answer and navigates on success.
+   * Stores the workflow answer and navigates on success. This is the only
+   * place the library write is triggered from, so it happens exactly once per
+   * run and not again when the user navigates back to the results.
    * @param response Envelope returned by the webhook.
    * @param payload Request the answer belongs to.
    */
@@ -90,7 +112,34 @@ export class RecipeGenerationService {
     }
     this.recipeList.set(response.recipes);
     this.lastRequest.set(payload);
+    this.savedIdList.set([]);
     this.statusState.set('success');
     void this.router.navigate(['/results']);
+    void this.storeRecipes(response.recipes);
+  }
+
+  /**
+   * Writes every suggestion of the run to the library. Deliberately not
+   * awaited by the caller: the results are already on screen, and a failing
+   * write must not hold them back.
+   * @param recipes Suggestions the workflow returned.
+   */
+  private async storeRecipes(recipes: GeneratedRecipe[]): Promise<void> {
+    const ids = await Promise.all(recipes.map((recipe) => this.storeRecipe(recipe)));
+    this.savedIdList.set(ids);
+  }
+
+  /**
+   * Writes one suggestion to the library.
+   * @param recipe Suggestion to persist.
+   * @returns The new document id, or null when the write was rejected.
+   */
+  private async storeRecipe(recipe: GeneratedRecipe): Promise<string | null> {
+    try {
+      return await this.library.saveRecipe(recipe);
+    } catch (error) {
+      console.error('[code-a-cuisine] a generated recipe could not be saved', error);
+      return null;
+    }
   }
 }

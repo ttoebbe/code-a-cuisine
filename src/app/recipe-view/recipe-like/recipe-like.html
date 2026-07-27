@@ -3,7 +3,7 @@
     <strong class="like__question">Just finished this meal?</strong>
     <span class="like__hint">
       @if (recipeId() === null) {
-        Save it to the cookbook first, then you can give it a heart.
+        This recipe is not in the cookbook, so it cannot be liked.
       } @else {
         Give it a heart, so that the others know this is delicious.
       }
@@ -26,12 +26,10 @@
     />
   </button>
 
-  @if (total() !== null) {
-    <p class="like__count">
-      <span class="visually-hidden">Likes:</span>
-      {{ total() }}
-    </p>
-  }
+  <p class="like__count">
+    <span class="visually-hidden">Likes:</span>
+    {{ total() }}
+  </p>
 
   @if (failed()) {
     <p class="like__error" role="alert">Your like could not be saved. Please try again.</p>

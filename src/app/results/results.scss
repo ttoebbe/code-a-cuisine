@@ -22,6 +22,7 @@
     'media'
     'lead'
     'filters'
+    'save-note'
     'list'
     'footnote';
   max-width: calc(1088px + 2 * var(--space-4));
@@ -34,6 +35,7 @@
       'title media'
       'lead media'
       'filters media'
+      'save-note media'
       'list list'
       'footnote footnote';
     align-items: start;
@@ -95,6 +97,17 @@
   background: var(--color-cream);
   color: var(--color-green-middle);
   font: var(--font-body-16);
+}
+
+// Discreet note: the cookbook write failed, the results themselves are fine.
+.results__save-note {
+  grid-area: save-note;
+  margin-top: var(--space-4);
+  font: var(--font-body-16);
+
+  @include desktop {
+    max-width: 46ch;
+  }
 }
 
 .results__list {

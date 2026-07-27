@@ -24,13 +24,11 @@
       }
       <li class="summary__chip">{{ timeLabel() }}</li>
       <li class="summary__chip">{{ cuisineLabel() }}</li>
-      @if (likeCount() !== null) {
-        <li class="summary__chip">
-          <img src="/img/recipe-view/favorite.png" alt="" width="17" height="15" />
-          <span class="visually-hidden">Likes:</span>
-          {{ likeCount() }}
-        </li>
-      }
+      <li class="summary__chip">
+        <img src="/img/recipe-view/favorite.png" alt="" width="17" height="15" />
+        <span class="visually-hidden">Likes:</span>
+        {{ likeCount() }}
+      </li>
     </ul>
 
     <app-nutrition-table [nutrition]="recipe().nutrition" [portions]="recipe().portions" />

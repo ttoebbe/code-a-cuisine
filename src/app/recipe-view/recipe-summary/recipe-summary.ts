@@ -24,11 +24,8 @@ export class RecipeSummary {
   /** Recipe on display. */
   readonly recipe = input.required<GeneratedRecipe>();
 
-  /**
-   * Likes of the recipe. Null for a fresh suggestion that is not in the
-   * cookbook yet, which hides the counter.
-   */
-  readonly likeCount = input<number | null>(null);
+  /** Likes of the recipe, zero for one that was just generated. */
+  readonly likeCount = input(0);
 
   /** Cooking time of the recipe, e.g. "20min". */
   protected readonly cookingTime = computed(() =>

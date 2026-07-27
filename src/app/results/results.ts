@@ -21,6 +21,9 @@ export class Results {
   /** Suggestions of the current run. */
   protected readonly recipes = this.generation.recipes;
 
+  /** True when a suggestion did not make it into the cookbook. */
+  protected readonly hasSaveFailure = this.generation.hasSaveFailure;
+
   /** Preferences of the request, shown as chips under the lead text. */
   protected readonly filters = computed(() => this.buildFilters());
 

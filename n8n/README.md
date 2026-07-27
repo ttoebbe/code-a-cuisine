@@ -87,21 +87,20 @@ erhalten. Auf `ai_failed` gemappt werden: HTTP-Fehler und Gemini-Quota (`error` 
 
 ### Firestore-Schreiben (Aufgabe 6)
 
-**n8n schreibt bewusst NICHT nach Firestore.** Der Firestore-Write gehört im bestehenden Frontend
-zum Bestätigen eines Rezepts: [`RecipeSave`](../src/app/recipe-view/recipe-save/recipe-save.ts) ruft
-`RecipeLibraryService.saveRecipe()` und legt genau das **eine vom Nutzer bestätigte** Rezept über die
-Security-Rules an. Würde n8n zusätzlich alle drei Vorschläge schreiben, wäre die Bibliothek mit
-unbestätigten Rezepten geflutet und beim Bestätigen dupliziert.
+**n8n schreibt bewusst NICHT nach Firestore.** Der Firestore-Write liegt im Frontend: der
+`RecipeGenerationService` legt **alle drei** Vorschläge über `RecipeLibraryService.saveRecipe()`
+an, sobald die Workflow-Antwort eintrifft (Phase 7, siehe unten).
 
 Damit ist die in der Aufgabe genannte Alternative „Service-Account vs. Rules erweitern" hinfällig:
 n8n bekommt **keine** Firebase-Credentials. Das ist die stärkste Variante gegenüber beiden
 Doc-Vorgaben — kein Service-Account-Key existiert irgendwo, die Rules bleiben die alleinige
 Absicherung, und der Kostenairbag (rein in n8n) wird nicht angefasst.
 
-> Falls n8n später doch schreiben soll (z. B. Auto-Archiv aller Generierungen), wäre der saubere Weg
-> ein anonymer Client-Write über die **Firestore-REST-API** mit `documents:commit` und einem
-> `updateTransform` (`setToServerValue: REQUEST_TIME`) für `createdAt` sowie `likeCount = 0` — dann
-> greifen die vorhandenen Rules unverändert, ohne Service-Account.
+> **Änderung in Phase 7:** Bis dahin schrieb das Frontend nur das **eine vom Nutzer bestätigte**
+> Rezept („Save to cookbook"-Button). Die Schul-Checkliste verlangt, dass **alle** generierten
+> Rezepte in Firebase landen — der Button ist entfallen, der Save läuft automatisch. Am n8n-Workflow
+> und an `firestore.rules` hat sich dadurch **nichts** geändert: der Client-Write geht weiterhin
+> durch dieselben Rules. Details in [docs/architektur.md](../docs/architektur.md).
 
 ### Tages-Quota / Kostenairbag (Aufgabe 4)
 

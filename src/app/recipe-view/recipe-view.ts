@@ -5,7 +5,6 @@ import {
   inject,
   input,
   resource,
-  signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { GeneratedRecipe } from '../models/recipe.interface';
@@ -14,7 +13,6 @@ import { RecipeLibraryService } from '../services/recipe-library.service';
 import { RecipeDirections } from './recipe-directions/recipe-directions';
 import { RecipeIngredients } from './recipe-ingredients/recipe-ingredients';
 import { RecipeLike } from './recipe-like/recipe-like';
-import { RecipeSave } from './recipe-save/recipe-save';
 import { RecipeSummary } from './recipe-summary/recipe-summary';
 
 /** Where the back link of the recipe view leads. */
@@ -40,7 +38,7 @@ const MISSING_TEXTS: Record<RecipeOrigin, string> = {
  */
 @Component({
   selector: 'app-recipe-view',
-  imports: [RecipeDirections, RecipeIngredients, RecipeLike, RecipeSave, RecipeSummary, RouterLink],
+  imports: [RecipeDirections, RecipeIngredients, RecipeLike, RecipeSummary, RouterLink],
   templateUrl: './recipe-view.html',
   styleUrl: './recipe-view.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,19 +68,27 @@ export class RecipeView {
   /** Stored recipe, null while it loads or when the id is unknown. */
   protected readonly storedRecipe = computed(() => this.stored.value() ?? null);
 
+  /** Position of the suggestion in the result list as a number. */
+  private readonly suggestionIndex = computed(() => Number(this.index()));
+
   /** Suggestion of the current generation run. */
-  private readonly suggestion = computed(() => this.generation.recipeAt(Number(this.index())));
+  private readonly suggestion = computed(() => this.generation.recipeAt(this.suggestionIndex()));
 
   /** Recipe to display, null when the route points nowhere. */
   protected readonly recipe = computed<GeneratedRecipe | null>(() =>
     this.isFromCookbook() ? this.storedRecipe() : this.suggestion(),
   );
 
-  /** Likes of the recipe, null for a suggestion that is not stored yet. */
-  protected readonly likeCount = computed(() => this.readLikeCount());
+  /**
+   * Likes of the recipe. A suggestion is persisted right after its generation,
+   * so it starts at zero like every fresh document.
+   */
+  protected readonly likeCount = computed(() =>
+    this.isFromCookbook() ? (this.storedRecipe()?.likeCount ?? 0) : 0,
+  );
 
-  /** Document id of the recipe once it exists in the library. */
-  protected readonly recipeId = computed(() => this.storedRecipe()?.id ?? this.savedId());
+  /** Document id of the recipe in the library. */
+  protected readonly recipeId = computed(() => this.readRecipeId());
 
   /** True while the cookbook recipe is being read. */
   protected readonly isLoading = this.stored.isLoading;
@@ -96,26 +102,16 @@ export class RecipeView {
   /** Explanation of an empty view, depending on where the user came from. */
   protected readonly missingText = computed(() => MISSING_TEXTS[this.backTo()]);
 
-  /** Document id of the suggestion once it was saved, null before that. */
-  protected readonly savedId = signal<string | null>(null);
-
   /**
-   * Remembers under which document the suggestion was stored.
-   * @param id Document id reported by the save button.
+   * Library id of the displayed recipe. It follows the same source as the
+   * recipe itself: the document for a cookbook entry, and for a suggestion the
+   * id its automatic save returned — null only while that write is still in
+   * flight or was rejected.
+   * @returns Document id, or null when the recipe is not in the library.
    */
-  protected onSaved(id: string): void {
-    this.savedId.set(id);
-  }
-
-  /**
-   * Likes to display. A suggestion has none until it is saved, from then on
-   * it starts at zero like every fresh document.
-   * @returns Like count, or null while the recipe is not in the library.
-   */
-  private readLikeCount(): number | null {
-    const stored = this.storedRecipe();
-    if (stored !== null) return stored.likeCount;
-    return this.savedId() === null ? null : 0;
+  private readRecipeId(): string | null {
+    if (this.isFromCookbook()) return this.storedRecipe()?.id ?? null;
+    return this.generation.savedIdAt(this.suggestionIndex());
   }
 
   /**

@@ -52,7 +52,7 @@ flowchart TB
   gemini -- "JSON-Text nach responseSchema" --> hook
   hook -- "HTTP 200 mit Antwort-Envelope" --> apiSvc
 
-  libSvc -- "addDoc · nur beim Bestaetigen" --> store
+  libSvc -- "addDoc · automatisch fuer alle 3 Vorschlaege" --> store
   libSvc -- "getDocs / getDoc · Bibliothek lesen" --> store
   libSvc -- "updateDoc · Like plus 1" --> store
 ```
@@ -89,17 +89,38 @@ flowchart TB
 ### Warum n8n NICHT nach Firestore schreibt
 
 Bewusste Entscheidung (siehe [n8n/README.md](../n8n/README.md), Aufgabe 6). Der Firestore-Write gehört
-ins Frontend und passiert **nur beim Bestätigen** eines Rezepts über
-[RecipeSave](../src/app/recipe-view/recipe-save/recipe-save.ts) →
-`RecipeLibraryService.saveRecipe()`. Gründe:
+ins Frontend: [RecipeGenerationService](../src/app/services/recipe-generation.service.ts) legt alle
+drei Vorschläge über `RecipeLibraryService.saveRecipe()` an, sobald die Antwort eintrifft. Gründe:
 
-- n8n liefert **drei** Vorschläge; gespeichert werden soll nur das **eine vom Nutzer bestätigte**.
-  Würde n8n schreiben, wäre die Bibliothek mit unbestätigten Rezepten geflutet und beim Bestätigen
-  dupliziert.
 - n8n bekommt damit **keine** Firebase-Credentials. Es existiert nirgends ein Service-Account-Key
   (der würde sämtliche Rules umgehen). Die **Security-Rules bleiben die alleinige Absicherung** — der
   Client-Write muss durch sie hindurch.
 - Der Kostenairbag (Quota) bleibt rein in n8n und wird davon nicht berührt.
+- Der Schreibzeitpunkt bleibt dort, wo auch der Zustand liegt: Das Frontend weiß, welcher Lauf zu
+  welchen Vorschlägen gehört, und kann die zurückgegebenen Dokument-Ids sofort weiterverwenden
+  (Like-Herz).
+
+### Automatischer Save statt Bestätigen-Button (Phase 7)
+
+Bis Phase 6 wurde **nur das eine vom Nutzer bestätigte** Rezept gespeichert — über einen
+„Save to cookbook"-Button in der Rezeptansicht. Die Schul-Checkliste verlangt jedoch, dass **alle**
+generierten Rezepte in Firebase landen (User Story 12). Die Phase-4-Entscheidung ist damit
+**revidiert**:
+
+- Der Button ist **entfallen**. `applyResponse()` im `RecipeGenerationService` schreibt die drei
+  Rezepte parallel, **genau einmal pro Generierung** — beim Eintreffen der Antwort, nicht beim
+  Rendern. Ein erneutes Navigieren auf `/results` löst deshalb keinen zweiten Write aus.
+- Der Save wird **nicht abgewartet**: Navigation und Ergebnisliste laufen sofort. Scheitert ein
+  Write, wird er nur geloggt, das Ergebnis bleibt sichtbar, und `/results` zeigt einen dezenten
+  Hinweis. Eine gescheiterte Bibliotheks-Ablage blockiert die Generierung nie.
+- Die Dokument-Ids landen in `savedIdList`; die Rezeptansicht liest sie über `savedIdAt(index)`.
+  Damit ist das **Like-Herz sofort aktiv** — früher war es gesperrt, solange das Rezept nur im
+  Speicher lag. Nur wenn der Write scheiterte, bleibt es deaktiviert.
+- **Unverändert:** `firestore.rules`, der n8n-Workflow und der JSON-Vertrag. Es ist weiterhin ein
+  reiner Client-Write durch dieselben Rules.
+
+Preis dieser Entscheidung: Die Bibliothek enthält auch Rezepte, die niemand nachgekocht hat. Sie
+sortiert nach `createdAt` bzw. `likeCount`, sodass Ungenutztes nach hinten rutscht.
 
 ---
 
@@ -348,11 +369,9 @@ sequenceDiagram
   N8N-->>NG: HTTP 200 · status ok mit 3 Rezepten
   NG-->>User: Ergebnisliste und Rezeptansicht
 
-  Note over User,FS: Zweiter Pfad · erst beim Bestaetigen
-  User->>NG: Klick Save to cookbook
-  NG->>FS: addDoc · createdAt Servertime · likeCount 0
-  FS-->>NG: Dokument-Id
-  NG-->>User: Gespeichert · Like-Button aktiv
+  Note over User,FS: Zweiter Pfad · automatisch, parallel zur Anzeige
+  NG->>FS: addDoc x3 · createdAt Servertime · likeCount 0
+  FS-->>NG: drei Dokument-Ids
   User->>NG: Klick auf das Herz
   NG->>FS: updateDoc · likeCount plus 1
   FS-->>NG: ok
@@ -374,14 +393,15 @@ sequenceDiagram
    packt aus (`coerceRecipes`), säubert und prüft; drei gültige Rezepte → `route: ok`.
 7. **n8n → Angular:** **Respond: recipes** antwortet HTTP 200 mit `{ status: 'ok', recipes }`.
 8. **Angular → Nutzer:** `applyResponse` legt die Rezepte in den Signals ab und navigiert auf
-   `/results`. Die Vorschläge liegen **nur im Speicher** — ein Reload schickt bewusst zurück in den
-   Wizard (es sind Vorschläge, keine gespeicherten Rezepte).
-9. **„Save to cookbook":** Erst hier entsteht ein Firestore-Dokument.
-   [RecipeSave](../src/app/recipe-view/recipe-save/recipe-save.ts) ruft `saveRecipe()`;
-   `buildRecipeDocument` ergänzt `createdAt: serverTimestamp()` und `likeCount: 0` und `addDoc`
-   schreibt durch die **Security-Rules** (Feld-Whitelist, Wertebereiche, `createdAt == request.time`,
-   `likeCount == 0`). Zurück kommt die Dokument-Id.
-10. **Like:** Nach dem Speichern ist der Like-Button aktiv
+   `/results`. Die Liste im Speicher ist an den Lauf gebunden — ein Reload schickt bewusst zurück in
+   den Wizard; die Rezepte selbst sind über den Cookbook danach weiterhin erreichbar.
+9. **Automatischer Save:** Direkt nach der Navigation schreibt `storeRecipes()` alle drei Rezepte
+   parallel über `RecipeLibraryService.saveRecipe()`. `buildRecipeDocument` ergänzt
+   `createdAt: serverTimestamp()` und `likeCount: 0`, `addDoc` schreibt durch die
+   **Security-Rules** (Feld-Whitelist, Wertebereiche, `createdAt == request.time`, `likeCount == 0`).
+   Zurück kommen die Dokument-Ids, die der Lauf unter `savedIdAt(index)` bereithält. Der Schritt läuft
+   **neben** der Anzeige; ein Fehler wird geloggt und dezent gemeldet, blockiert aber nichts.
+10. **Like:** Weil das Rezept schon in der Bibliothek liegt, ist der Like-Button sofort aktiv
     ([RecipeLike](../src/app/recipe-view/recipe-like/recipe-like.ts)). Der Klick ruft `incrementLike()`
     → `updateDoc(..., { likeCount: increment(1) })`. Die Rules erlauben als einzige Änderung genau
     `likeCount + 1`; der Zähler lebt auf dem Server, sodass parallele Likes sich addieren statt sich
@@ -402,8 +422,7 @@ Alles oben ist aus diesen Dateien abgeleitet:
   [src/app/services/recipe-generation.service.ts](../src/app/services/recipe-generation.service.ts),
   [src/app/services/recipe-library.service.ts](../src/app/services/recipe-library.service.ts),
   [src/app/services/recipe-document.ts](../src/app/services/recipe-document.ts)
-- [src/app/recipe-view/recipe-save/recipe-save.ts](../src/app/recipe-view/recipe-save/recipe-save.ts),
-  [src/app/recipe-view/recipe-like/recipe-like.ts](../src/app/recipe-view/recipe-like/recipe-like.ts),
+- [src/app/recipe-view/recipe-like/recipe-like.ts](../src/app/recipe-view/recipe-like/recipe-like.ts),
   [src/app/recipe-view/recipe-view.ts](../src/app/recipe-view/recipe-view.ts)
 - [src/environments/environment.ts](../src/environments/environment.ts),
   [firestore.rules](../firestore.rules), [CLAUDE.md](../CLAUDE.md)

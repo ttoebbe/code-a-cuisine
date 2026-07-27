@@ -14,6 +14,12 @@
     }
   </ul>
 
+  @if (hasSaveFailure()) {
+    <p class="results__save-note" role="status">
+      Some of these recipes could not be added to the cookbook. You can still cook them here.
+    </p>
+  }
+
   <ul class="results__list">
     @for (recipe of recipes(); track recipe.title) {
       <li class="results__item">

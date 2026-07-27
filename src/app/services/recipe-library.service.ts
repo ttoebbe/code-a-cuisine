@@ -60,7 +60,7 @@ export class RecipeLibraryService {
   private readonly recipes = collection(this.firestore, 'recipes');
 
   /**
-   * Stores a confirmed recipe in the library.
+   * Stores a generated recipe in the library.
    * @param recipe Recipe as returned by the n8n workflow.
    * @returns Id of the created document.
    */

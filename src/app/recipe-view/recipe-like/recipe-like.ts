@@ -3,9 +3,9 @@ import { RecipeLibraryService } from '../../services/recipe-library.service';
 
 /**
  * Closing call to action of the recipe view. The heart writes straight to the
- * stored recipe, so the count is shared by everybody. A suggestion that is not
- * in the cookbook yet has nothing to write to, so the button stays disabled
- * until it is saved.
+ * stored recipe, so the count is shared by everybody. Every generated recipe
+ * is saved automatically, so the heart is active right away; it only stays
+ * disabled when that write did not reach the library.
  */
 @Component({
   selector: 'app-recipe-like',
@@ -16,11 +16,11 @@ import { RecipeLibraryService } from '../../services/recipe-library.service';
 export class RecipeLike {
   private readonly library = inject(RecipeLibraryService);
 
-  /** Document id of the recipe, null while it only lives in memory. */
+  /** Document id of the recipe, null while it is not in the library. */
   readonly recipeId = input<string | null>(null);
 
-  /** Like count of the stored recipe, null for an unsaved suggestion. */
-  readonly likeCount = input<number | null>(null);
+  /** Like count of the stored recipe. */
+  readonly likeCount = input(0);
 
   /** Whether this visitor has already given their heart. */
   protected readonly liked = signal(false);
@@ -28,8 +28,10 @@ export class RecipeLike {
   /** True when the write failed. */
   protected readonly failed = signal(false);
 
-  /** Likes including the one just given, null while the recipe is unsaved. */
-  protected readonly total = computed(() => this.readTotal());
+  /** Likes including the one just given. */
+  protected readonly total = computed(() =>
+    this.liked() ? this.likeCount() + 1 : this.likeCount(),
+  );
 
   /** True when there is a document to like. */
   protected readonly isEnabled = computed(() => this.recipeId() !== null && !this.liked());
@@ -49,15 +51,5 @@ export class RecipeLike {
       this.liked.set(false);
       this.failed.set(true);
     }
-  }
-
-  /**
-   * Adds the optimistic like to the stored counter.
-   * @returns Number of likes to display, or null without a stored recipe.
-   */
-  private readTotal(): number | null {
-    const stored = this.likeCount();
-    if (stored === null) return null;
-    return this.liked() ? stored + 1 : stored;
   }
 }
