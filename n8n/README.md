@@ -64,18 +64,36 @@ Der Error-Handler verschickt die Fehlermeldung per **Send-Email-Node** an
 `toebbe.thomas@outlook.de`. Der Node **referenziert** nur eine SMTP-Credential — Host, Port,
 Benutzer und Passwort werden **von Hand in der n8n-UI** eingetragen und stehen **nirgends im Repo**.
 
+Versendet wird über **Gmail-SMTP mit App-Passwort**:
+
+| Feld     | Wert                                           |
+| -------- | ---------------------------------------------- |
+| Host     | `smtp.gmail.com`                               |
+| Port     | `465`                                          |
+| SSL/TLS  | an (implizites SSL, kein STARTTLS)             |
+| User     | die Gmail-Adresse                              |
+| Password | ein **App-Passwort**, nicht das Konto-Passwort |
+
+Das App-Passwort setzt **aktivierte Zwei-Faktor-Authentifizierung** im Google-Konto voraus
+(Google-Konto → Sicherheit → App-Passwörter).
+
+> **Warum nicht Outlook.com?** Microsoft hat Basic Auth für SMTP bei privaten Outlook-Konten Anfang
+> 2026 abgeschaltet — auch App-Passwörter funktionieren dort nicht mehr, `smtp-mail.outlook.com`
+> lehnt den Login ab. Übrig bliebe nur OAuth2, wofür n8ns generischer SMTP-Node nicht gebaut ist.
+> Deshalb der Umweg über Gmail; die Mails landen weiterhin im Outlook-Postfach.
+
 1. n8n öffnen → **Credentials** → **New** → _SMTP_.
 2. Name exakt `Code a Cuisine SMTP (error mails)` — er muss zu `SMTP_CREDENTIAL` in
    `build-workflows.mjs` passen, sonst findet der importierte Node die Credential nicht.
-3. Host/Port/User/Passwort des Mailkontos eintragen (bei Outlook: `smtp-mail.outlook.com`,
-   Port 587, STARTTLS) und speichern.
+3. Werte aus der Tabelle oben eintragen und speichern.
 4. Im Workflow **Code a Cuisine — Error Handler** den Node **Email the failure** öffnen und prüfen,
    dass die Credential ausgewählt ist. Danach einmal **Test step** ausführen.
 
-Absender und Empfänger sind beide `toebbe.thomas@outlook.de` (`ALERT_MAILBOX` in
-`build-workflows.mjs`) — die meisten SMTP-Server lassen als Absender nur das authentifizierte Konto
-zu. Der Node läuft mit `onError: continueRegularOutput`: ist der Mailserver nicht erreichbar,
-scheitert der Error-Handler nicht zusätzlich, und die **Log-Zeile bleibt als Rückfallebene**.
+**Absender ≠ Empfänger:** Gmail lässt als Absender nur das authentifizierte Konto zu, `fromEmail` ist
+deshalb `toebbe.thomas@googlemail.com` (`ALERT_SENDER` in `build-workflows.mjs`); Empfänger bleibt
+`toebbe.thomas@outlook.de` (`ALERT_MAILBOX`). Der Node läuft mit `onError: continueRegularOutput`:
+ist der Mailserver nicht erreichbar, scheitert der Error-Handler nicht zusätzlich, und die
+**Log-Zeile bleibt als Rückfallebene**.
 
 ## Wichtige Entscheidungen
 

@@ -27,6 +27,9 @@ const GEMINI_CREDENTIAL = {
 
 // Failure notification. The SMTP credential is only referenced here; host,
 // user and password are typed into the n8n UI and never live in this repo.
+// Sending runs over Gmail, so the sender must be the authenticated Gmail
+// account; the alerts themselves land in the regular Outlook mailbox.
+const ALERT_SENDER = 'toebbe.thomas@googlemail.com';
 const ALERT_MAILBOX = 'toebbe.thomas@outlook.de';
 const SMTP_CREDENTIAL = {
   id: 'codeacuisine-smtp',
@@ -255,7 +258,7 @@ const errorNodes = [
     2.1,
     [480, 0],
     {
-      fromEmail: ALERT_MAILBOX,
+      fromEmail: ALERT_SENDER,
       toEmail: ALERT_MAILBOX,
       subject: '={{ "[Code a Cuisine] " + $json.workflow + " failed: " + $json.error }}',
       emailFormat: 'text',

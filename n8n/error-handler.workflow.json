@@ -31,7 +31,7 @@
     },
     {
       "parameters": {
-        "fromEmail": "toebbe.thomas@outlook.de",
+        "fromEmail": "toebbe.thomas@googlemail.com",
         "toEmail": "toebbe.thomas@outlook.de",
         "subject": "={{ \"[Code a Cuisine] \" + $json.workflow + \" failed: \" + $json.error }}",
         "emailFormat": "text",
