@@ -32,7 +32,7 @@ const GEMINI_CREDENTIAL = {
 const ALERT_SENDER = 'toebbe.thomas@googlemail.com';
 const ALERT_MAILBOX = 'toebbe.thomas@outlook.de';
 const SMTP_CREDENTIAL = {
-  id: 'codeacuisine-smtp',
+  id: 'ds4bY5C06AWQroWz',
   name: 'Code a Cuisine SMTP (error mails)',
 };
 
