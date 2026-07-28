@@ -59,7 +59,9 @@ Die Single-Field-Indexe für `createdAt` und `likeCount` legt Firestore automati
 
 ## Security-Rules — was erlaubt ist
 
-Die App hat keine Anmeldung, deshalb tragen die Rules die gesamte Absicherung:
+Alle Writes kommen aus dem Browser — n8n schreibt nie nach Firestore, und nach jeder Generierung
+legt das Frontend automatisch alle drei Vorschläge an. Die App hat keine Anmeldung, deshalb tragen
+die Rules die gesamte Absicherung:
 
 - **read**: für alle offen — die Bibliothek ist öffentlich.
 - **create**: nur mit exakt den Feldern des `Recipe`-Interfaces, gültigen Wertebereichen

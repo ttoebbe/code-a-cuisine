@@ -100,24 +100,21 @@ drei Vorschläge über `RecipeLibraryService.saveRecipe()` an, sobald die Antwor
   welchen Vorschlägen gehört, und kann die zurückgegebenen Dokument-Ids sofort weiterverwenden
   (Like-Herz).
 
-### Automatischer Save statt Bestätigen-Button (Phase 7)
+### Automatischer Save — alle drei Vorschläge, ohne Bestätigen-Button
 
-Bis Phase 6 wurde **nur das eine vom Nutzer bestätigte** Rezept gespeichert — über einen
-„Save to cookbook"-Button in der Rezeptansicht. Die Schul-Checkliste verlangt jedoch, dass **alle**
-generierten Rezepte in Firebase landen (User Story 12). Die Phase-4-Entscheidung ist damit
-**revidiert**:
+Die Schul-Checkliste verlangt, dass **alle** generierten Rezepte in Firebase landen (User Story 12).
+Es gibt deshalb **keinen** „Save to cookbook"-Button; gespeichert wird automatisch:
 
-- Der Button ist **entfallen**. `applyResponse()` im `RecipeGenerationService` schreibt die drei
-  Rezepte parallel, **genau einmal pro Generierung** — beim Eintreffen der Antwort, nicht beim
-  Rendern. Ein erneutes Navigieren auf `/results` löst deshalb keinen zweiten Write aus.
+- `applyResponse()` im `RecipeGenerationService` schreibt die drei Rezepte parallel, **genau einmal
+  pro Generierung** — beim Eintreffen der Antwort, nicht beim Rendern. Ein erneutes Navigieren auf
+  `/results` löst deshalb keinen zweiten Write aus.
 - Der Save wird **nicht abgewartet**: Navigation und Ergebnisliste laufen sofort. Scheitert ein
-  Write, wird er nur geloggt, das Ergebnis bleibt sichtbar, und `/results` zeigt einen dezenten
-  Hinweis. Eine gescheiterte Bibliotheks-Ablage blockiert die Generierung nie.
+  Write, wird er nur geloggt, das Ergebnis bleibt sichtbar, und `/results` zeigt über
+  `hasSaveFailure` einen dezenten Hinweis. Eine gescheiterte Ablage blockiert die Generierung nie.
 - Die Dokument-Ids landen in `savedIdList`; die Rezeptansicht liest sie über `savedIdAt(index)`.
-  Damit ist das **Like-Herz sofort aktiv** — früher war es gesperrt, solange das Rezept nur im
-  Speicher lag. Nur wenn der Write scheiterte, bleibt es deaktiviert.
-- **Unverändert:** `firestore.rules`, der n8n-Workflow und der JSON-Vertrag. Es ist weiterhin ein
-  reiner Client-Write durch dieselben Rules.
+  Damit ist das **Like-Herz sofort aktiv** — nur wenn der Write scheiterte, bleibt es deaktiviert.
+- Am n8n-Workflow, an `firestore.rules` und am JSON-Vertrag ändert das nichts: Es ist ein reiner
+  Client-Write durch dieselben Rules.
 
 Preis dieser Entscheidung: Die Bibliothek enthält auch Rezepte, die niemand nachgekocht hat. Sie
 sortiert nach `createdAt` bzw. `likeCount`, sodass Ungenutztes nach hinten rutscht.
@@ -126,7 +123,8 @@ sortiert nach `createdAt` bzw. `likeCount`, sodass Ungenutztes nach hinten rutsc
 
 ## 2. Der n8n-Workflow „Code a Cuisine — Generate Recipe"
 
-Quelle: [n8n/generate-recipe.workflow.json](../n8n/generate-recipe.workflow.json). Der Workflow ist eine
+Quelle: [n8n/generate-recipe.workflow.json](../n8n/generate-recipe.workflow.json) — generiert aus
+[n8n/build-workflows.mjs](../n8n/build-workflows.mjs), nicht von Hand gepflegt. Der Workflow ist eine
 lineare Kette mit zwei Weichen (`IF`-Nodes). Jeder Ausgang mündet in genau **einen** der beiden
 Antwort-Nodes.
 
@@ -213,11 +211,13 @@ flowchart LR
 - **Log the failure** — schreibt eine lesbare Zeile (`workflow`, `node`, `error`, `url`) per
   `console.error` ins n8n-Log und reicht die Einzelfelder an den Mail-Node weiter
   ([n8n/src/log-error.js](../n8n/src/log-error.js)).
-- **Email the failure** — Send-Email-Node an `toebbe.thomas@outlook.de`. Betreff trägt Workflow-Name
-  und Fehlertext, der Body zusätzlich gescheiterten Node, Execution-Id, Zeitstempel, Execution-Link
-  und Stacktrace. Die SMTP-Credential wird nur **referenziert**; Zugangsdaten stehen ausschließlich
-  in der n8n-UI (siehe [n8n/README.md](../n8n/README.md)). Mit `onError: continueRegularOutput`
-  bleibt die Log-Zeile die Rückfallebene, wenn der Mailserver nicht erreichbar ist.
+- **Email the failure** — Send-Email-Node über **Gmail-SMTP** (App-Passwort). Absender ist die
+  googlemail-Adresse — Gmail lässt nur das authentifizierte Konto zu —, Empfänger bleibt
+  `toebbe.thomas@outlook.de`. Betreff trägt Workflow-Name und Fehlertext, der Body zusätzlich
+  gescheiterten Node, Execution-Id, Zeitstempel, Execution-Link und Stacktrace. Die SMTP-Credential
+  wird nur **referenziert**; Zugangsdaten stehen ausschließlich in der n8n-UI (siehe
+  [n8n/README.md](../n8n/README.md)). Mit `onError: continueRegularOutput` bleibt die Log-Zeile die
+  Rückfallebene, wenn der Mailserver nicht erreichbar ist.
 
 Wichtig zur Abgrenzung: Die **erwarteten** Fehler (Validierung, Quota, KI) laufen **nicht** über den
 Error-Handler. Sie kommen als regulärer Envelope über **Respond: error** zurück. Der Error-Handler
@@ -275,23 +275,17 @@ Client-Zähler (Vorgabe aus [CLAUDE.md](../CLAUDE.md), Quota-Regel).
 - `maxOutputTokens: 32000` — großzügig bemessen, weil drei vollständige Rezepte plus das interne
   Denken des Modells sonst in `finishReason: MAX_TOKENS` laufen können.
 
-Zum **Schema-Dialekt**: Gemini erwartet eine OpenAPI-3.0-Teilmenge, nicht JSON Schema. Gegenüber dem
-früheren `input_schema` sind daher drei Dinge anders — **Felder und Wertebereiche bleiben identisch**:
-
-| Anthropic `input_schema`      | Gemini `responseSchema`            |
-| ----------------------------- | ---------------------------------- |
-| `type: 'string'` (klein)      | `type: 'STRING'` (Enum-Name, groß) |
-| `type: ['integer', 'null']`   | `type: 'INTEGER', nullable: true`  |
-| `additionalProperties: false` | entfällt (nicht unterstützt)       |
-| Wrapper `{ recipes: [...] }`  | direkt `ARRAY` auf oberster Ebene  |
+Zum **Schema-Dialekt**: Gemini erwartet eine OpenAPI-3.0-Teilmenge, nicht JSON Schema — Typnamen in
+Großschreibung (`STRING`), `nullable: true` statt Union-Typen, kein `additionalProperties`. Der
+Vergleich zur früheren Anthropic-Fassung steht in [n8n/README.md](../n8n/README.md).
 
 ### coerceRecipes in map-ai.js — warum das Auspacken nötig ist
 
 Trotz erzwungenem Schema ist die Modellantwort in der Praxis nicht immer sauber die reine Liste.
 `isRefused` sortiert zuerst unbrauchbare Antworten aus (siehe unten), `readAnswerText` verkettet dann
 die Text-Parts von `candidates[0].content.parts` (reine Denk-Parts mit `thought: true` werden
-übersprungen). `coerceRecipes` wickelt diesen Text rekursiv aus — die Funktion stammt unverändert aus
-der Claude-Zeit, weil der Wert dort unterschiedlich verpackt ankam:
+übersprungen). `coerceRecipes` wickelt diesen Text rekursiv aus, weil der Wert unterschiedlich
+verpackt ankommen kann:
 
 - schon die **Liste** selbst, oder
 - ein **`{ recipes: [...] }`**-Objekt, oder
@@ -419,10 +413,11 @@ sequenceDiagram
 
 Alles oben ist aus diesen Dateien abgeleitet:
 
-- [n8n/generate-recipe.workflow.json](../n8n/generate-recipe.workflow.json),
+- [n8n/build-workflows.mjs](../n8n/build-workflows.mjs) und die daraus erzeugten
+  [n8n/generate-recipe.workflow.json](../n8n/generate-recipe.workflow.json),
   [n8n/error-handler.workflow.json](../n8n/error-handler.workflow.json)
-- [n8n/src/map-ai.js](../n8n/src/map-ai.js), [n8n/src/log-error.js](../n8n/src/log-error.js),
-  [n8n/README.md](../n8n/README.md)
+- [n8n/src/guard.js](../n8n/src/guard.js), [n8n/src/map-ai.js](../n8n/src/map-ai.js),
+  [n8n/src/log-error.js](../n8n/src/log-error.js), [n8n/README.md](../n8n/README.md)
 - [docs/n8n-webhook.md](n8n-webhook.md), [docs/firebase.md](firebase.md)
 - [src/app/services/recipe-api.service.ts](../src/app/services/recipe-api.service.ts),
   [src/app/services/recipe-generation.service.ts](../src/app/services/recipe-generation.service.ts),

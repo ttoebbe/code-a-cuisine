@@ -40,12 +40,14 @@ Haupt-Workflow den Error-Handler über `settings.errorWorkflow` referenzieren ka
 
 Beide Credentials (Gemini-Header-Auth und SMTP) müssen **vor** dem Import in der n8n-UI existieren,
 sonst zeigen die Nodes nach dem Import eine leere Credential-Auswahl — siehe die zwei Abschnitte
-unten.
+unten. In `build-workflows.mjs` stehen unter `GEMINI_CREDENTIAL` und `SMTP_CREDENTIAL` die **Ids und
+Namen der real angelegten** Credentials dieser Instanz (nur Referenzen, keine Zugangsdaten). Auf
+einer frischen n8n-Instanz beide Werte auf die dort vergebenen Ids anpassen und neu bauen.
 
 ## Gemini-Key eintragen (Pflicht vor dem ersten echten Lauf)
 
 Der LLM-Aufruf nutzt eine **HTTP-Header-Auth-Credential** mit dem Header-Namen **`x-goog-api-key`**.
-Sie wird **von Hand in der n8n-UI** angelegt (Credentials → New → _Header Auth_); ID und Name stehen
+Sie wird **von Hand in der n8n-UI** angelegt (Credentials → New → _Header Auth_); Id und Name stehen
 in `build-workflows.mjs` unter `GEMINI_CREDENTIAL` und müssen zur Credential in n8n passen. Den
 echten Key nur in der n8n-UI eintragen, nie ins Repo:
 
@@ -54,9 +56,8 @@ echten Key nur in der n8n-UI eintragen, nie ins Repo:
 3. Speichern. Weitere feste Header braucht der HTTP-Node nicht.
 
 Modell: `gemini-3.5-flash` — es steht bei Gemini in der **URL**
-(`…/v1beta/models/gemini-3.5-flash:generateContent`), nicht im Body. Strukturierte Ausgabe erzwingt
-der Node über `generationConfig.responseMimeType: "application/json"` plus ein `responseSchema`, das
-exakt `GeneratedRecipe[]` abbildet.
+(`…/v1beta/models/gemini-3.5-flash:generateContent`), nicht im Body. Wie die Antwortstruktur
+erzwungen wird, steht unter [Strukturierte Ausgabe](#strukturierte-ausgabe-über-responseschema).
 
 ## SMTP-Credential eintragen (für die Fehler-Mail)
 
@@ -103,45 +104,40 @@ ist der Mailserver nicht erreichbar, scheitert der Error-Handler nicht zusätzli
 Provider-spezifischer Node). Grund: volle Kontrolle über Request-Body und Response-Schema, und der
 Key liegt in einer austauschbaren Header-Auth-Credential.
 
-> **Wechsel in Phase 6 (Vorgabe der Developer Akademie):** vorher Anthropic Claude (`claude-sonnet-5`,
-> Messages API, erzwungenes Tool `emit_recipes`). Umgestellt wurden nur der HTTP-Node, der
-> Request-Bau in `guard.js` und das Auslesen in `map-ai.js`. **Der JSON-Vertrag Angular ↔ n8n ist
-> unverändert** — am Frontend wurde keine Zeile angefasst.
+> **Historie:** In Phase 6 wurde auf Vorgabe der Developer Akademie von Anthropic Claude auf Gemini
+> umgestellt. Betroffen waren nur der HTTP-Node, der Request-Bau in `guard.js` und das Auslesen in
+> `map-ai.js`; der JSON-Vertrag Angular ↔ n8n blieb unverändert. Anthropic wird nirgends mehr
+> aufgerufen.
 
-### Strukturierte Ausgabe: von Tool Use zu responseSchema
+### Strukturierte Ausgabe über responseSchema
 
-Gemini erwartet für `responseSchema` eine **OpenAPI-3.0-Teilmenge**, nicht JSON Schema. Felder und
-Wertebereiche sind identisch zum früheren `input_schema`, die Schreibweise unterscheidet sich:
+Der Request erzwingt die Struktur, statt auf sie zu hoffen:
+`generationConfig.responseMimeType: "application/json"` plus ein `responseSchema`, das exakt
+`GeneratedRecipe[]` mit `minItems: 3, maxItems: 3` abbildet, dazu `maxOutputTokens: 32000` (drei
+vollständige Rezepte samt Modell-Denkschritten passen sonst nicht hinein).
 
-| Anthropic `input_schema`      | Gemini `responseSchema`            |
-| ----------------------------- | ---------------------------------- |
-| `type: 'string'` (klein)      | `type: 'STRING'` (Enum-Name, groß) |
-| `type: ['integer', 'null']`   | `type: 'INTEGER', nullable: true`  |
-| `additionalProperties: false` | entfällt (nicht unterstützt)       |
-| Wrapper `{ recipes: [...] }`  | direkt `ARRAY` auf oberster Ebene  |
+Gemini erwartet für `responseSchema` eine **OpenAPI-3.0-Teilmenge**, nicht JSON Schema: Typnamen in
+Großschreibung (`STRING`, `INTEGER`), `nullable: true` statt Union-Typen, kein
+`additionalProperties`, und das Array steht direkt auf oberster Ebene statt in einem
+`{ recipes: … }`-Wrapper.
 
 `map-ai.js` liest die Antwort aus `candidates[0].content.parts[].text` (Denk-Parts mit
-`thought: true` werden übersprungen). Das robuste `coerceRecipes` aus der Claude-Zeit bleibt
-erhalten. Auf `ai_failed` gemappt werden: HTTP-Fehler und Gemini-Quota (`error` im Body, dank
-`neverError`), Safety-Block (`promptFeedback.blockReason`), leere `candidates` und jeder
-`finishReason` ungleich `STOP` (SAFETY, MAX_TOKENS, RECITATION).
+`thought: true` werden übersprungen) und wickelt sie mit `coerceRecipes` robust aus. Auf `ai_failed`
+gemappt werden: HTTP-Fehler und Gemini-Quota (`error` im Body, dank `neverError`), Safety-Block
+(`promptFeedback.blockReason`), leere `candidates` und jeder `finishReason` ungleich `STOP`
+(SAFETY, MAX_TOKENS, RECITATION).
 
 ### Firestore-Schreiben (Aufgabe 6)
 
 **n8n schreibt bewusst NICHT nach Firestore.** Der Firestore-Write liegt im Frontend: der
-`RecipeGenerationService` legt **alle drei** Vorschläge über `RecipeLibraryService.saveRecipe()`
-an, sobald die Workflow-Antwort eintrifft (Phase 7, siehe unten).
+`RecipeGenerationService` legt **alle drei** Vorschläge über `RecipeLibraryService.saveRecipe()` an,
+sobald die Workflow-Antwort eintrifft — automatisch, ohne Bestätigungs-Button. Details in
+[docs/architektur.md](../docs/architektur.md).
 
 Damit ist die in der Aufgabe genannte Alternative „Service-Account vs. Rules erweitern" hinfällig:
 n8n bekommt **keine** Firebase-Credentials. Das ist die stärkste Variante gegenüber beiden
 Doc-Vorgaben — kein Service-Account-Key existiert irgendwo, die Rules bleiben die alleinige
 Absicherung, und der Kostenairbag (rein in n8n) wird nicht angefasst.
-
-> **Änderung in Phase 7:** Bis dahin schrieb das Frontend nur das **eine vom Nutzer bestätigte**
-> Rezept („Save to cookbook"-Button). Die Schul-Checkliste verlangt, dass **alle** generierten
-> Rezepte in Firebase landen — der Button ist entfallen, der Save läuft automatisch. Am n8n-Workflow
-> und an `firestore.rules` hat sich dadurch **nichts** geändert: der Client-Write geht weiterhin
-> durch dieselben Rules. Details in [docs/architektur.md](../docs/architektur.md).
 
 ### Tages-Quota / Kostenairbag (Aufgabe 4)
 

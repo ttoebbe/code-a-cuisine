@@ -2,8 +2,8 @@
 
 Rezept-Generator als Projekt der Developer Akademie. Man gibt an, was noch im Kühlschrank liegt und
 wie gekocht werden soll — ein n8n-Workflow lässt daraus von einem LLM drei Rezepte erzeugen und
-liefert sie als JSON an das Angular-Frontend zurück. Rezepte, die gefallen, wandern in eine
-gemeinsame Firestore-Bibliothek („Cookbook") und können dort wiedergefunden und geliked werden.
+liefert sie als JSON an das Angular-Frontend zurück. Alle drei Vorschläge landen automatisch in einer
+gemeinsamen Firestore-Bibliothek („Cookbook") und können dort wiedergefunden und geliked werden.
 
 | Bereich            | Technik                                           | Läuft wo                       |
 | ------------------ | ------------------------------------------------- | ------------------------------ |
@@ -12,7 +12,8 @@ gemeinsame Firestore-Bibliothek („Cookbook") und können dort wiedergefunden u
 | Bibliothek         | Firebase Firestore (Collection `recipes`)         | extern                         |
 
 Die beiden Pfade kreuzen sich nie im Backend: n8n schreibt **nicht** nach Firestore, das Frontend
-spricht Firestore direkt an. Details in [docs/architektur.md](docs/architektur.md).
+spricht Firestore direkt an — es legt die drei Vorschläge selbst an, sobald die Antwort eintrifft.
+Details in [docs/architektur.md](docs/architektur.md).
 
 ---
 
@@ -47,8 +48,9 @@ importiert. Der Container kommt aus der `docker-compose.yml` unter `~/n8n`:
 cd ~/n8n && docker compose up -d     # danach: http://localhost:5678
 ```
 
-Import, Workflow-Aktivierung und das Eintragen des Google-API-Keys sind Schritt für Schritt in
-[`n8n/README.md`](n8n/README.md) beschrieben. Der Webhook hört danach auf
+Die Workflow-JSONs werden aus [`n8n/build-workflows.mjs`](n8n/build-workflows.mjs) generiert; Import
+per CLI, Aktivierung und das Eintragen der beiden Credentials (Gemini-Key, SMTP) stehen Schritt für
+Schritt in [`n8n/README.md`](n8n/README.md). Der Webhook hört danach auf
 `http://localhost:5678/webhook/generate-recipe`; das Frontend bezieht die URL ausschließlich aus
 `environment.recipeWebhookUrl`, nie hartcodiert.
 
@@ -124,12 +126,13 @@ keinen Client-Zähler, der sich umgehen ließe.
 - [docs/n8n-webhook.md](docs/n8n-webhook.md) — JSON-Vertrag, Fehlercodes, CORS
 - [docs/firebase.md](docs/firebase.md) — Firestore-Einrichtung, Security-Rules, Indexe
 - [docs/loading-animation.md](docs/loading-animation.md) — Herkunft und Neuerzeugung der Ladeanimation
-- [n8n/README.md](n8n/README.md) — Workflow importieren, aktivieren, API-Key eintragen
+- [n8n/README.md](n8n/README.md) — Workflows bauen, importieren, Credentials eintragen
+- [src/app/models/firebase-schema.md](src/app/models/firebase-schema.md) — Firestore-Schema und Queries
 - [CLAUDE.md](CLAUDE.md) — Projekt-Anweisungen und Konventionen
 
 ## Offene Punkte vor einem Deployment
 
 - `environment.prod.ts`: Platzhalter-URL durch die öffentliche n8n-Webhook-URL ersetzen
-- n8n-Webhook-Node: Prod-Origin in `ALLOWED_ORIGINS` ergänzen (CORS)
+- n8n-Webhook-Node: Prod-Origin in `allowedOrigins` und `CORS_ORIGIN` (`n8n/build-workflows.mjs`)
+  ergänzen, danach neu bauen und importieren
 - Google-Cloud-Console: HTTP-Referrer-Beschränkung für den Firebase-Browser-Key setzen
-- `src/app/imprint/imprint.html`: Platzhalter im Impressum durch echte Angaben ersetzen

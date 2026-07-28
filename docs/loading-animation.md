@@ -14,13 +14,14 @@ Quelle: `docs/design/loading-original.gif` (436×613, 25 fps, 13,16 s) — nicht
 **`loading.webp` ist die bevorzugte Quelle.** Das GIF bleibt ausschließlich als Fallback im Repo
 und darf nicht gelöscht werden.
 
-Sobald der Ladezustand im Generator gebaut wird, wird die Animation über ein `<picture>`-Element
-eingebunden — WebP zuerst, GIF als Fallback:
+Eingebunden ist die Animation über ein `<picture>`-Element in
+[`generation-loading.html`](../src/app/generator/generation-loading/generation-loading.html) — WebP
+zuerst, GIF als Fallback:
 
 ```html
 <picture>
-  <source srcset="img/loading.webp" type="image/webp" />
-  <img src="img/loading.gif" alt="" width="171" height="240" />
+  <source srcset="/img/loading.webp" type="image/webp" />
+  <img class="loading__animation" src="/img/loading.gif" alt="" width="171" height="240" />
 </picture>
 ```
 

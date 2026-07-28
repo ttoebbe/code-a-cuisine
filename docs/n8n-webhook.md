@@ -16,21 +16,20 @@ dieses Dokument beschreibt Endpunkt, Regeln und Fehlercodes drumherum.
 - Aufrufe ausschließlich über `RecipeApiService`, nie direkt aus Components
 
 > **Ist-Stand:** Der Workflow ist gebaut und liegt versioniert unter [`n8n/`](../n8n/). Aufbau,
-> Import, Gemini-Key und die getroffenen Entscheidungen stehen in
-> [`n8n/README.md`](../n8n/README.md). Vor dem ersten echten Lauf müssen zwei Dinge in der n8n-UI
-> passieren: **(1)** den Google-API-Key in die Header-Auth-Credential `x-goog-api-key` eintragen,
-> **(2)** der Workflow „Code a Cuisine — Generate Recipe" muss **aktiv** sein.
+> Build, Import, Credentials und die getroffenen Entscheidungen stehen in
+> [`n8n/README.md`](../n8n/README.md). Vor dem ersten echten Lauf müssen zwei Dinge stimmen:
+> **(1)** der Google-API-Key steht in der Header-Auth-Credential `x-goog-api-key` (nur in der
+> n8n-UI), **(2)** der Workflow „Code a Cuisine — Generate Recipe" ist **aktiv**.
 
 ### CORS
 
-Der Browser schickt vor dem POST einen Preflight (`OPTIONS`). Der n8n-Webhook-Node muss daher
-antworten mit:
+Zwei Stufen, beide im Workflow:
 
-```
-Access-Control-Allow-Origin: http://localhost:4200
-Access-Control-Allow-Headers: Content-Type
-Access-Control-Allow-Methods: POST, OPTIONS
-```
+- **Preflight (`OPTIONS`)** beantwortet der Webhook-Node über `allowedOrigins`
+  (`http://localhost:4200,http://localhost:4300`).
+- **Antwort auf den POST**: beide Respond-Nodes spiegeln `headers.origin` in
+  `Access-Control-Allow-Origin` zurück, sofern er in der Allow-Liste steht, sonst
+  `http://localhost:4200` — dazu `Vary: Origin`.
 
 Ohne diese Header blockiert Chrome den Aufruf; das Frontend zeigt dann den generischen
 `internal_error`-Dialog („The recipe service is not reachable right now").
@@ -65,7 +64,8 @@ diskriminierte Union über `status`.
 ```
 
 `GeneratedRecipe` ist das `Recipe`-Interface ohne `id`, `createdAt` und `likeCount`; diese Felder
-ergänzt erst der Firestore-Write.
+ergänzt erst der Firestore-Write, den das **Frontend** direkt nach dem Eintreffen der Antwort für
+alle drei Vorschläge auslöst (siehe [docs/architektur.md](architektur.md)).
 
 ### Fehler
 
@@ -89,9 +89,10 @@ ergänzt erst der Firestore-Write.
 `message` wird unverändert angezeigt — der Text ist damit Teil des Vertrags. `retryAfter` nur bei
 Quota-Fehlern (ISO 8601), sonst `null`.
 
-HTTP-Status ist egal: Das Frontend liest die Fehler-Envelope sowohl aus einer 200er- als auch aus
-einer 4xx/5xx-Antwort. Nur wenn gar kein passender Body ankommt, fällt es auf `internal_error`
-zurück.
+n8n antwortet **immer mit HTTP 200**, auch im Fehlerfall — Diskriminator ist allein das Feld
+`status`. Das Frontend ist trotzdem tolerant und liest die Fehler-Envelope auch aus einer
+4xx/5xx-Antwort. Nur wenn gar kein passender Body ankommt (Transport, CORS, Timeout), fällt es auf
+`internal_error` zurück; dieser Code kommt also nie aus n8n.
 
 ## Umsetzung in n8n
 
@@ -107,9 +108,10 @@ Webhook (POST generate-recipe)
       └─ false → Respond: error
 ```
 
-- **Alle** Antworten kommen als **HTTP 200** mit dem jeweiligen Envelope zurück (der `RecipeApiService`
-  liest den Erfolgs- wie den Fehler-Envelope aus einer 200er-Antwort). Details, Import und die
-  Entscheidungen zu LLM-Anbieter, Firestore und Quota: [`n8n/README.md`](../n8n/README.md).
+Die Workflow-JSONs werden aus [`n8n/build-workflows.mjs`](../n8n/build-workflows.mjs) generiert.
+Build, Import und die Entscheidungen zu LLM-Anbieter, Firestore und Quota stehen in
+[`n8n/README.md`](../n8n/README.md), der Node-für-Node-Durchgang in
+[docs/architektur.md](architektur.md).
 
 ## Regeln, die in n8n liegen
 

@@ -1,12 +1,13 @@
 # Firestore-Schema — Code à Cuisine
 
-Dieses Dokument beschreibt die Firestore-Struktur für die Rezept-Bibliothek. Es ist die Vertragsbasis für den Firebase-Service in Phase 3.
+Dieses Dokument beschreibt die Firestore-Struktur für die Rezept-Bibliothek — die Vertragsbasis für [`RecipeLibraryService`](../services/recipe-library.service.ts). Einrichtung, Rules-Deployment und Testdaten stehen in [`docs/firebase.md`](../../../docs/firebase.md).
 
 ## Collection: `recipes`
 
 - **Document-ID**: Firestore-auto-generated (via `addDoc()`).
 - **Dokument-Shape**: das `Recipe`-Interface aus [`recipe.interface.ts`](./recipe.interface.ts) ohne `id` — die Document-ID _ist_ die `id` — und mit `createdAt` als Firestore-`Timestamp`.
 - **Datenherkunft**: Aus der n8n-Antwort (Typ `GeneratedRecipe`) werden beim Schreiben die Felder `createdAt` (serverseitig via `serverTimestamp()`) und `likeCount = 0` ergänzt.
+- **Schreibzeitpunkt**: `RecipeGenerationService.applyResponse()` legt **alle drei** Vorschläge einer Generierung automatisch an, sobald die Workflow-Antwort eintrifft — genau einmal pro Lauf, ohne Bestätigungs-Button. n8n schreibt nie selbst nach Firestore.
 - **Mapping**: [`recipe-document.ts`](../services/recipe-document.ts) übersetzt zwischen Dokument und Modell: beim Lesen wird die Document-ID als `id` und der `Timestamp` als ISO-String (`Recipe.createdAt`) gesetzt.
 
 > `serverTimestamp()` schreibt zwangsläufig einen `Timestamp`, keinen ISO-String — ein einzelner Write kann nicht beides. Der Timestamp gewinnt, weil er die Serveruhr nutzt: die Sortierung und der Paginierungs-Cursor hängen damit nicht an der Uhr des Clients, und die Security-Rule kann `createdAt == request.time` erzwingen.
