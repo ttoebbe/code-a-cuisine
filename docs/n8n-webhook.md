@@ -1,8 +1,8 @@
-# n8n-Webhook — Rezept-Generierung
+# n8n-Webhook — JSON-Vertrag
 
 Vertrag zwischen Angular-Frontend und n8n-Workflow. Die TypeScript-Interfaces in
-[`src/app/models/`](../src/app/models/) sind die einzige Quelle der Wahrheit für die Shapes;
-dieses Dokument beschreibt Endpunkt, Regeln und Fehlercodes drumherum.
+[`src/app/models/`](../src/app/models/) sind die einzige Quelle der Wahrheit für die Shapes; dieses
+Dokument beschreibt Endpunkt, Fehlercodes und die Regeln, die serverseitig liegen.
 
 ## Endpunkt
 
@@ -11,32 +11,14 @@ dieses Dokument beschreibt Endpunkt, Regeln und Fehlercodes drumherum.
 | Dev      | `http://localhost:5678/webhook/generate-recipe` | `src/environments/environment.ts` |
 | Prod     | Platzhalter, bis die n8n-Instanz deployed ist   | `environment.prod.ts`             |
 
-- Methode: `POST`, `Content-Type: application/json`
-- Timeout im Frontend: 90 s (`environment.webhookTimeoutMs`)
-- Aufrufe ausschließlich über `RecipeApiService`, nie direkt aus Components
-
-> **Ist-Stand:** Der Workflow ist gebaut und liegt versioniert unter [`n8n/`](../n8n/). Aufbau,
-> Build, Import, Credentials und die getroffenen Entscheidungen stehen in
-> [`n8n/README.md`](../n8n/README.md). Vor dem ersten echten Lauf müssen zwei Dinge stimmen:
-> **(1)** der Google-API-Key steht in der Header-Auth-Credential `x-goog-api-key` (nur in der
-> n8n-UI), **(2)** der Workflow „Code a Cuisine — Generate Recipe" ist **aktiv**.
-
-### CORS
-
-Zwei Stufen, beide im Workflow:
-
-- **Preflight (`OPTIONS`)** beantwortet der Webhook-Node über `allowedOrigins`
-  (`http://localhost:4200,http://localhost:4300`).
-- **Antwort auf den POST**: beide Respond-Nodes spiegeln `headers.origin` in
-  `Access-Control-Allow-Origin` zurück, sofern er in der Allow-Liste steht, sonst
-  `http://localhost:4200` — dazu `Vary: Origin`.
-
-Ohne diese Header blockiert Chrome den Aufruf; das Frontend zeigt dann den generischen
-`internal_error`-Dialog („The recipe service is not reachable right now").
+`POST`, `Content-Type: application/json`, Timeout im Frontend 90 s
+(`environment.webhookTimeoutMs`). Aufrufe ausschließlich über `RecipeApiService`, nie direkt aus
+Components.
 
 ## Request
 
-Shape: `RecipeRequest` in [`recipe-request.interface.ts`](../src/app/models/recipe-request.interface.ts).
+Shape: `RecipeRequest` in
+[`recipe-request.interface.ts`](../src/app/models/recipe-request.interface.ts).
 
 ```json
 {
@@ -50,24 +32,24 @@ Shape: `RecipeRequest` in [`recipe-request.interface.ts`](../src/app/models/reci
 ```
 
 - `unit`: `g` | `ml` | `piece`
-- `portions`: 1–12, `cooks`: 1–3 (Frontend klemmt die Werte, n8n validiert erneut)
+- `portions`: 1–12, `cooks`: 1–3 (das Frontend klemmt die Werte, n8n validiert erneut)
 
 ## Response
 
-Shape: `RecipeResponse` in [`recipe-response.interface.ts`](../src/app/models/recipe-response.interface.ts) —
-diskriminierte Union über `status`.
+Shape: `RecipeResponse` in
+[`recipe-response.interface.ts`](../src/app/models/recipe-response.interface.ts) — diskriminierte
+Union über `status`.
 
-### Erfolg
+**Erfolg:**
 
 ```json
 { "status": "ok", "recipes": [/* 3 × GeneratedRecipe */] }
 ```
 
 `GeneratedRecipe` ist das `Recipe`-Interface ohne `id`, `createdAt` und `likeCount`; diese Felder
-ergänzt erst der Firestore-Write, den das **Frontend** direkt nach dem Eintreffen der Antwort für
-alle drei Vorschläge auslöst (siehe [docs/architektur.md](architektur.md)).
+ergänzt erst der Firestore-Write, den das Frontend selbst auslöst.
 
-### Fehler
+**Fehler:**
 
 ```json
 {
@@ -90,49 +72,43 @@ alle drei Vorschläge auslöst (siehe [docs/architektur.md](architektur.md)).
 Quota-Fehlern (ISO 8601), sonst `null`.
 
 n8n antwortet **immer mit HTTP 200**, auch im Fehlerfall — Diskriminator ist allein das Feld
-`status`. Das Frontend ist trotzdem tolerant und liest die Fehler-Envelope auch aus einer
-4xx/5xx-Antwort. Nur wenn gar kein passender Body ankommt (Transport, CORS, Timeout), fällt es auf
-`internal_error` zurück; dieser Code kommt also nie aus n8n.
+`status`. Nur wenn gar kein passender Body ankommt (Transport, CORS, Timeout), fällt das Frontend
+selbst auf `internal_error` zurück; dieser Code kommt also nie aus n8n.
 
-## Umsetzung in n8n
+## Quota — der Kostenairbag
 
-Der Node-Graph des Haupt-Workflows:
+Läuft **ausschließlich serverseitig** in n8n. Das Frontend zeigt den Zustand nur an und führt keine
+eigenen Zähler.
 
-```
-Webhook (POST generate-recipe)
-  → Validate & rate limit   (n8n/src/guard.js  — Validierung + Tages-Quota + Gemini-Request)
-  → IF route == ok
-      ├─ true  → Generate recipes (Gemini) (HTTP, generateContent, responseSchema, neverError)
-      │           → Map AI answer to recipes (n8n/src/map-ai.js)
-      │           → IF route == ok → Respond: recipes | Respond: error
-      └─ false → Respond: error
-```
+- **3 Rezepte pro IP und Tag, 12 systemweit**, Reset um Mitternacht UTC (`retryAfter` = die nächste
+  UTC-Mitternacht).
+- Der Slot wird **vor** dem LLM-Aufruf reserviert, damit wiederholte Fehlversuche das Budget nicht
+  aushöhlen.
+- Zähler liegen in `/home/node/.n8n/quota-state.json` auf dem n8n-Datenvolume. Zurücksetzen: siehe
+  [n8n/README.md](../n8n/README.md).
 
-Die Workflow-JSONs werden aus [`n8n/build-workflows.mjs`](../n8n/build-workflows.mjs) generiert.
-Build, Import und die Entscheidungen zu LLM-Anbieter, Firestore und Quota stehen in
-[`n8n/README.md`](../n8n/README.md), der Node-für-Node-Durchgang in
-[docs/architektur.md](architektur.md).
+> Ohne vorgelagerten Proxy setzt der Browser kein `x-forwarded-for`; auf `localhost` landen daher
+> alle Anfragen im IP-Bucket `unknown`. Das systemweite Limit greift trotzdem und ist der harte
+> Deckel.
 
-## Regeln, die in n8n liegen
+## Weitere Regeln, die in n8n liegen
 
 Diese Punkte prüft das Frontend bewusst **nicht** — es zeigt nur an, was zurückkommt:
 
-- **Quota / Kostenairbag**: 3 Rezepte pro IP und Tag, 12 systemweit. Keine Client-Zähler,
-  kein LocalStorage-Ersatz.
 - **Zutaten-Abdeckung**: mindestens 70 % der eingegebenen Zutaten müssen im Rezept vorkommen
   (`yourIngredients`).
 - **Zusatzzutaten**: maximal 3 Basiszutaten in `extraIngredients`.
-- **Arbeitsaufteilung**: bei `cooks > 1` verteilt der Workflow die Schritte auf
-  `assignedChef` 1..cooks. Schritte mit gleicher `parallelGroupId` laufen gleichzeitig und werden
-  in der Rezeptansicht nebeneinander dargestellt; `parallelGroupId: null` heißt seriell.
+- **Arbeitsaufteilung**: bei `cooks > 1` verteilt der Workflow die Schritte auf `assignedChef`
+  `1..cooks`. Schritte mit gleicher `parallelGroupId` laufen gleichzeitig und werden nebeneinander
+  dargestellt; `parallelGroupId: null` heißt seriell.
 - **Nährwerte**: `perPortion` und `total` müssen beide gefüllt sein.
 
-## Ohne laufenden Workflow entwickeln
+## CORS
 
-`environment.useMockWebhook` auf `true` setzen: Der `RecipeApiService` liefert dann die Fixtures
-aus [`recipe-mock.data.ts`](../src/app/services/recipe-mock.data.ts) mit 4 s Verzögerung, sodass
-Ladeanimation, Ergebnisliste und Rezeptansicht ohne n8n testbar sind. Für Fehlerzustände die
-Flagge auf `false` lassen und den Workflow stoppen — dann greift der `internal_error`-Pfad.
+Der Webhook-Node beantwortet den Preflight (`OPTIONS`) über `allowedOrigins`
+(`http://localhost:4200,http://localhost:4300`); beide Respond-Nodes spiegeln `headers.origin` in
+`Access-Control-Allow-Origin` zurück, sofern er in der Allow-Liste steht. Ohne diese Header blockiert
+Chrome den Aufruf, und das Frontend zeigt den generischen `internal_error`-Dialog.
 
 ## Manueller Test
 

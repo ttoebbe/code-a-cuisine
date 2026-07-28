@@ -11,11 +11,6 @@ export const environment = {
   /** Aborts the call before the browser default kicks in; n8n needs ~15-40s per run. */
   webhookTimeoutMs: 90_000,
   /**
-   * Serves the fixtures from recipe-mock.data.ts instead of calling n8n.
-   * Flip to true to work on the result screens without a running workflow.
-   */
-  useMockWebhook: false,
-  /**
    * Firebase project of the recipe library. The values live in the untracked
    * firebase.config.ts, see docs/firebase.md.
    */

@@ -10,7 +10,7 @@ import type { GeneratedRecipe, Recipe } from '../models/recipe.interface';
 /**
  * A recipe as it lives in Firestore: without the id, which is the document id,
  * and with a native timestamp so the sort order follows the server clock.
- * See src/app/models/firebase-schema.md.
+ * See docs/firebase.md.
  */
 export type RecipeDocument = Omit<Recipe, 'id' | 'createdAt'> & { createdAt: Timestamp };
 

@@ -1,10 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, delay, of, timeout } from 'rxjs';
+import { Observable, catchError, of, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
 import type { RecipeRequest } from '../models/recipe-request.interface';
 import type { RecipeErrorResponse, RecipeResponse } from '../models/recipe-response.interface';
-import { MOCK_RECIPE_RESPONSE, MOCK_WEBHOOK_DELAY_MS } from './recipe-mock.data';
 
 /** Fallback envelope for failures that never reached the workflow. */
 function buildTransportError(): RecipeErrorResponse {
@@ -31,20 +30,10 @@ export class RecipeApiService {
    * @returns Stream that always emits exactly one RecipeResponse and never errors.
    */
   generateRecipes(request: RecipeRequest): Observable<RecipeResponse> {
-    if (environment.useMockWebhook) return this.serveMock();
     return this.http.post<RecipeResponse>(environment.recipeWebhookUrl, request).pipe(
       timeout(environment.webhookTimeoutMs),
       catchError((error: unknown) => of(this.toErrorResponse(error))),
     );
-  }
-
-  /**
-   * Emits the local fixtures with a delay, so the loading screen is visible
-   * while working without a running n8n instance.
-   * @returns Mock response stream.
-   */
-  private serveMock(): Observable<RecipeResponse> {
-    return of(MOCK_RECIPE_RESPONSE).pipe(delay(MOCK_WEBHOOK_DELAY_MS));
   }
 
   /**
