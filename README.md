@@ -53,20 +53,27 @@ Der vollständige Weg inklusive Firebase-Werten, Rules, Index und n8n-Setup steh
 
 ```
 src/app/
+  home/          Startseite mit dem Einstieg in den Wizard
   generator/     Wizard: Zutaten, Präferenzen, Ladezustand, Fehlerdialog
   results/       Ergebnisliste der drei Vorschläge
   recipe-view/   Rezeptansicht — für Vorschläge und gespeicherte Rezepte
   library/       Cookbook: Kachel-Filter, Kartenliste, „Most liked"-Reihe
-  models/        JSON-Verträge (Request, Response, Recipe)
+  header/        Kopfzeile mit Navigation
+  footer/        Fußzeile
+  imprint/       Impressum
+  models/        Schnittstellen-Typen (Request, Response, Recipe)
   services/      n8n-Webhook, Generierungs-Zustand, Firestore-Zugriff
+  firebase/      Firestore-Provider für die App-Config
+  guards/        Route-Guard für die Ergebnisseite
+  shared/        Formatierungs-Helfer für Rezeptdaten
 n8n/             Die beiden Workflows als exportierte JSONs
-docs/            Installation, Architektur, Webhook-Vertrag, Firebase, Design-Mockups
+docs/            Installation, Architektur, Webhook-Schnittstelle, Firebase, Design-Mockups
 ```
 
 ## Dokumentation
 
 - [docs/installation.md](docs/installation.md) — von `git clone` bis zur laufenden App
 - [docs/architektur.md](docs/architektur.md) — Gesamtbild und die Entscheidungen dahinter
-- [docs/n8n-webhook.md](docs/n8n-webhook.md) — JSON-Vertrag, Fehlercodes, Quota
+- [docs/n8n-webhook.md](docs/n8n-webhook.md) — Webhook-Schnittstelle, Fehlercodes, Quota
 - [docs/firebase.md](docs/firebase.md) — Config, Schema, Rules, Index, Testdaten
 - [n8n/README.md](n8n/README.md) — Workflows importieren, Credentials anlegen
