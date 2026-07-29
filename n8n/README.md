@@ -1,15 +1,15 @@
 # n8n — Rezept-Generierung
 
 Zwei Workflows als exportierte JSONs. Sie sind die **einzige Quelle** und mit der laufenden Instanz
-synchron — es gibt kein Build-Skript mehr.
+synchron.
 
 | Datei                           | Inhalt                                                          |
 | ------------------------------- | --------------------------------------------------------------- |
 | `generate-recipe.workflow.json` | Haupt-Workflow (Webhook → Validierung/Quota → Gemini → Antwort) |
 | `error-handler.workflow.json`   | Error-Trigger: loggt und mailt fehlgeschlagene Läufe            |
 
-> Änderungen an den Code-Nodes (`guard`, `map-ai`, `log-error`) werden ab jetzt **direkt in der
-> n8n-UI** gemacht und der Workflow danach neu exportiert, sodass diese Dateien aktuell bleiben.
+> Änderungen an den Code-Nodes (`guard`, `map-ai`, `log-error`) macht man **direkt in der n8n-UI**
+> und exportiert den Workflow danach neu, damit diese Dateien aktuell bleiben.
 
 Wie der Workflow mit dem Frontend spricht, steht in [`docs/n8n-webhook.md`](../docs/n8n-webhook.md).
 
@@ -78,15 +78,3 @@ docker exec n8n rm /home/node/.n8n/quota-state.json
 ```
 
 Der Datei-Zugriff braucht `NODE_FUNCTION_ALLOW_BUILTIN=fs` in der `docker-compose.yml` unter `~/n8n`.
-
-## Rauch-Test (ohne echten Key)
-
-```bash
-export MSYS_NO_PATHCONV=1
-# CORS-Preflight
-curl -i -X OPTIONS http://localhost:5678/webhook/generate-recipe \
-  -H "Origin: http://localhost:4200" -H "Access-Control-Request-Method: POST"
-# Validierung greift serverseitig, bevor der LLM gerufen wird
-curl -X POST http://localhost:5678/webhook/generate-recipe -H "Content-Type: application/json" \
-  -d '{"ingredients":[],"portions":2,"cooks":2,"timeCategory":"quick","cuisine":"italian","diet":"vegetarian"}'
-```
