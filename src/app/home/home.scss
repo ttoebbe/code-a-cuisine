@@ -5,19 +5,22 @@
 }
 
 .hero {
+  --hero-height: calc(100vh - var(--header-height-mobile) - var(--footer-height));
+
   position: relative;
   padding: var(--space-7) var(--space-5);
-  min-height: calc(100vh - var(--header-height-mobile));
+  min-height: var(--hero-height);
   background: var(--color-olive-green);
   color: var(--color-cream);
   overflow: hidden;
 
   @include desktop {
+    --hero-height: calc(100vh - var(--header-height-desktop) - var(--footer-height));
+
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
     gap: var(--space-6);
-    min-height: calc(100vh - var(--header-height-desktop));
     padding: var(--space-8) var(--space-6);
   }
 }
@@ -29,7 +32,7 @@
   flex-direction: column;
   justify-content: space-between;
   gap: var(--space-8);
-  min-height: calc(100vh - var(--header-height-mobile) - 2 * var(--space-7));
+  min-height: calc(var(--hero-height) - 2 * var(--space-7));
   padding-right: 42%;
 
   @include desktop {
@@ -81,6 +84,12 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-2);
+
+  @include desktop {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-5);
+  }
 }
 
 .hero__cross-sell-title {
@@ -102,65 +111,50 @@
   }
 }
 
+// The stack spans the full hero, ignoring its padding, so the top plate starts
+// flush with the hero edge instead of being clipped by the header above it.
+// `--plate-size` is the reference width all three plates and their offsets are
+// derived from: the stack is 2.19 reference widths tall and the design lets the
+// last plate bleed 0.09 past the bottom, so 2.11 widths fill the hero exactly.
+// Capped at the native export width so the food photos are never upscaled.
 .hero__plates {
+  // Mobile keeps the wide plates of the design: the stack starts right of the
+  // 42% text padding and runs off the right edge instead of shrinking to fit.
+  --plate-size: min(68vw, var(--hero-height) / 2.11, 280px);
+
   position: absolute;
-  inset: 0 0 0 auto;
-  width: 40%;
+  inset: 0 auto 0 63%;
+  width: var(--plate-size);
   pointer-events: none;
 
   @include desktop {
-    position: relative;
-    inset: auto;
-    width: auto;
-    align-self: stretch;
-    min-height: 520px;
-    // Reference size the plate offsets are derived from, so the stack keeps its
-    // proportions on every viewport instead of drifting apart.
-    --plate-size: min(34vw, 494px);
+    --plate-size: min(var(--hero-height) / 2.11, 494px);
+
+    inset: 0 var(--space-6) 0 auto;
+    width: 50%;
   }
 }
 
-// Plates scale with the viewport but are capped at their native export size,
-// so the food photos are never upscaled. They bleed off the right hero edge.
 .hero__plate {
   position: absolute;
-  left: 8%;
-  width: min(68vw, 280px);
+  right: 0;
   height: auto;
   max-width: none;
-
-  @include desktop {
-    left: auto;
-    right: -20px;
-  }
 }
 
+// Widths keep the ratio of the native exports, so the three photos scale as one
+// stack; the top offsets are the overlap measured in the design.
 .hero__plate--1 {
-  top: -2%;
-
-  @include desktop {
-    top: 50%;
-    width: min(34vw, 480px);
-    margin-top: calc(var(--plate-size) * -1.418);
-  }
+  top: 0;
+  width: calc(var(--plate-size) * 480 / 494);
 }
 
 .hero__plate--2 {
-  top: 32%;
-
-  @include desktop {
-    top: 50%;
-    width: var(--plate-size);
-    margin-top: calc(var(--plate-size) * -0.553);
-  }
+  top: calc(var(--plate-size) * 0.58);
+  width: var(--plate-size);
 }
 
 .hero__plate--3 {
-  top: 68%;
-
-  @include desktop {
-    top: 50%;
-    width: min(34vw, 493px);
-    margin-top: calc(var(--plate-size) * 0.131);
-  }
+  top: calc(var(--plate-size) * 1.275);
+  width: calc(var(--plate-size) * 493 / 494);
 }

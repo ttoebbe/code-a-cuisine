@@ -57,6 +57,9 @@
   // Layout
   --header-height-mobile: 80px;
   --header-height-desktop: 88px;
+  // Footer padding (2 × --space-4) plus the 44px touch target of its link.
+  // Route hosts subtract it so a full-height page fits without a scrollbar.
+  --footer-height: 76px;
   --content-max-width: 1200px;
   --content-max-width-narrow: 720px;
 }
