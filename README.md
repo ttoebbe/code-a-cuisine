@@ -1,35 +1,35 @@
 # Code à Cuisine
 
-Rezept-Generator als Projekt der Developer Akademie. Man gibt an, was noch im Kühlschrank liegt und
-wie gekocht werden soll — ein n8n-Workflow lässt daraus von einem LLM drei Rezepte erzeugen und
-liefert sie als JSON an das Angular-Frontend zurück. Alle drei Vorschläge landen automatisch in einer
-gemeinsamen Firestore-Bibliothek („Cookbook") und können dort wiedergefunden und geliked werden.
+A recipe generator built as a Developer Akademie project. You say what is still in the fridge and how
+you want to cook — an n8n workflow has an LLM turn that into three recipes and hands them back to the
+Angular frontend as JSON. All three suggestions land in a shared Firestore library (the "Cookbook")
+automatically, where they can be found again and liked.
 
 ```mermaid
 flowchart LR
-  ng["Angular-App · Browser"]
-  n8n["n8n-Workflow · Docker lokal"]
-  ai["Google Gemini · extern"]
-  fs["Firestore · extern"]
+  ng["Angular app · browser"]
+  n8n["n8n workflow · local Docker"]
+  ai["Google Gemini · external"]
+  fs["Firestore · external"]
 
   ng -- "POST RecipeRequest" --> n8n
   n8n -- "generateContent" --> ai
-  ai -- "3 Rezepte als JSON" --> n8n
-  n8n -- "HTTP 200 mit Envelope" --> ng
-  ng -- "speichern, lesen, liken" --> fs
+  ai -- "3 recipes as JSON" --> n8n
+  n8n -- "HTTP 200 with envelope" --> ng
+  ng -- "save, read, like" --> fs
 ```
 
-Die beiden Pfade kreuzen sich nie im Backend: n8n schreibt **nicht** nach Firestore, das Frontend
-spricht Firestore direkt an und legt die drei Vorschläge selbst an, sobald die Antwort eintrifft.
+The two paths never meet in the backend: n8n does **not** write to Firestore. The frontend talks to
+Firestore directly and creates the three suggestions itself as soon as the response arrives.
 
-## Tech-Stack
+## Tech stack
 
-- **Frontend:** Angular 21 (Standalone Components, Signals), SCSS — lokal auf `localhost:4200`
-- **Generierung:** n8n-Workflow in Docker → Google Gemini (`gemini-3.5-flash`) — lokal auf
+- **Frontend:** Angular 21 (standalone components, signals), SCSS — runs on `localhost:4200`
+- **Generation:** n8n workflow in Docker → Google Gemini (`gemini-3.5-flash`) — runs on
   `localhost:5678`
-- **Bibliothek:** Firebase Firestore, Collection `recipes` — extern
+- **Library:** Firebase Firestore, collection `recipes` — external
 
-## Loslegen
+## Getting started
 
 ```bash
 npm install
@@ -37,43 +37,43 @@ cp src/environments/firebase.config.example.ts src/environments/firebase.config.
 npm start           # http://localhost:4200
 ```
 
-Der vollständige Weg inklusive Firebase-Werten, Rules, Index und n8n-Setup steht in
+The full walkthrough — Firebase values, rules, index and the n8n setup — is in
 **[docs/installation.md](docs/installation.md)**.
 
-## npm-Skripte
+## npm scripts
 
-| Befehl          | Zweck                                |
-| --------------- | ------------------------------------ |
-| `npm start`     | Dev-Server auf Port 4200             |
-| `npm run build` | Produktionsbuild nach `dist/`        |
-| `npm run watch` | Build im Watch-Modus                 |
-| `npm run lint`  | ESLint inkl. Angular-Template-Regeln |
+| Command         | Purpose                                 |
+| --------------- | --------------------------------------- |
+| `npm start`     | Dev server on port 4200                 |
+| `npm run build` | Production build into `dist/`           |
+| `npm run watch` | Build in watch mode                     |
+| `npm run lint`  | ESLint including Angular template rules |
 
-## Projektstruktur
+## Project structure
 
 ```
 src/app/
-  home/          Startseite mit dem Einstieg in den Wizard
-  generator/     Wizard: Zutaten, Präferenzen, Ladezustand, Fehlerdialog
-  results/       Ergebnisliste der drei Vorschläge
-  recipe-view/   Rezeptansicht — für Vorschläge und gespeicherte Rezepte
-  library/       Cookbook: Kachel-Filter, Kartenliste, „Most liked"-Reihe
-  header/        Kopfzeile mit Navigation
-  footer/        Fußzeile
-  imprint/       Impressum
-  models/        Schnittstellen-Typen (Request, Response, Recipe)
-  services/      n8n-Webhook, Generierungs-Zustand, Firestore-Zugriff
-  firebase/      Firestore-Provider für die App-Config
-  guards/        Route-Guard für die Ergebnisseite
-  shared/        Formatierungs-Helfer für Rezeptdaten
-n8n/             Die beiden Workflows als exportierte JSONs
-docs/            Installation, Architektur, Webhook-Schnittstelle, Firebase, Design-Mockups
+  home/          Landing page, entry point into the wizard
+  generator/     Wizard: ingredients, preferences, loading state, error dialog
+  results/       List of the three suggestions
+  recipe-view/   Recipe view — for suggestions and saved recipes alike
+  library/       Cookbook: category tiles, card list, "Most liked" row
+  header/        Header with the navigation
+  footer/        Footer
+  imprint/       Imprint
+  models/        Interface types (request, response, recipe)
+  services/      n8n webhook, generation state, Firestore access
+  firebase/      Firestore provider for the app config
+  guards/        Route guard for the results page
+  shared/        Formatting helpers for recipe data
+n8n/             Both workflows as exported JSON
+docs/            Installation, architecture, webhook interface, Firebase, design mockups
 ```
 
-## Dokumentation
+## Documentation
 
-- [docs/installation.md](docs/installation.md) — von `git clone` bis zur laufenden App
-- [docs/architektur.md](docs/architektur.md) — Gesamtbild und die Entscheidungen dahinter
-- [docs/n8n-webhook.md](docs/n8n-webhook.md) — Webhook-Schnittstelle, Fehlercodes, Quota
-- [docs/firebase.md](docs/firebase.md) — Config, Schema, Rules, Index, Testdaten
-- [n8n/README.md](n8n/README.md) — Workflows importieren, Credentials anlegen
+- [docs/installation.md](docs/installation.md) — from `git clone` to a running app
+- [docs/architecture.md](docs/architecture.md) — the big picture and the decisions behind it
+- [docs/n8n-webhook.md](docs/n8n-webhook.md) — webhook interface, error codes, quota
+- [docs/firebase.md](docs/firebase.md) — config, schema, rules, index, test data
+- [n8n/README.md](n8n/README.md) — importing the workflows, creating credentials

@@ -1,126 +1,125 @@
-# Firebase — Rezept-Bibliothek
+# Firebase — the recipe library
 
-Die Bibliothek („Cookbook") liegt in Firestore. Dieses Dokument beschreibt Config, Datenmodell,
-Security-Rules, Indexe und die Testdaten.
+The library (the "Cookbook") lives in Firestore. This page covers the config, the data model, the
+security rules, the indexes and the test data.
 
-## Config eintragen (einmal pro Arbeitsplatz)
+## Entering the config (once per machine)
 
-Die Web-Config liegt in **`src/environments/firebase.config.ts`** und ist per `.gitignore` von der
-Versionierung ausgenommen — ohne sie kompiliert die App nicht.
+The web config lives in **`src/environments/firebase.config.ts`** and is kept out of version control
+via `.gitignore` — without it the app does not compile.
 
-1. [`firebase.config.example.ts`](../src/environments/firebase.config.example.ts) im selben Ordner
-   nach `firebase.config.ts` kopieren.
-2. In der Firebase-Console: **Projekt-Einstellungen → Deine Apps → Web-App → SDK-Konfiguration →
+1. Copy [`firebase.config.example.ts`](../src/environments/firebase.config.example.ts) to
+   `firebase.config.ts` in the same folder.
+2. In the Firebase console: **Project settings → Your apps → Web app → SDK setup and configuration →
    Config**.
-3. Die sechs Werte (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`,
-   `appId`) anstelle der `TODO-…`-Platzhalter eintragen.
+3. Enter the six values (`apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`,
+   `appId`) in place of the `TODO-…` placeholders.
 
-`environment.ts` und `environment.prod.ts` importieren die Config nur — dort steht kein Key. Solange
-die Platzhalter drinstehen, läuft die App normal, nur die Bibliothek zeigt ihren Fehlerzustand.
+`environment.ts` and `environment.prod.ts` only import the config — no key is written there. As long
+as the placeholders are still in place the app runs normally, only the library shows its error state.
 
-> Die Web-Config ist technisch kein Geheimnis — sie landet bei jedem Deployment im JS-Bundle. Wir
-> halten sie trotzdem aus dem öffentlichen Repository heraus. Der wirksame Schutz sind die
-> Security-Rules unten plus eine **HTTP-Referrer-Beschränkung** des API-Keys in der
-> Google-Cloud-Console (APIs & Dienste → Anmeldedaten → Browser-Key).
+> The web config is not technically a secret — it ends up in the JS bundle with every deployment. We
+> still keep it out of the public repository. The protection that actually works is the security
+> rules below plus an **HTTP referrer restriction** on the API key in the Google Cloud console
+> (APIs & Services → Credentials → browser key).
 >
-> Was **niemals** ins Repository darf, ist ein Service-Account-Key (`firebase-adminsdk-….json`) —
-> der umgeht sämtliche Rules. Die App braucht keinen: alle Writes laufen als normaler Client durch
-> die Rules.
+> What must **never** go into the repository is a service account key
+> (`firebase-adminsdk-….json`) — it bypasses every rule. The app does not need one: all writes go
+> through the rules as a normal client.
 
-## Einrichtung in der Console
+## Setting it up in the console
 
-1. Projekt anlegen (Google Analytics kann aus bleiben).
-2. **Build → Firestore Database → Datenbank erstellen**, Modus „Produktion", Region z. B. `eur3`
-   oder `europe-west3`.
-3. **Web-App hinzufügen** (`</>`-Symbol), Config kopieren, siehe oben.
-4. **Rules**: Den Inhalt von [`firestore.rules`](../firestore.rules) in den Reiter „Regeln" einfügen
-   und veröffentlichen. Alternativ `firebase deploy --only firestore:rules` (die
-   [`firebase.json`](../firebase.json) liegt bereit).
-5. **Composite-Index anlegen**, siehe unten.
+1. Create a project (Google Analytics can stay off).
+2. **Build → Firestore Database → Create database**, production mode, region e.g. `eur3` or
+   `europe-west3`.
+3. **Add a web app** (the `</>` icon), copy the config, see above.
+4. **Rules**: paste the contents of [`firestore.rules`](../firestore.rules) into the "Rules" tab and
+   publish. Alternatively run `firebase deploy --only firestore:rules` (the
+   [`firebase.json`](../firebase.json) is ready to go).
+5. **Create the composite index**, see below.
 
-## Datenmodell — Collection `recipes`
+## Data model — collection `recipes`
 
-- **Document-ID**: von Firestore vergeben (`addDoc()`) — sie _ist_ die `id` des Rezepts.
-- **Dokument-Shape**: das `Recipe`-Interface aus
-  [`recipe.interface.ts`](../src/app/models/recipe.interface.ts) ohne `id`, mit `createdAt` als
-  Firestore-`Timestamp`.
-- **Herkunft**: Aus der n8n-Antwort (Typ `GeneratedRecipe`) ergänzt der Write die Felder `createdAt`
-  (serverseitig über `serverTimestamp()`) und `likeCount = 0`.
-- **Schreibzeitpunkt**: `RecipeGenerationService.applyResponse()` legt **alle drei** Vorschläge einer
-  Generierung automatisch an, sobald die Antwort eintrifft — genau einmal pro Lauf, ohne
-  Bestätigungs-Button. n8n schreibt nie selbst nach Firestore.
-- **Mapping**: [`recipe-document.ts`](../src/app/services/recipe-document.ts) übersetzt zwischen
-  Dokument und Modell; beim Lesen wird die Document-ID als `id` und der `Timestamp` als ISO-String
-  gesetzt.
+- **Document ID**: assigned by Firestore (`addDoc()`) — it _is_ the recipe's `id`.
+- **Document shape**: the `Recipe` interface from
+  [`recipe.interface.ts`](../src/app/models/recipe.interface.ts) without `id`, and with `createdAt`
+  as a Firestore `Timestamp`.
+- **Where it comes from**: starting with the n8n response (type `GeneratedRecipe`), the write adds
+  `createdAt` (server-side, via `serverTimestamp()`) and `likeCount = 0`.
+- **When it is written**: `RecipeGenerationService.applyResponse()` creates **all three** suggestions
+  of a run automatically as soon as the response arrives — exactly once per run, without a confirm
+  button. n8n never writes to Firestore itself.
+- **Mapping**: [`recipe-document.ts`](../src/app/services/recipe-document.ts) translates between
+  document and model; when reading, the document ID becomes `id` and the `Timestamp` becomes an ISO
+  string.
 
-> `serverTimestamp()` schreibt zwangsläufig einen `Timestamp`, keinen ISO-String — ein einzelner
-> Write kann nicht beides. Der Timestamp gewinnt, weil er die Serveruhr nutzt: Sortierung und
-> Paginierungs-Cursor hängen damit nicht an der Uhr des Clients, und die Security-Rule kann
-> `createdAt == request.time` erzwingen.
+> `serverTimestamp()` inevitably writes a `Timestamp`, not an ISO string — a single write cannot do
+> both. The timestamp wins because it uses the server clock: sorting and the pagination cursor no
+> longer depend on the client's clock, and the security rule can enforce `createdAt == request.time`.
 
-### Zugriff aus dem Frontend
+### Access from the frontend
 
-Alle Reads und Writes laufen über
-[`RecipeLibraryService`](../src/app/services/recipe-library.service.ts) (`providedIn: 'root'`) —
-keine Firestore-Aufrufe aus Components:
+Every read and write goes through
+[`RecipeLibraryService`](../src/app/services/recipe-library.service.ts) (`providedIn: 'root'`) — no
+Firestore calls from components:
 
-| Methode                           | Query / Write                                      |
-| --------------------------------- | -------------------------------------------------- |
-| `saveRecipe(GeneratedRecipe)`     | `addDoc()`, liefert die Document-ID                |
-| `getRecipeById(id)`               | `getDoc()`, `null` wenn es das Dokument nicht gibt |
-| `listRecipes({cuisine?, cursor})` | paginierte Liste, 20/Seite                         |
-| `listMostLiked(count)`            | Most-liked-Row                                     |
-| `incrementLike(id)`               | `updateDoc()` mit `increment(1)`                   |
+| Method                            | Query / write                                 |
+| --------------------------------- | --------------------------------------------- |
+| `saveRecipe(GeneratedRecipe)`     | `addDoc()`, returns the document ID           |
+| `getRecipeById(id)`               | `getDoc()`, `null` if the document is missing |
+| `listRecipes({cuisine?, cursor})` | paginated list, 20 per page                   |
+| `listMostLiked(count)`            | the most-liked row                            |
+| `incrementLike(id)`               | `updateDoc()` with `increment(1)`             |
 
-## Security-Rules — was erlaubt ist
+## Security rules — what is allowed
 
-Alle Writes kommen aus dem Browser, und die App hat keine Anmeldung — deshalb tragen die Rules die
-gesamte Absicherung:
+Every write comes from the browser and the app has no sign-in, which is why the rules carry the
+entire protection:
 
-- **read**: für alle offen — die Bibliothek ist öffentlich.
-- **create**: nur mit exakt den Feldern des `Recipe`-Interfaces, gültigen Wertebereichen (Portionen
-  1–12, Köche 1–3, max. 3 Zusatzzutaten …), `createdAt == request.time` und `likeCount == 0`.
-- **update**: ausschließlich `likeCount + 1`. Jede andere Änderung wird abgelehnt.
-- **delete**: nie.
+- **read**: open to everyone — the library is public.
+- **create**: only with exactly the fields of the `Recipe` interface, valid ranges (portions 1–12,
+  cooks 1–3, at most 3 extra ingredients …), `createdAt == request.time` and `likeCount == 0`.
+- **update**: `likeCount + 1` and nothing else. Any other change is rejected.
+- **delete**: never.
 
-Damit kann ein manipulierter Client weder fremde Rezepte verändern noch Likes zurücksetzen.
+So a tampered client can neither change other people's recipes nor reset likes.
 
-## Composite-Index
+## Composite index
 
-Der Kategoriefilter kombiniert `where('cuisine', '==', …)` mit `orderBy('createdAt', 'desc')` und
-braucht dafür einen zusammengesetzten Index:
+The category filter combines `where('cuisine', '==', …)` with `orderBy('createdAt', 'desc')`, which
+needs a composite index:
 
-| Collection | Feld        | Reihenfolge |
-| ---------- | ----------- | ----------- |
-| `recipes`  | `cuisine`   | Aufsteigend |
-| `recipes`  | `createdAt` | Absteigend  |
+| Collection | Field       | Order      |
+| ---------- | ----------- | ---------- |
+| `recipes`  | `cuisine`   | Ascending  |
+| `recipes`  | `createdAt` | Descending |
 
-Anlegen unter **Firestore → Indexe → Zusammengesetzt → Index erstellen**. Ohne ihn liefert der
-gefilterte Aufruf einen Fehler, dessen Meldung in der Browser-Konsole einen Direktlink zum Anlegen
-enthält. Die Definition ist in [`firestore.indexes.json`](../firestore.indexes.json) versioniert
+Create it under **Firestore → Indexes → Composite → Create index**. Without it the filtered call
+fails, and the message in the browser console contains a direct link to create it. The definition is
+versioned in [`firestore.indexes.json`](../firestore.indexes.json)
 (`firebase deploy --only firestore:indexes`).
 
-Die Single-Field-Indexe für `createdAt` (Gesamt-Bibliothek) und `likeCount` (Most-liked-Row) legt
-Firestore automatisch an.
+The single-field indexes for `createdAt` (the full library) and `likeCount` (the most-liked row) are
+created by Firestore automatically.
 
-## Testdaten
+## Test data
 
-Die Bibliothek füllt sich aus der App selbst: Jede Generierung legt automatisch **drei** Rezepte an.
-Voraussetzung ist die ausgefüllte `firebase.config.ts`. Likes entstehen über das Herz in der
-Detailansicht — ein paar davon, damit die „Most liked recipes"-Zeile gefüllt ist.
+The library fills itself from the app: every generation creates **three** recipes. All it takes is a
+filled-in `firebase.config.ts`. Likes come from the heart in the detail view — a few of those, so the
+"Most liked recipes" row has something to show.
 
-### Was sich damit testen lässt
+### What that lets you test
 
-| Zustand                | So erreichbar                                                      |
-| ---------------------- | ------------------------------------------------------------------ |
-| Leere Bibliothek       | `/library` vor der ersten Generierung                              |
-| Gefüllte Liste         | nach ein paar Generierungsläufen (je Lauf 3 Rezepte)               |
-| Paginierung (20/Seite) | ab 21 Rezepten → „Load more recipes" lädt den Rest                 |
-| Kategoriefilter        | `/library?cuisine=italian` bzw. Klick auf eine Kachel              |
-| Detailansicht          | „View" auf einer Karte → `/library/<id>`                           |
-| Unbekannte ID          | `/library/does-not-exist` → „Recipe not available"                 |
-| Like-Persistenz        | Herz in der Detailansicht, danach Reload — der Zähler bleibt       |
-| Fehlerzustand          | Netzwerk in den DevTools offline schalten und `/library` neu laden |
+| State                    | How to get there                                                |
+| ------------------------ | --------------------------------------------------------------- |
+| Empty library            | `/library` before the first generation                          |
+| Filled list              | after a few generation runs (3 recipes each)                    |
+| Pagination (20 per page) | from 21 recipes on → "Load more recipes" fetches the rest       |
+| Category filter          | `/library?cuisine=italian`, or click a tile                     |
+| Detail view              | "View" on a card → `/library/<id>`                              |
+| Unknown ID               | `/library/does-not-exist` → "Recipe not available"              |
+| Likes persisting         | heart in the detail view, then reload — the counter stays       |
+| Error state              | switch the network to offline in DevTools and reload `/library` |
 
-Zum Aufräumen die Collection `recipes` in der Console löschen — die Rules verbieten `delete` aus dem
-Client bewusst.
+To clean up, delete the `recipes` collection in the console — the rules deliberately forbid `delete`
+from the client.

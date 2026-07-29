@@ -1,23 +1,23 @@
-# n8n-Webhook — die Schnittstelle zum Frontend
+# n8n webhook — the interface to the frontend
 
-So reden Angular-Frontend und n8n-Workflow miteinander. Wie die Daten aussehen, steht in den
-TypeScript-Interfaces unter [`src/app/models/`](../src/app/models/) — die sind maßgeblich. Hier geht
-es um den Rest: Endpunkt, Fehlercodes und die Regeln, die serverseitig liegen.
+How the Angular frontend and the n8n workflow talk to each other. What the data looks like is defined
+by the TypeScript interfaces in [`src/app/models/`](../src/app/models/) — those are authoritative.
+This page covers the rest: the endpoint, the error codes, and the rules that live on the server.
 
-## Endpunkt
+## Endpoint
 
-| Umgebung | URL                                             | Datei                             |
-| -------- | ----------------------------------------------- | --------------------------------- |
-| Dev      | `http://localhost:5678/webhook/generate-recipe` | `src/environments/environment.ts` |
-| Prod     | Platzhalter, bis die n8n-Instanz deployed ist   | `environment.prod.ts`             |
+| Environment | URL                                             | File                              |
+| ----------- | ----------------------------------------------- | --------------------------------- |
+| Dev         | `http://localhost:5678/webhook/generate-recipe` | `src/environments/environment.ts` |
+| Prod        | Placeholder until the n8n instance is deployed  | `environment.prod.ts`             |
 
-`POST`, `Content-Type: application/json`, das Frontend wartet höchstens 90 s
-(`environment.webhookTimeoutMs`). Gerufen wird der Endpunkt nur über `RecipeApiService`, nie direkt
-aus einem Component.
+`POST`, `Content-Type: application/json`, and the frontend waits at most 90 s
+(`environment.webhookTimeoutMs`). The endpoint is only ever called through `RecipeApiService`, never
+straight from a component.
 
 ## Request
 
-Der Body ist ein `RecipeRequest` aus
+The body is a `RecipeRequest` from
 [`recipe-request.interface.ts`](../src/app/models/recipe-request.interface.ts).
 
 ```json
@@ -32,24 +32,24 @@ Der Body ist ein `RecipeRequest` aus
 ```
 
 - `unit`: `g` | `ml` | `piece`
-- `portions`: 1–12, `cooks`: 1–3 (das Frontend klemmt die Werte, n8n validiert erneut)
+- `portions`: 1–12, `cooks`: 1–3 (the frontend clamps the values, n8n validates them again)
 
 ## Response
 
-Zurück kommt ein `RecipeResponse` aus
-[`recipe-response.interface.ts`](../src/app/models/recipe-response.interface.ts) — eine
-diskriminierte Union über `status`.
+Back comes a `RecipeResponse` from
+[`recipe-response.interface.ts`](../src/app/models/recipe-response.interface.ts) — a discriminated
+union over `status`.
 
-**Erfolg:**
+**Success:**
 
 ```json
 { "status": "ok", "recipes": [/* 3 × GeneratedRecipe */] }
 ```
 
-`GeneratedRecipe` ist das `Recipe`-Interface ohne `id`, `createdAt` und `likeCount` — diese drei
-Felder kommen erst beim Firestore-Write dazu, den das Frontend selbst auslöst.
+`GeneratedRecipe` is the `Recipe` interface without `id`, `createdAt` and `likeCount` — those three
+fields are added by the Firestore write, which the frontend triggers itself.
 
-**Fehler:**
+**Failure:**
 
 ```json
 {
@@ -60,57 +60,56 @@ Felder kommen erst beim Firestore-Write dazu, den das Frontend selbst auslöst.
 }
 ```
 
-| Code                    | Bedeutung                              | Dialog-Aktion im Frontend |
-| ----------------------- | -------------------------------------- | ------------------------- |
-| `quota_ip_exceeded`     | Tageslimit pro IP erschöpft            | Zurück zum Rezept-Wunsch  |
-| `quota_system_exceeded` | Tageslimit systemweit erschöpft        | Zurück zum Rezept-Wunsch  |
-| `validation_failed`     | Payload/Mengen von n8n abgelehnt       | Zurück zu den Zutaten     |
-| `ai_failed`             | KI lieferte kein verwertbares Ergebnis | Erneut versuchen          |
-| `internal_error`        | Sammelfall, auch Transportfehler       | Erneut versuchen          |
+| Code                    | Meaning                           | Dialog action in the frontend |
+| ----------------------- | --------------------------------- | ----------------------------- |
+| `quota_ip_exceeded`     | Daily limit per IP used up        | Back to the recipe wish       |
+| `quota_system_exceeded` | Daily limit for everyone used up  | Back to the recipe wish       |
+| `validation_failed`     | Payload/amounts rejected by n8n   | Back to the ingredients       |
+| `ai_failed`             | The AI returned nothing usable    | Try again                     |
+| `internal_error`        | Catch-all, transport failures too | Try again                     |
 
-`message` zeigt das Frontend unverändert an — der Text landet also genau so beim Nutzer, wie ihn n8n
-formuliert. `retryAfter` gibt es nur bei Quota-Fehlern (ISO 8601), sonst steht dort `null`.
+The frontend shows `message` unchanged — the text reaches the user exactly as n8n phrased it.
+`retryAfter` only appears on quota errors (ISO 8601), otherwise it is `null`.
 
-n8n antwortet **immer mit HTTP 200**, auch im Fehlerfall — woran man Erfolg und Fehler unterscheidet,
-ist allein das Feld `status`. Nur wenn gar kein brauchbarer Body ankommt (Transport, CORS, Timeout),
-setzt das Frontend selbst `internal_error` — dieser Code kommt also nie aus n8n.
+n8n **always answers with HTTP 200**, failures included — the only thing telling success and failure
+apart is the `status` field. Only when no usable body arrives at all (transport, CORS, timeout) does
+the frontend set `internal_error` itself, so that code never comes out of n8n.
 
-## Quota — der Kostenairbag
+## Quota — the cost airbag
 
-Der Airbag läuft **ausschließlich serverseitig** in n8n. Das Frontend zeigt nur an, was zurückkommt,
-und zählt nichts selbst mit.
+The airbag runs **server-side only**, inside n8n. The frontend just displays what comes back and
+keeps no counters of its own.
 
-- **3 Rezepte pro IP und Tag, 12 systemweit**, Reset um Mitternacht UTC (`retryAfter` = die nächste
-  UTC-Mitternacht).
-- Der Slot wird **vor** dem LLM-Aufruf reserviert — sonst würden wiederholte Fehlversuche das Budget
-  aushöhlen.
-- Die Zähler liegen in `/home/node/.n8n/quota-state.json` auf dem n8n-Datenvolume. Zurücksetzen:
-  siehe [n8n/README.md](../n8n/README.md).
+- **3 recipes per IP per day, 12 across the whole system**, reset at UTC midnight (`retryAfter` is
+  the next UTC midnight).
+- The slot is reserved **before** the LLM call — otherwise repeated failed attempts would eat into
+  the budget.
+- The counters live in `/home/node/.n8n/quota-state.json` on the n8n data volume. Resetting them:
+  see [n8n/README.md](../n8n/README.md).
 
-> Ohne vorgelagerten Proxy setzt der Browser kein `x-forwarded-for`; auf `localhost` landen deshalb
-> alle Anfragen im IP-Bucket `unknown`. Das systemweite Limit greift trotzdem und ist der harte
-> Deckel.
+> Without a proxy in front, the browser sets no `x-forwarded-for`, so on `localhost` every request
+> ends up in the IP bucket `unknown`. The system-wide limit still applies and is the hard ceiling.
 
-## Was sonst noch in n8n entschieden wird
+## What else is decided inside n8n
 
-Diese Punkte prüft das Frontend bewusst **nicht** — es zeigt nur an, was zurückkommt:
+The frontend deliberately does **not** check any of this — it only displays what comes back:
 
-- **Zutaten-Abdeckung**: mindestens 70 % der eingegebenen Zutaten müssen im Rezept vorkommen
+- **Ingredient coverage**: at least 70 % of the ingredients you entered have to show up in the recipe
   (`yourIngredients`).
-- **Zusatzzutaten**: maximal 3 Basiszutaten in `extraIngredients`.
-- **Arbeitsaufteilung**: bei `cooks > 1` verteilt der Workflow die Schritte auf `assignedChef`
-  `1..cooks`. Schritte mit gleicher `parallelGroupId` laufen gleichzeitig und werden nebeneinander
-  dargestellt; `parallelGroupId: null` heißt seriell.
-- **Nährwerte**: `perPortion` und `total` müssen beide gefüllt sein.
+- **Extra ingredients**: at most 3 basic ingredients in `extraIngredients`.
+- **Splitting the work**: with `cooks > 1` the workflow spreads the steps across `assignedChef`
+  `1..cooks`. Steps sharing a `parallelGroupId` happen at the same time and are shown side by side;
+  `parallelGroupId: null` means sequential.
+- **Nutrition**: both `perPortion` and `total` have to be filled in.
 
 ## CORS
 
-Der Webhook-Node beantwortet den Preflight (`OPTIONS`) über `allowedOrigins`
-(`http://localhost:4200,http://localhost:4300`); beide Respond-Nodes spiegeln `headers.origin` in
-`Access-Control-Allow-Origin` zurück, sofern er in der Allow-Liste steht. Ohne diese Header blockiert
-Chrome den Aufruf, und das Frontend zeigt den generischen `internal_error`-Dialog.
+The webhook node answers the preflight (`OPTIONS`) via `allowedOrigins`
+(`http://localhost:4200,http://localhost:4300`); both respond nodes mirror `headers.origin` back into
+`Access-Control-Allow-Origin` as long as it is on the allow list. Without those headers Chrome blocks
+the call and the frontend shows the generic `internal_error` dialog.
 
-## Manueller Test
+## Testing it by hand
 
 ```bash
 curl -X POST http://localhost:5678/webhook/generate-recipe \

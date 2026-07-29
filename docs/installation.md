@@ -1,11 +1,11 @@
 # Installation
 
-Der komplette Weg von `git clone` bis zur laufenden App.
+The whole way from `git clone` to a running app.
 
-Voraussetzungen: Node `^20.19` / `^22.12` / `>=24` (Angular 21), npm, Docker (nur für die echte
-Rezept-Generierung), ein Firebase-Projekt.
+You need Node `^20.19` / `^22.12` / `>=24` (Angular 21), npm, Docker (only for real recipe
+generation) and a Firebase project.
 
-## 1. Abhängigkeiten installieren
+## 1. Install the dependencies
 
 ```bash
 git clone <repository-url>
@@ -13,55 +13,54 @@ cd code-a-cuisine
 npm install
 ```
 
-## 2. Firebase-Config anlegen
+## 2. Create the Firebase config
 
-Die Web-Config ist nicht versioniert und muss auf jedem Rechner lokal angelegt werden — ohne sie
-kompiliert die App nicht:
+The web config is not versioned and has to be created locally on every machine — without it the app
+does not compile:
 
 ```bash
 cp src/environments/firebase.config.example.ts src/environments/firebase.config.ts
 ```
 
-Danach die sechs Werte aus der Firebase-Console eintragen (**Projekt-Einstellungen → Deine Apps →
-Web-App → SDK-Konfiguration → Config**) und die `TODO-…`-Platzhalter ersetzen. Solange die
-Platzhalter drinstehen, läuft die App, nur das Cookbook zeigt seinen Fehlerzustand.
+Then fill in the six values from the Firebase console (**Project settings → Your apps → Web app →
+SDK setup and configuration → Config**) and replace the `TODO-…` placeholders. As long as the
+placeholders are still there the app runs fine, only the Cookbook shows its error state.
 
-## 3. Firestore einrichten
+## 3. Set up Firestore
 
-In der Firebase-Console eine Firestore-Datenbank anlegen (Modus „Produktion", Region z. B. `eur3`),
-dann:
+Create a Firestore database in the Firebase console (production mode, region e.g. `eur3`), then:
 
-- **Rules veröffentlichen** — Inhalt von [`firestore.rules`](../firestore.rules) in den Reiter
-  „Regeln" einfügen, oder `firebase deploy --only firestore:rules`.
-- **Composite-Index anlegen** — Collection `recipes`, `cuisine` aufsteigend + `createdAt` absteigend.
-  Ohne ihn schlägt der Kategoriefilter fehl. Definition in
-  [`firestore.indexes.json`](../firestore.indexes.json), Deploy mit
+- **Publish the rules** — paste the contents of [`firestore.rules`](../firestore.rules) into the
+  "Rules" tab, or run `firebase deploy --only firestore:rules`.
+- **Create the composite index** — collection `recipes`, `cuisine` ascending + `createdAt`
+  descending. Without it the category filter fails. The definition lives in
+  [`firestore.indexes.json`](../firestore.indexes.json), deploy it with
   `firebase deploy --only firestore:indexes`.
 
-Details in [docs/firebase.md](firebase.md).
+More detail in [docs/firebase.md](firebase.md).
 
-## 4. n8n aufsetzen
+## 4. Set up n8n
 
-Ohne n8n läuft die App, nur die Rezept-Generierung schlägt mit `internal_error` fehl.
+The app runs without n8n, only recipe generation fails with `internal_error`.
 
 ```bash
-cd ~/n8n && docker compose up -d     # danach: http://localhost:5678
+cd ~/n8n && docker compose up -d     # then: http://localhost:5678
 ```
 
-Dann in n8n:
+Then, inside n8n:
 
-1. **Credentials anlegen** — Gemini-Header-Auth (`x-goog-api-key`) und Gmail-SMTP für die
-   Fehlermails. Muss **vor** dem Import passieren.
-2. **Beide Workflows importieren** aus [`n8n/`](../n8n/) — per CLI oder über Import from File.
-3. **Haupt-Workflow aktivieren**, danach `docker restart n8n`, damit die Produktions-Webhook-URL
-   registriert wird.
+1. **Create the credentials** — Gemini header auth (`x-goog-api-key`) and Gmail SMTP for the error
+   mails. This has to happen **before** the import.
+2. **Import both workflows** from [`n8n/`](../n8n/) — via CLI or via Import from File.
+3. **Activate the main workflow**, then run `docker restart n8n` so the production webhook URL gets
+   registered.
 
-Jeder Schritt im Detail: [n8n/README.md](../n8n/README.md).
+Every step in detail: [n8n/README.md](../n8n/README.md).
 
-Der Webhook hört danach auf `http://localhost:5678/webhook/generate-recipe`; das Frontend bezieht die
-URL ausschließlich aus `environment.recipeWebhookUrl`.
+After that the webhook listens on `http://localhost:5678/webhook/generate-recipe`; the frontend only
+ever takes the URL from `environment.recipeWebhookUrl`.
 
-## 5. App starten
+## 5. Start the app
 
 ```bash
 npm start           # http://localhost:4200
@@ -69,9 +68,9 @@ npm start           # http://localhost:4200
 
 ---
 
-## Vor einem Deployment
+## Before a deployment
 
-- `environment.prod.ts`: Platzhalter-URL durch die öffentliche n8n-Webhook-URL ersetzen.
-- n8n-Webhook-Node: Prod-Origin in `allowedOrigins` ergänzen und in beiden Respond-Nodes bei den
-  CORS-Headern hinterlegen — direkt in n8n, danach neu exportieren.
-- Google-Cloud-Console: HTTP-Referrer-Beschränkung für den Firebase-Browser-Key setzen.
+- `environment.prod.ts`: replace the placeholder URL with the public n8n webhook URL.
+- n8n webhook node: add the production origin to `allowedOrigins` and to the CORS headers in both
+  respond nodes — directly in n8n, then export the workflow again.
+- Google Cloud console: set an HTTP referrer restriction on the Firebase browser key.
