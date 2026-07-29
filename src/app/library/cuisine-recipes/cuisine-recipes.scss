@@ -1,4 +1,4 @@
-@use '../../styles/mixins' as *;
+@use '../../../styles/mixins' as *;
 
 :host {
   display: block;
@@ -10,7 +10,7 @@
   }
 }
 
-.cookbook__nav {
+.cuisine-page__nav {
   padding: var(--space-4) var(--space-5) 0;
 
   @include desktop {
@@ -18,7 +18,7 @@
   }
 }
 
-.cookbook__back {
+.cuisine-page__back {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -26,8 +26,8 @@
   color: var(--color-green-middle);
   font: 500 16px/1.2 var(--font-family-body);
 
-  &:hover .cookbook__back-text,
-  &:focus-visible .cookbook__back-text {
+  &:hover .cuisine-page__back-text,
+  &:focus-visible .cuisine-page__back-text {
     text-decoration: underline;
   }
 
@@ -37,7 +37,7 @@
   }
 }
 
-.cookbook {
+.cuisine-page {
   max-width: calc(1088px + 2 * var(--space-4));
   margin: 0 auto;
   padding: var(--space-4) var(--space-4) var(--space-8);
@@ -48,52 +48,79 @@
   }
 }
 
-// Header panel of the design: claim on the left, favourites on the right.
-.cookbook__intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6);
-  padding: var(--space-5);
-  border-radius: var(--radius-lg);
-  background: var(--color-mint);
-
-  @include desktop {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    align-items: start;
-    gap: var(--space-7);
-    padding: var(--space-7);
-  }
-}
-
-.cookbook__title {
-  margin-bottom: var(--space-4);
-  color: var(--color-olive-green);
-  font: 600 40px/1.1 var(--font-family-body);
-
-  @include desktop {
-    font: var(--font-h3);
-  }
-}
-
-.cookbook__text {
-  color: var(--color-green-dark);
-  font: 500 18px/1.4 var(--font-family-body);
-
-  @include desktop {
-    max-width: 40ch;
-  }
-}
-
-app-cuisine-filter {
+.cuisine-page__banner {
   display: block;
-  margin-top: var(--space-7);
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-md);
+}
+
+.cuisine-page__title {
+  margin-bottom: var(--space-5);
+  color: var(--color-olive-green);
+  font: 600 28px/1.2 var(--font-family-body);
 
   @include desktop {
-    margin-top: var(--space-8);
+    font: var(--font-h5-semi);
+    font-size: 32px;
   }
 }
 
-.cookbook__footnote {
+.cuisine-page__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @include desktop {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
+  }
+}
+
+.cuisine-page__item {
+  display: flex;
+}
+
+.cuisine-page__note {
+  margin-top: var(--space-5);
+  font: var(--font-body-16);
+}
+
+.cuisine-page__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  margin-top: var(--space-5);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-button);
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+  font: 600 18px/1.2 var(--font-family-body);
+  transition: background 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--color-green-middle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-dark);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    background: var(--color-chip);
+    color: var(--color-green-dark);
+    cursor: progress;
+  }
+}
+
+.cuisine-page__footnote {
   margin-top: var(--space-7);
   text-align: center;
 
@@ -102,7 +129,7 @@ app-cuisine-filter {
   }
 }
 
-.cookbook__generate {
+.cuisine-page__generate {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);

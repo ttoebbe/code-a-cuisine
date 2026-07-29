@@ -18,57 +18,7 @@
     <app-most-liked-row [recipes]="mostLiked.value()" [isLoading]="mostLiked.isLoading()" />
   </section>
 
-  <app-cuisine-filter [active]="activeCuisine()" />
-
-  <section class="cookbook__results" aria-labelledby="cookbook-list-title">
-    @if (activeCategory(); as category) {
-      <img
-        class="cookbook__banner"
-        [src]="category.banner"
-        alt=""
-        [width]="category.bannerWidth"
-        [height]="category.bannerHeight"
-      />
-    }
-
-    <h2 class="cookbook__list-title" id="cookbook-list-title">{{ listTitle() }}</h2>
-
-    @if (recipes().length > 0) {
-      <ul class="cookbook__list">
-        @for (recipe of recipes(); track recipe.id) {
-          <li class="cookbook__item"><app-cookbook-card [recipe]="recipe" /></li>
-        }
-      </ul>
-    }
-
-    @if (isLoading()) {
-      <p class="cookbook__note">Loading recipes…</p>
-    } @else if (hasFailed()) {
-      <p class="cookbook__note" role="alert">
-        The cookbook could not be loaded. Please check your connection.
-      </p>
-      <button type="button" class="cookbook__button" (click)="reload()">Try again</button>
-    } @else if (isEmpty()) {
-      <p class="cookbook__note">
-        No recipe here yet. Generate one and save it to fill the cookbook.
-      </p>
-    }
-
-    @if (hasMore()) {
-      <button
-        type="button"
-        class="cookbook__button"
-        [disabled]="isAppending()"
-        (click)="loadMore()"
-      >
-        {{ isAppending() ? 'Loading…' : 'Load more recipes' }}
-      </button>
-    }
-
-    @if (appendFailed()) {
-      <p class="cookbook__note" role="alert">Loading more recipes failed. Please try again.</p>
-    }
-  </section>
+  <app-cuisine-filter />
 
   <p class="cookbook__footnote">
     <a class="cookbook__generate" routerLink="/generator">

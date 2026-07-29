@@ -61,16 +61,3 @@
 .cuisine-filter__tile:focus-visible .cuisine-filter__image {
   opacity: 0.85;
 }
-
-// The active category keeps its photo highlighted while the rest steps back.
-.cuisine-filter__tile--active {
-  .cuisine-filter__image {
-    outline: 3px solid var(--color-olive-green);
-    outline-offset: 3px;
-  }
-
-  .cuisine-filter__label {
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
-}

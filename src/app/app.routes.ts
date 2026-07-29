@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { cuisineExistsGuard } from './guards/cuisine-exists-guard';
 import { hasResultsGuard } from './guards/has-results-guard';
 
 export const routes: Routes = [
@@ -32,6 +33,15 @@ export const routes: Routes = [
     path: 'library',
     loadComponent: () => import('./library/library').then((m) => m.Library),
     title: 'Cookbook · Code à Cuisine',
+  },
+  {
+    // Declared before 'library/:id' so the three segments read as a category
+    // page rather than as a recipe that happens to be called "cuisine".
+    path: 'library/cuisine/:cuisine',
+    loadComponent: () =>
+      import('./library/cuisine-recipes/cuisine-recipes').then((m) => m.CuisineRecipes),
+    canActivate: [cuisineExistsGuard],
+    title: 'Cuisine · Code à Cuisine',
   },
   {
     // A stored recipe is addressed by its Firestore document id, so the view

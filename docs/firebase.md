@@ -112,10 +112,11 @@ filled-in `firebase.config.ts`. Likes come from the heart in the detail view —
 
 | State                    | How to get there                                                |
 | ------------------------ | --------------------------------------------------------------- |
-| Empty library            | `/library` before the first generation                          |
+| Empty library            | `/library/cuisine/italian` before the first generation          |
 | Filled list              | after a few generation runs (3 recipes each)                    |
 | Pagination (20 per page) | from 21 recipes on → "Load more recipes" fetches the rest       |
-| Category filter          | `/library?cuisine=italian`, or click a tile                     |
+| Category page            | `/library/cuisine/italian`, or click a tile                     |
+| Unknown category         | `/library/cuisine/klingon` → back to `/library`                 |
 | Detail view              | "View" on a card → `/library/<id>`                              |
 | Unknown ID               | `/library/does-not-exist` → "Recipe not available"              |
 | Likes persisting         | heart in the detail view, then reload — the counter stays       |
