@@ -1,3 +1,23 @@
 <span class="chef-badge" [class.chef-badge--2]="chef() === 2" [class.chef-badge--3]="chef() >= 3">
+  @if (icon() === 'toque') {
+    <svg class="chef-badge__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        d="M6.5 15.3c-2.2-.5-3.6-2.3-3.6-4.4 0-2.3 1.8-4.1 4-4.1.3 0 .6 0 .9.1C8.5 4.9 10.1 3.6 12 3.6s3.5 1.3 4.2 3.3c.3-.1.6-.1.9-.1 2.2 0 4 1.8 4 4.1 0 2.1-1.4 3.9-3.6 4.4"
+      />
+      <path d="M6.5 15.3h11v3.9c0 .7-.6 1.2-1.2 1.2H7.7c-.7 0-1.2-.5-1.2-1.2z" />
+    </svg>
+  } @else {
+    <svg class="chef-badge__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <g transform="rotate(38 12 12)">
+        <path d="M9.4 2.8v5.2a2.6 2.6 0 0 0 5.2 0V2.8" />
+        <path d="M12 2.8v5.2" />
+        <path d="M12 10.6v10.6" />
+      </g>
+      <g transform="rotate(-38 12 12)">
+        <path d="M12 2.8c2.4 2.4 2.4 6.6 0 9z" />
+        <path d="M12 11.8v9.4" />
+      </g>
+    </svg>
+  }
   Chef {{ chef() }}
 </span>
