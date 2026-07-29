@@ -11,7 +11,7 @@ synchron — es gibt kein Build-Skript mehr.
 > Änderungen an den Code-Nodes (`guard`, `map-ai`, `log-error`) werden ab jetzt **direkt in der
 > n8n-UI** gemacht und der Workflow danach neu exportiert, sodass diese Dateien aktuell bleiben.
 
-Den JSON-Vertrag zum Frontend beschreibt [`docs/n8n-webhook.md`](../docs/n8n-webhook.md).
+Wie der Workflow mit dem Frontend spricht, steht in [`docs/n8n-webhook.md`](../docs/n8n-webhook.md).
 
 ## Importieren
 

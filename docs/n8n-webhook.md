@@ -1,8 +1,8 @@
-# n8n-Webhook — JSON-Vertrag
+# n8n-Webhook — die Schnittstelle zum Frontend
 
-Vertrag zwischen Angular-Frontend und n8n-Workflow. Die TypeScript-Interfaces in
-[`src/app/models/`](../src/app/models/) sind die einzige Quelle der Wahrheit für die Shapes; dieses
-Dokument beschreibt Endpunkt, Fehlercodes und die Regeln, die serverseitig liegen.
+So reden Angular-Frontend und n8n-Workflow miteinander. Wie die Daten aussehen, steht in den
+TypeScript-Interfaces unter [`src/app/models/`](../src/app/models/) — die sind maßgeblich. Hier geht
+es um den Rest: Endpunkt, Fehlercodes und die Regeln, die serverseitig liegen.
 
 ## Endpunkt
 
@@ -11,13 +11,13 @@ Dokument beschreibt Endpunkt, Fehlercodes und die Regeln, die serverseitig liege
 | Dev      | `http://localhost:5678/webhook/generate-recipe` | `src/environments/environment.ts` |
 | Prod     | Platzhalter, bis die n8n-Instanz deployed ist   | `environment.prod.ts`             |
 
-`POST`, `Content-Type: application/json`, Timeout im Frontend 90 s
-(`environment.webhookTimeoutMs`). Aufrufe ausschließlich über `RecipeApiService`, nie direkt aus
-Components.
+`POST`, `Content-Type: application/json`, das Frontend wartet höchstens 90 s
+(`environment.webhookTimeoutMs`). Gerufen wird der Endpunkt nur über `RecipeApiService`, nie direkt
+aus einem Component.
 
 ## Request
 
-Shape: `RecipeRequest` in
+Der Body ist ein `RecipeRequest` aus
 [`recipe-request.interface.ts`](../src/app/models/recipe-request.interface.ts).
 
 ```json
@@ -36,9 +36,9 @@ Shape: `RecipeRequest` in
 
 ## Response
 
-Shape: `RecipeResponse` in
-[`recipe-response.interface.ts`](../src/app/models/recipe-response.interface.ts) — diskriminierte
-Union über `status`.
+Zurück kommt ein `RecipeResponse` aus
+[`recipe-response.interface.ts`](../src/app/models/recipe-response.interface.ts) — eine
+diskriminierte Union über `status`.
 
 **Erfolg:**
 
@@ -46,8 +46,8 @@ Union über `status`.
 { "status": "ok", "recipes": [/* 3 × GeneratedRecipe */] }
 ```
 
-`GeneratedRecipe` ist das `Recipe`-Interface ohne `id`, `createdAt` und `likeCount`; diese Felder
-ergänzt erst der Firestore-Write, den das Frontend selbst auslöst.
+`GeneratedRecipe` ist das `Recipe`-Interface ohne `id`, `createdAt` und `likeCount` — diese drei
+Felder kommen erst beim Firestore-Write dazu, den das Frontend selbst auslöst.
 
 **Fehler:**
 
@@ -68,30 +68,30 @@ ergänzt erst der Firestore-Write, den das Frontend selbst auslöst.
 | `ai_failed`             | KI lieferte kein verwertbares Ergebnis | Erneut versuchen          |
 | `internal_error`        | Sammelfall, auch Transportfehler       | Erneut versuchen          |
 
-`message` wird unverändert angezeigt — der Text ist damit Teil des Vertrags. `retryAfter` nur bei
-Quota-Fehlern (ISO 8601), sonst `null`.
+`message` zeigt das Frontend unverändert an — der Text landet also genau so beim Nutzer, wie ihn n8n
+formuliert. `retryAfter` gibt es nur bei Quota-Fehlern (ISO 8601), sonst steht dort `null`.
 
-n8n antwortet **immer mit HTTP 200**, auch im Fehlerfall — Diskriminator ist allein das Feld
-`status`. Nur wenn gar kein passender Body ankommt (Transport, CORS, Timeout), fällt das Frontend
-selbst auf `internal_error` zurück; dieser Code kommt also nie aus n8n.
+n8n antwortet **immer mit HTTP 200**, auch im Fehlerfall — woran man Erfolg und Fehler unterscheidet,
+ist allein das Feld `status`. Nur wenn gar kein brauchbarer Body ankommt (Transport, CORS, Timeout),
+setzt das Frontend selbst `internal_error` — dieser Code kommt also nie aus n8n.
 
 ## Quota — der Kostenairbag
 
-Läuft **ausschließlich serverseitig** in n8n. Das Frontend zeigt den Zustand nur an und führt keine
-eigenen Zähler.
+Der Airbag läuft **ausschließlich serverseitig** in n8n. Das Frontend zeigt nur an, was zurückkommt,
+und zählt nichts selbst mit.
 
 - **3 Rezepte pro IP und Tag, 12 systemweit**, Reset um Mitternacht UTC (`retryAfter` = die nächste
   UTC-Mitternacht).
-- Der Slot wird **vor** dem LLM-Aufruf reserviert, damit wiederholte Fehlversuche das Budget nicht
+- Der Slot wird **vor** dem LLM-Aufruf reserviert — sonst würden wiederholte Fehlversuche das Budget
   aushöhlen.
-- Zähler liegen in `/home/node/.n8n/quota-state.json` auf dem n8n-Datenvolume. Zurücksetzen: siehe
-  [n8n/README.md](../n8n/README.md).
+- Die Zähler liegen in `/home/node/.n8n/quota-state.json` auf dem n8n-Datenvolume. Zurücksetzen:
+  siehe [n8n/README.md](../n8n/README.md).
 
-> Ohne vorgelagerten Proxy setzt der Browser kein `x-forwarded-for`; auf `localhost` landen daher
+> Ohne vorgelagerten Proxy setzt der Browser kein `x-forwarded-for`; auf `localhost` landen deshalb
 > alle Anfragen im IP-Bucket `unknown`. Das systemweite Limit greift trotzdem und ist der harte
 > Deckel.
 
-## Weitere Regeln, die in n8n liegen
+## Was sonst noch in n8n entschieden wird
 
 Diese Punkte prüft das Frontend bewusst **nicht** — es zeigt nur an, was zurückkommt:
 

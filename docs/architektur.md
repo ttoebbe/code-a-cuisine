@@ -79,6 +79,6 @@ nach `createdAt` bzw. `likeCount`, sodass Ungenutztes nach hinten rutscht.
 
 ## Weiter
 
-- [docs/n8n-webhook.md](n8n-webhook.md) — JSON-Vertrag, Fehlercodes, Quota
+- [docs/n8n-webhook.md](n8n-webhook.md) — Webhook-Schnittstelle, Fehlercodes, Quota
 - [docs/firebase.md](firebase.md) — Firestore-Schema, Rules, Indexe, Testdaten
 - [n8n/README.md](../n8n/README.md) — Workflows importieren und Credentials anlegen
