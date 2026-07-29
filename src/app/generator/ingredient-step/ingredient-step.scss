@@ -42,7 +42,8 @@
   font: 600 18px/1.2 var(--font-family-body);
   transition:
     background 0.2s ease,
-    opacity 0.2s ease;
+    opacity 0.2s ease,
+    visibility 0.2s ease;
 
   @include desktop {
     min-width: 161px;
@@ -61,8 +62,11 @@
     outline-offset: 2px;
   }
 
-  &:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
+  // The design shows no button while the list is empty. Hiding instead of
+  // removing keeps the row's height, so the cards above never shift. The
+  // button is disabled in exactly this state, so there is no greyed-out look.
+  &--hidden {
+    visibility: hidden;
+    opacity: 0;
   }
 }
