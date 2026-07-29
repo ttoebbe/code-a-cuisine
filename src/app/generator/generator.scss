@@ -12,26 +12,26 @@
   }
 }
 
-// Design content area is 1086px wide at 1440, narrower than --content-max-width.
-// The max-width adds the horizontal padding on top of it.
+// --content-max-width is the content area of the design at 1440px; the
+// max-width adds the horizontal padding on top of it.
 .generator {
-  max-width: calc(1088px + 2 * var(--space-4));
+  max-width: calc(var(--content-max-width) + 2 * var(--space-4));
   margin: 0 auto;
   padding: var(--space-6) var(--space-4) var(--space-8);
 
   @include desktop {
-    max-width: calc(1088px + 2 * var(--space-6));
+    max-width: calc(var(--content-max-width) + 2 * var(--space-6));
     padding: var(--space-8) var(--space-6);
   }
 }
 
-// Back navigation sits under the header and aligns with the header logo,
-// not with the narrower centred content column.
+// Back navigation sits under the header and shares its gutter, so the two stay
+// aligned at every width — from 1440px that edge is the content column's too.
 .generator__nav {
-  padding: var(--space-4) var(--space-5) 0;
+  padding: var(--space-4) var(--page-gutter) 0;
 
   @include desktop {
-    padding: var(--space-5) var(--space-6) 0;
+    padding: var(--space-5) var(--page-gutter) 0;
   }
 }
 

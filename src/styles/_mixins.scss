@@ -14,3 +14,11 @@
     @content;
   }
 }
+
+// Widescreen breakpoint of the design: the content column stops growing here and
+// only the background keeps spanning the screen. Matches `--page-gutter`.
+@mixin widescreen {
+  @media (min-width: 1440px) {
+    @content;
+  }
+}

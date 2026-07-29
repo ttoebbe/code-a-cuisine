@@ -2,6 +2,8 @@
 // Colors + typography come from Figma variables; spacing/radius are pragmatic
 // scales until the design system exposes them explicitly.
 
+@use 'mixins' as *;
+
 :root {
   // Colors — palette "Rezepten"
   --color-olive-green: #396039;
@@ -60,6 +62,25 @@
   // Footer padding (2 × --space-4) plus the 44px touch target of its link.
   // Route hosts subtract it so a full-height page fits without a scrollbar.
   --footer-height: 76px;
-  --content-max-width: 1200px;
+  --content-max-width: 1088px;
   --content-max-width-narrow: 720px;
+  // Horizontal edge of every full-bleed band (header, footer, hero, back links).
+  // Kept in one place so those bands line up with the centred content column.
+  --page-gutter: var(--space-5);
+}
+
+@include desktop {
+  :root {
+    --page-gutter: var(--space-6);
+  }
+}
+
+// Widescreen per design: from 1440px the content column is frozen and only the
+// gutter grows, so the background spans the screen while the content does not.
+// `100%` resolves against the band itself — unlike `100vw` it ignores the
+// scrollbar and therefore matches the centred containers exactly.
+@include widescreen {
+  :root {
+    --page-gutter: calc((100% - var(--content-max-width)) / 2);
+  }
 }

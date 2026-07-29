@@ -8,7 +8,7 @@
   --hero-height: calc(100vh - var(--header-height-mobile) - var(--footer-height));
 
   position: relative;
-  padding: var(--space-7) var(--space-5);
+  padding: var(--space-7) var(--page-gutter);
   min-height: var(--hero-height);
   background: var(--color-olive-green);
   color: var(--color-cream);
@@ -21,7 +21,7 @@
     grid-template-columns: 1fr 1fr;
     align-items: center;
     gap: var(--space-6);
-    padding: var(--space-8) var(--space-6);
+    padding-block: var(--space-8);
   }
 }
 
@@ -113,9 +113,9 @@
 
 // The stack spans the full hero, ignoring its padding, so the top plate starts
 // flush with the hero edge instead of being clipped by the header above it.
-// `--plate-size` is the reference width all three plates and their offsets are
-// derived from: the stack is 2.19 reference widths tall and the design lets the
-// last plate bleed 0.09 past the bottom, so 2.11 widths fill the hero exactly.
+// `--plate-size` is the reference width every plate and every offset is derived
+// from: the first three are 2.19 reference widths tall and the design lets the
+// third bleed 0.09 past the bottom, so 2.11 widths fill the hero exactly.
 // Capped at the native export width so the food photos are never upscaled.
 .hero__plates {
   // Mobile keeps the wide plates of the design: the stack starts right of the
@@ -130,8 +130,14 @@
   @include desktop {
     --plate-size: min(var(--hero-height) / 2.11, 494px);
 
-    inset: 0 var(--space-6) 0 auto;
+    inset: 0 var(--page-gutter) 0 auto;
     width: 50%;
+  }
+
+  // The stack is positioned against the hero's padding box, which stays full
+  // width, so the widescreen column has to be applied explicitly.
+  @include widescreen {
+    width: calc(var(--content-max-width) / 2);
   }
 }
 
@@ -157,4 +163,26 @@
 .hero__plate--3 {
   top: calc(var(--plate-size) * 1.275);
   width: calc(var(--plate-size) * 493 / 494);
+}
+
+// Once `--plate-size` reaches its 494px cap, three plates stop filling a
+// widescreen hero. The design repeats the first two photos below them; the
+// offsets continue the stack with the same 0.295 overlap as the plates above.
+.hero__plate--4,
+.hero__plate--5 {
+  display: none;
+
+  @include widescreen {
+    display: block;
+  }
+}
+
+.hero__plate--4 {
+  top: calc(var(--plate-size) * 1.9);
+  width: calc(var(--plate-size) * 480 / 494);
+}
+
+.hero__plate--5 {
+  top: calc(var(--plate-size) * 2.47);
+  width: var(--plate-size);
 }

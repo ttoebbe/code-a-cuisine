@@ -11,10 +11,10 @@
 }
 
 .cookbook__nav {
-  padding: var(--space-4) var(--space-5) 0;
+  padding: var(--space-4) var(--page-gutter) 0;
 
   @include desktop {
-    padding: var(--space-5) var(--space-6) 0;
+    padding: var(--space-5) var(--page-gutter) 0;
   }
 }
 
@@ -38,12 +38,12 @@
 }
 
 .cookbook {
-  max-width: calc(1088px + 2 * var(--space-4));
+  max-width: calc(var(--content-max-width) + 2 * var(--space-4));
   margin: 0 auto;
   padding: var(--space-4) var(--space-4) var(--space-8);
 
   @include desktop {
-    max-width: calc(1088px + 2 * var(--space-6));
+    max-width: calc(var(--content-max-width) + 2 * var(--space-6));
     padding: var(--space-5) var(--space-6) var(--space-8);
   }
 }

@@ -1,16 +1,17 @@
 @use '../../styles/mixins' as *;
 
+// The olive band spans the screen; `--page-gutter` keeps the logo on the same
+// edge as the centred content column below it.
 .header {
   display: flex;
   align-items: center;
   min-height: var(--header-height-mobile);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--page-gutter);
   background: var(--color-olive-green);
   color: var(--color-cream);
 
   @include desktop {
     min-height: var(--header-height-desktop);
-    padding: var(--space-4) var(--space-6);
   }
 }
 

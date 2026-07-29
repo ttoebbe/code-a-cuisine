@@ -1,18 +1,12 @@
-@use '../../styles/mixins' as *;
-
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-4) var(--page-gutter);
   background: var(--color-olive-green);
   color: var(--color-cream);
   font: var(--font-small-text);
-
-  @include desktop {
-    padding: var(--space-4) var(--space-6);
-  }
 }
 
 .footer__copyright {
