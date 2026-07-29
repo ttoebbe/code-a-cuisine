@@ -1,6 +1,6 @@
 <nav class="cuisine-filter" aria-label="Recipe categories">
   <ul class="cuisine-filter__list">
-    @for (category of categories; track category.value) {
+    @for (category of categories; track category.value; let index = $index) {
       <li class="cuisine-filter__item">
         <a
           class="cuisine-filter__tile"
@@ -19,7 +19,8 @@
             alt=""
             width="400"
             height="400"
-            loading="lazy"
+            [attr.loading]="index < eagerTileCount ? null : 'lazy'"
+            [attr.fetchpriority]="index < eagerTileCount ? 'high' : null"
           />
         </a>
       </li>
