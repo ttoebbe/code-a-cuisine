@@ -48,41 +48,46 @@
   }
 }
 
+// The heading sits centred on the decorative band, as in the design.
 .cuisine-page__banner {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin-bottom: var(--space-4);
-  border-radius: var(--radius-md);
-}
-
-.cuisine-page__title {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: var(--space-5);
-  color: var(--color-olive-green);
-  font: 600 28px/1.2 var(--font-family-body);
 
   @include desktop {
-    font: var(--font-h5-semi);
-    font-size: 32px;
+    margin-bottom: var(--space-6);
   }
 }
 
+.cuisine-page__banner-image {
+  width: 100%;
+  height: auto;
+}
+
+.cuisine-page__title {
+  position: absolute;
+  color: var(--color-green-middle);
+  font: 600 22px/1.2 var(--font-family-body);
+
+  @include desktop {
+    font: 600 32px/1.2 var(--font-family-body);
+  }
+}
+
+// One recipe per row, as in the design — never two side by side.
 .cuisine-page__list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
 
   @include desktop {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-5);
+    gap: var(--space-3);
   }
-}
-
-.cuisine-page__item {
-  display: flex;
 }
 
 .cuisine-page__note {
@@ -120,31 +125,30 @@
   }
 }
 
-.cuisine-page__footnote {
-  margin-top: var(--space-7);
-  text-align: center;
-
-  @include desktop {
-    text-align: right;
-  }
+.cuisine-page__action {
+  margin-bottom: var(--space-5);
+  text-align: right;
 }
 
 .cuisine-page__generate {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  justify-content: center;
   min-height: 44px;
-  color: var(--color-green-dark);
-  font: var(--font-body-16);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-button);
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+  font: 600 18px/1.2 var(--font-family-body);
+  transition: background 0.2s ease;
 
   &:hover,
   &:focus-visible {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+    background: var(--color-green-middle);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-green-middle);
+    outline: 2px solid var(--color-green-dark);
     outline-offset: 2px;
   }
 }

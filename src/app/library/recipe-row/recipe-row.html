@@ -1,0 +1,23 @@
+<div class="recipe-row">
+  <span class="recipe-row__position" aria-hidden="true">{{ position() }}.</span>
+
+  <span class="recipe-row__main">
+    <span class="recipe-row__time">
+      <img src="/img/preferences/schedule.png" alt="" width="20" height="20" />
+      Cooking time: {{ cookingTime() }}
+    </span>
+    <a class="recipe-row__title" [routerLink]="['/library', recipe().id]">{{ recipe().title }}</a>
+  </span>
+
+  <span class="recipe-row__chips">
+    @if (dietLabel(); as diet) {
+      <span class="recipe-row__chip">{{ diet }}</span>
+    }
+    <span class="recipe-row__chip">{{ timeLabel() }}</span>
+    <span class="recipe-row__chip recipe-row__chip--likes">
+      <img src="/img/recipe-view/favorite.png" alt="" width="17" height="15" />
+      <span class="visually-hidden">Likes:</span>
+      {{ recipe().likeCount }}
+    </span>
+  </span>
+</div>

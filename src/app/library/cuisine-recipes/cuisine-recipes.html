@@ -6,25 +6,32 @@
 </nav>
 
 <div class="cuisine-page">
-  <section class="cuisine-page__results" aria-labelledby="cuisine-list-title">
-    @if (category(); as active) {
-      <img
-        class="cuisine-page__banner"
-        [src]="active.banner"
-        alt=""
-        [width]="active.bannerWidth"
-        [height]="active.bannerHeight"
-      />
-    }
+  <p class="cuisine-page__action">
+    <a class="cuisine-page__generate" routerLink="/generator">Generate a recipe</a>
+  </p>
 
-    <h1 class="cuisine-page__title" id="cuisine-list-title">{{ listTitle() }}</h1>
+  <section class="cuisine-page__results" aria-labelledby="cuisine-list-title">
+    <div class="cuisine-page__banner">
+      @if (category(); as active) {
+        <img
+          class="cuisine-page__banner-image"
+          [src]="active.banner"
+          alt=""
+          [width]="active.bannerWidth"
+          [height]="active.bannerHeight"
+        />
+      }
+      <h1 class="cuisine-page__title" id="cuisine-list-title">{{ listTitle() }}</h1>
+    </div>
 
     @if (recipes().length > 0) {
-      <ul class="cuisine-page__list">
-        @for (recipe of recipes(); track recipe.id) {
-          <li class="cuisine-page__item"><app-cookbook-card [recipe]="recipe" /></li>
+      <ol class="cuisine-page__list">
+        @for (recipe of recipes(); track recipe.id; let index = $index) {
+          <li class="cuisine-page__item">
+            <app-recipe-row [recipe]="recipe" [position]="index + 1" />
+          </li>
         }
-      </ul>
+      </ol>
     }
 
     @if (isLoading()) {
@@ -55,10 +62,4 @@
       <p class="cuisine-page__note" role="alert">Loading more recipes failed. Please try again.</p>
     }
   </section>
-
-  <p class="cuisine-page__footnote">
-    <a class="cuisine-page__generate" routerLink="/generator">
-      Generate new recipe <span aria-hidden="true">→</span>
-    </a>
-  </p>
 </div>

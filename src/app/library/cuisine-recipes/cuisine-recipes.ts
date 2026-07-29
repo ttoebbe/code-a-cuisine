@@ -11,8 +11,8 @@ import {
 import { RouterLink } from '@angular/router';
 import type { Recipe } from '../../models/recipe.interface';
 import { RecipeLibraryService, type RecipePage } from '../../services/recipe-library.service';
-import { CookbookCard } from '../cookbook-card/cookbook-card';
 import { findCuisineCategory, isCuisineStyle } from '../cuisine-categories';
+import { RecipeRow } from '../recipe-row/recipe-row';
 
 /**
  * Recipe list of a single cuisine (User Story 13). It is a page of its own so
@@ -20,7 +20,7 @@ import { findCuisineCategory, isCuisineStyle } from '../cuisine-categories';
  */
 @Component({
   selector: 'app-cuisine-recipes',
-  imports: [CookbookCard, RouterLink],
+  imports: [RecipeRow, RouterLink],
   templateUrl: './cuisine-recipes.html',
   styleUrl: './cuisine-recipes.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
