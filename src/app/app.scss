@@ -1,9 +1,20 @@
 @use '../styles/mixins' as *;
 
+// Header and footer never carry a colour of their own: they read the two shell
+// properties below, which the routed page switches between its two palettes.
 :host {
+  --shell-bg: var(--color-surface);
+  --shell-fg: var(--color-green-dark);
+
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background: var(--shell-bg);
+}
+
+:host(.app--green) {
+  --shell-bg: var(--color-olive-green);
+  --shell-fg: var(--color-cream);
 }
 
 .app-main {

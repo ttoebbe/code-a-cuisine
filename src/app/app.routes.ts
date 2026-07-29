@@ -7,6 +7,9 @@ export const routes: Routes = [
     path: '',
     pathMatch: 'full',
     loadComponent: () => import('./home/home').then((m) => m.Home),
+    // Header and footer take the colour of the page they frame; only the two
+    // green pages say so, every other route falls back to the light shell.
+    data: { shell: 'green' },
     title: 'Code à Cuisine',
   },
   {
@@ -18,6 +21,7 @@ export const routes: Routes = [
     path: 'results',
     loadComponent: () => import('./results/results').then((m) => m.Results),
     canActivate: [hasResultsGuard],
+    data: { shell: 'green' },
     title: 'Recipe results · Code à Cuisine',
   },
   {

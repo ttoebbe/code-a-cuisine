@@ -12,7 +12,12 @@
   min-height: var(--hero-height);
   background: var(--color-olive-green);
   color: var(--color-cream);
-  overflow: hidden;
+
+  // The plate stack bleeds upwards over the header band, so the hero must not
+  // clip vertically. `hidden` on one axis forces the other one to clip as well,
+  // `clip` does not — the horizontal bleed of the mobile stack stays contained.
+  overflow-x: clip;
+  overflow-y: visible;
 
   @include desktop {
     --hero-height: calc(100vh - var(--header-height-desktop) - var(--footer-height));
@@ -111,26 +116,36 @@
   }
 }
 
-// The stack spans the full hero, ignoring its padding, so the top plate starts
-// flush with the hero edge instead of being clipped by the header above it.
-// `--plate-size` is the reference width every plate and every offset is derived
-// from: the first three are 2.19 reference widths tall and the design lets the
-// third bleed 0.09 past the bottom, so 2.11 widths fill the hero exactly.
-// Capped at the native export width so the food photos are never upscaled.
+// The stack ignores the hero padding and reaches past its top edge, so the
+// first plate starts flush with the top of the page and paints in front of the
+// header band — as in the design, where the plates are the frontmost element.
+// It stops at the hero's bottom edge so the footer text stays readable.
+// `--plate-span` is that reach and `--plate-size` the reference width every
+// plate and every offset is derived from: the first three are 2.19 reference
+// widths tall and the design lets the third bleed 0.09 past the bottom, so 2.11
+// widths fill the span exactly. Capped at the native export width so the food
+// photos are never upscaled.
 .hero__plates {
+  // Hero height plus the header band above it — the footer is all that is left.
+  --plate-span: calc(100vh - var(--footer-height));
+
   // Mobile keeps the wide plates of the design: the stack starts right of the
   // 42% text padding and runs off the right edge instead of shrinking to fit.
-  --plate-size: min(68vw, var(--hero-height) / 2.11, 280px);
+  --plate-size: min(68vw, var(--plate-span) / 2.11, 280px);
 
   position: absolute;
-  inset: 0 auto 0 63%;
+  inset: calc(-1 * var(--header-height-mobile)) auto 0 63%;
   width: var(--plate-size);
   pointer-events: none;
 
-  @include desktop {
-    --plate-size: min(var(--hero-height) / 2.11, 494px);
+  // The stack is the containing block of its plates, so clipping it here cuts
+  // the last plate at the footer edge while the hero itself stays open upwards.
+  overflow: hidden;
 
-    inset: 0 var(--page-gutter) 0 auto;
+  @include desktop {
+    --plate-size: min(var(--plate-span) / 2.11, 494px);
+
+    inset: calc(-1 * var(--header-height-desktop)) var(--page-gutter) 0 auto;
     width: 50%;
   }
 
@@ -165,24 +180,36 @@
   width: calc(var(--plate-size) * 493 / 494);
 }
 
-// Once `--plate-size` reaches its 494px cap, three plates stop filling a
-// widescreen hero. The design repeats the first two photos below them; the
-// offsets continue the stack with the same 0.295 overlap as the plates above.
-.hero__plate--4,
-.hero__plate--5 {
-  display: none;
+// Three plates fill the stack on their own — unless `--plate-size` runs into
+// one of its caps, then the repeats below cover what is left. Only the two
+// photos without a baked-in crop are repeated: `plate-1.png` is cut off at the
+// top by the design frame, which would show as a hard edge mid-stack.
+// The offsets continue the stack with the same 0.295 overlap as the plates
+// above, again derived from the height each photo has at `--plate-size`.
+.hero__plate--4 {
+  top: calc(var(--plate-size) * 1.9);
+  width: var(--plate-size);
+}
 
-  @include widescreen {
-    display: block;
+.hero__plate--5 {
+  top: calc(var(--plate-size) * 2.6);
+  width: calc(var(--plate-size) * 493 / 494);
+}
+
+// On mobile the plates keep the wide 68vw of the design and are capped by it,
+// so the repeats are always needed. From the desktop breakpoint the three
+// plates match the viewport exactly until the 494px cap takes over, which it
+// does once the stack spans more than 2.11 × 494px plus the footer.
+@include desktop {
+  .hero__plate--4,
+  .hero__plate--5 {
+    display: none;
   }
 }
 
-.hero__plate--4 {
-  top: calc(var(--plate-size) * 1.9);
-  width: calc(var(--plate-size) * 480 / 494);
-}
-
-.hero__plate--5 {
-  top: calc(var(--plate-size) * 2.47);
-  width: var(--plate-size);
+@media (min-height: 1119px) {
+  .hero__plate--4,
+  .hero__plate--5 {
+    display: block;
+  }
 }

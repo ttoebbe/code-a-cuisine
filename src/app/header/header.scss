@@ -1,14 +1,14 @@
 @use '../../styles/mixins' as *;
 
-// The olive band spans the screen; `--page-gutter` keeps the logo on the same
-// edge as the centred content column below it.
+// The band spans the screen and takes the colour of the page below it;
+// `--page-gutter` keeps the logo on the same edge as the centred content column.
 .header {
   display: flex;
   align-items: center;
   min-height: var(--header-height-mobile);
   padding: var(--space-4) var(--page-gutter);
-  background: var(--color-olive-green);
-  color: var(--color-cream);
+  background: var(--shell-bg);
+  color: var(--shell-fg);
 
   @include desktop {
     min-height: var(--header-height-desktop);
@@ -21,9 +21,15 @@
   min-height: 44px;
 }
 
-.header__logo-image {
+// The logo art is a single-colour shape on transparency, so masking it with the
+// shell foreground keeps it cream on the green pages and dark green on the
+// white ones from one export. `aspect-ratio` reserves the space up front.
+.header__logo-mark {
+  display: block;
   width: 100px;
-  height: auto;
+  aspect-ratio: 142 / 48;
+  background: currentcolor;
+  mask: url('/logo-broccoli-cream.png') no-repeat center / contain;
 
   @include desktop {
     width: 142px;
