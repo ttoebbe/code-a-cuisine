@@ -24,7 +24,8 @@ die Platzhalter drinstehen, läuft die App normal, nur die Bibliothek zeigt ihre
 > Google-Cloud-Console (APIs & Dienste → Anmeldedaten → Browser-Key).
 >
 > Was **niemals** ins Repository darf, ist ein Service-Account-Key (`firebase-adminsdk-….json`) —
-> der umgeht sämtliche Rules. Das Seed-Skript braucht keinen.
+> der umgeht sämtliche Rules. Die App braucht keinen: alle Writes laufen als normaler Client durch
+> die Rules.
 
 ## Einrichtung in der Console
 
@@ -104,25 +105,17 @@ Firestore automatisch an.
 
 ## Testdaten
 
-Das Seed-Skript schreibt über denselben Weg wie die App, prüft also auch die Rules mit:
-
-```bash
-npm run seed              # 30 Rezepte, 5 pro Küche
-npm run seed -- --count 8 # nur 8 Rezepte
-npm run seed -- --dry-run # zeigt nur, was geschrieben würde
-```
-
-Voraussetzung ist die ausgefüllte `firebase.config.ts` (alternativ die Config als JSON in der
-Umgebungsvariablen `FIREBASE_CONFIG`, z. B. für CI). Likes werden wie in der App einzeln hochgezählt
-(0–8 pro Rezept), damit die „Most liked recipes"-Zeile gefüllt ist.
+Die Bibliothek füllt sich aus der App selbst: Jede Generierung legt automatisch **drei** Rezepte an.
+Voraussetzung ist die ausgefüllte `firebase.config.ts`. Likes entstehen über das Herz in der
+Detailansicht — ein paar davon, damit die „Most liked recipes"-Zeile gefüllt ist.
 
 ### Was sich damit testen lässt
 
 | Zustand                | So erreichbar                                                      |
 | ---------------------- | ------------------------------------------------------------------ |
-| Leere Bibliothek       | `/library` vor dem ersten Seed-Lauf                                |
-| Gefüllte Liste         | nach `npm run seed`                                                |
-| Paginierung (20/Seite) | 30 Rezepte → „Load more recipes" lädt die restlichen 10            |
+| Leere Bibliothek       | `/library` vor der ersten Generierung                              |
+| Gefüllte Liste         | nach ein paar Generierungsläufen (je Lauf 3 Rezepte)               |
+| Paginierung (20/Seite) | ab 21 Rezepten → „Load more recipes" lädt den Rest                 |
 | Kategoriefilter        | `/library?cuisine=italian` bzw. Klick auf eine Kachel              |
 | Detailansicht          | „View" auf einer Karte → `/library/<id>`                           |
 | Unbekannte ID          | `/library/does-not-exist` → „Recipe not available"                 |

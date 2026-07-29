@@ -42,13 +42,12 @@ Der vollständige Weg inklusive Firebase-Werten, Rules, Index und n8n-Setup steh
 
 ## npm-Skripte
 
-| Befehl          | Zweck                                 |
-| --------------- | ------------------------------------- |
-| `npm start`     | Dev-Server auf Port 4200              |
-| `npm run build` | Produktionsbuild nach `dist/`         |
-| `npm run watch` | Build im Watch-Modus                  |
-| `npm run lint`  | ESLint inkl. Angular-Template-Regeln  |
-| `npm run seed`  | Firestore mit Beispielrezepten füllen |
+| Befehl          | Zweck                                |
+| --------------- | ------------------------------------ |
+| `npm start`     | Dev-Server auf Port 4200             |
+| `npm run build` | Produktionsbuild nach `dist/`        |
+| `npm run watch` | Build im Watch-Modus                 |
+| `npm run lint`  | ESLint inkl. Angular-Template-Regeln |
 
 ## Projektstruktur
 
@@ -62,7 +61,6 @@ src/app/
   services/      n8n-Webhook, Generierungs-Zustand, Firestore-Zugriff
 n8n/             Die beiden Workflows als exportierte JSONs
 docs/            Installation, Architektur, Webhook-Vertrag, Firebase, Design-Mockups
-scripts/         Seed-Skript für Testdaten
 ```
 
 ## Dokumentation

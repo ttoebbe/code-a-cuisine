@@ -40,16 +40,7 @@ dann:
 
 Details in [docs/firebase.md](firebase.md).
 
-## 4. Testdaten (optional)
-
-```bash
-npm run seed        # schreibt 30 Beispielrezepte nach Firestore
-```
-
-Das füllt das Cookbook, damit Liste, Filter, Paginierung und die „Most liked"-Zeile ohne echte
-Generierung testbar sind.
-
-## 5. n8n aufsetzen
+## 4. n8n aufsetzen
 
 Ohne n8n läuft die App, nur die Rezept-Generierung schlägt mit `internal_error` fehl.
 
@@ -70,7 +61,7 @@ Jeder Schritt im Detail: [n8n/README.md](../n8n/README.md).
 Der Webhook hört danach auf `http://localhost:5678/webhook/generate-recipe`; das Frontend bezieht die
 URL ausschließlich aus `environment.recipeWebhookUrl`.
 
-## 6. App starten
+## 5. App starten
 
 ```bash
 npm start           # http://localhost:4200
