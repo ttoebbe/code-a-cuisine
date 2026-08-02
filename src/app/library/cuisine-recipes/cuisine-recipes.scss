@@ -90,6 +90,12 @@
   }
 }
 
+// Every other entry sits on the cream surface of the design, so the eye keeps
+// its line across a full page of recipes.
+.cuisine-page__item:nth-child(even) {
+  --recipe-row-surface: var(--color-cream);
+}
+
 .cuisine-page__note {
   margin-top: var(--space-5);
   font: var(--font-body-16);

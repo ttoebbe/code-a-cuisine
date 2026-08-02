@@ -14,6 +14,10 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-md);
+
+  // Whether a row is highlighted is a property of its place in the list, so
+  // the list sets the surface and the row only paints it.
+  background: var(--recipe-row-surface, transparent);
   transition: background 0.2s ease;
 
   @include desktop {
@@ -22,8 +26,10 @@
     padding: var(--space-3);
   }
 
+  // Mint reads as a hover on both surfaces; the cream of a highlighted row
+  // would be invisible against its own background.
   &:hover {
-    background: var(--color-card);
+    background: var(--color-mint);
   }
 }
 
