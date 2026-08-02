@@ -19,8 +19,24 @@
   }
 }
 
-// One table per scope, stacked. Four equal columns keep Energy…Carbs readable
-// at 390px; a fifth scope column would push Carbs out of view.
+.nutrition__block + .nutrition__block {
+  margin-top: var(--space-5);
+}
+
+// Caption of one scope, e.g. "Per portion" or "All 4 portions".
+.nutrition__scope {
+  color: var(--color-green-dark);
+  font: var(--font-body-16);
+}
+
+.nutrition__energy {
+  margin-bottom: var(--space-2);
+  color: var(--color-green-dark);
+  font: var(--font-body-16);
+}
+
+// Three columns only, so name, grams and share still fit next to each other
+// at 390px — the bar takes whatever the first two columns leave.
 .nutrition__table {
   width: 100%;
   table-layout: fixed;
@@ -29,30 +45,72 @@
   font: var(--font-body-16);
   text-align: left;
 
-  & + & {
-    margin-top: var(--space-3);
-  }
-
   th,
   td {
     padding: var(--space-1) var(--space-2) var(--space-1) 0;
-    white-space: nowrap;
+    vertical-align: middle;
   }
 
-  // Energy carries the widest value ("1260 kcal"), the three macros are short.
-  th:first-child,
-  td:first-child {
-    width: 34%;
-  }
-
+  // Meta row, therefore 14px per the project's type scale.
   thead th {
+    font: var(--font-small-text);
     font-weight: 600;
+  }
+
+  td:last-child,
+  thead th:last-child {
+    padding-right: 0;
   }
 }
 
-// Caption of one scope, e.g. "Per portion" or "All 4 portions".
-.nutrition__scope {
-  padding-bottom: var(--space-1);
-  font: var(--font-body-16);
-  text-align: left;
+.nutrition__macro {
+  width: 28%;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.nutrition__grams {
+  width: 22%;
+  white-space: nowrap;
+}
+
+// Value and bar share one cell: the number carries the meaning, the bar only
+// makes the three shares comparable at a glance. On a phone the bar sits under
+// its value and uses the full cell — side by side it would be too short for
+// the small shares to tell apart.
+.nutrition__share {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+
+  @include desktop {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+  }
+}
+
+.nutrition__percent {
+  min-width: 5ch;
+  white-space: nowrap;
+}
+
+.nutrition__bar {
+  width: 100%;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-mist);
+
+  @include desktop {
+    flex: 1;
+    min-width: 40px;
+  }
+}
+
+.nutrition__bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-olive-green);
 }

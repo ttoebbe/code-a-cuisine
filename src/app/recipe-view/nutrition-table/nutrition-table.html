@@ -1,29 +1,42 @@
 <section class="nutrition" aria-labelledby="nutrition-title">
   <h2 class="nutrition__title" id="nutrition-title">Nutritional information</h2>
 
-  @for (row of rows(); track row.label) {
-    <table class="nutrition__table">
-      <caption class="nutrition__scope">
-        {{
-          row.label
-        }}
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">Energy</th>
-          <th scope="col">Protein</th>
-          <th scope="col">Fat</th>
-          <th scope="col">Carbs</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>{{ row.scope.kcal }} kcal</td>
-          <td>{{ row.scope.protein.grams }}g</td>
-          <td>{{ row.scope.fat.grams }}g</td>
-          <td>{{ row.scope.carbs.grams }}g</td>
-        </tr>
-      </tbody>
-    </table>
+  @for (block of blocks(); track block.label) {
+    <div class="nutrition__block">
+      <h3 class="nutrition__scope">{{ block.label }}</h3>
+      <p class="nutrition__energy">Energy: {{ block.kcal }} kcal</p>
+
+      <table class="nutrition__table">
+        <caption class="visually-hidden">
+          Macronutrients —
+          {{
+            block.label
+          }}
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Macro</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Share<span class="visually-hidden"> of energy</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (macro of block.macros; track macro.label) {
+            <tr>
+              <th scope="row" class="nutrition__macro">{{ macro.label }}</th>
+              <td class="nutrition__grams">{{ macro.grams }}g</td>
+              <td>
+                <span class="nutrition__share">
+                  <span class="nutrition__percent">{{ macro.percent }}%</span>
+                  <span class="nutrition__bar" aria-hidden="true">
+                    <span class="nutrition__bar-fill" [style.width.%]="macro.percent"></span>
+                  </span>
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   }
 </section>
