@@ -6,21 +6,23 @@ import {
   input,
   linkedSignal,
   resource,
-  signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Recipe } from '../../models/recipe.interface';
-import { RecipeLibraryService, type RecipePage } from '../../services/recipe-library.service';
+import { RECIPES_PER_PAGE, RecipeLibraryService } from '../../services/recipe-library.service';
+import { Pagination } from '../../shared/pagination/pagination';
 import { findCuisineCategory, isCuisineStyle } from '../cuisine-categories';
 import { RecipeRow } from '../recipe-row/recipe-row';
 
 /**
  * Recipe list of a single cuisine (User Story 13). It is a page of its own so
  * a category stays bookmarkable and the cookbook keeps its overview character.
+ * The list is paged in fixed blocks instead of growing on every click, so a
+ * long cuisine stays navigable from the bottom of the screen.
  */
 @Component({
   selector: 'app-cuisine-recipes',
-  imports: [RecipeRow, RouterLink],
+  imports: [Pagination, RecipeRow, RouterLink],
   templateUrl: './cuisine-recipes.html',
   styleUrl: './cuisine-recipes.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,76 +45,60 @@ export class CuisineRecipes {
   /** Query options of the current cuisine. */
   private readonly listOptions = computed(() => ({ cuisine: this.activeCuisine() ?? undefined }));
 
-  /** First page of the list, reloaded whenever the cuisine changes. */
-  private readonly firstPage = resource({
+  /** Every recipe of the cuisine, reloaded whenever the cuisine changes. */
+  private readonly allRecipes = resource({
     params: () => this.listOptions(),
     loader: ({ params }) => this.library.listRecipes(params),
+    defaultValue: [] as Recipe[],
   });
 
-  /** Pages fetched via "Load more", dropped as soon as the cuisine changes. */
-  private readonly extraPages = linkedSignal<RecipePage | undefined, RecipePage[]>({
-    source: () => this.firstPage.value(),
-    computation: () => [],
+  /** Page on display, back to the first one whenever the cuisine changes. */
+  protected readonly currentPage = linkedSignal<Recipe[], number>({
+    source: () => this.allRecipes.value(),
+    computation: () => 1,
   });
 
-  /** True while the next page is on its way. */
-  protected readonly isAppending = signal(false);
+  /** Number of pages, at least one so the empty state keeps its layout. */
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.allRecipes.value().length / RECIPES_PER_PAGE)),
+  );
 
-  /** True when loading the next page failed. */
-  protected readonly appendFailed = signal(false);
+  /** Recipes of the current page. */
+  protected readonly recipes = computed<Recipe[]>(() =>
+    this.allRecipes.value().slice(this.firstIndex(), this.firstIndex() + RECIPES_PER_PAGE),
+  );
 
-  /** Every recipe loaded so far, newest first. */
-  protected readonly recipes = computed<Recipe[]>(() => [
-    ...(this.firstPage.value()?.recipes ?? []),
-    ...this.extraPages().flatMap((page) => page.recipes),
-  ]);
+  /** Ordinal of the first recipe on the page, so numbering runs across pages. */
+  protected readonly firstPosition = computed(() => this.firstIndex() + 1);
 
-  /** True while the first page is loading. */
-  protected readonly isLoading = this.firstPage.isLoading;
+  /** True while the list is loading. */
+  protected readonly isLoading = this.allRecipes.isLoading;
 
   /** True when the list could not be read at all. */
-  protected readonly hasFailed = computed(() => this.firstPage.error() !== undefined);
+  protected readonly hasFailed = computed(() => this.allRecipes.error() !== undefined);
 
   /** Heading above the list, e.g. "Italian cuisine". */
   protected readonly listTitle = computed(() => this.category()?.label ?? 'Recipes');
 
-  /** Cursor of the last loaded page, null once the end is reached. */
-  private readonly cursor = computed(() => this.readLastPage()?.cursor ?? null);
-
-  /** True while another page is available. */
-  protected readonly hasMore = computed(() => this.cursor() !== null);
-
   /** True when the cuisine holds no recipe at all. */
   protected readonly isEmpty = computed(
-    () => !this.isLoading() && !this.hasFailed() && this.recipes().length === 0,
+    () => !this.isLoading() && !this.hasFailed() && this.allRecipes.value().length === 0,
   );
 
-  /** Appends the next page to the list. */
-  protected async loadMore(): Promise<void> {
-    const cursor = this.cursor();
-    if (cursor === null || this.isAppending()) return;
-    this.isAppending.set(true);
-    this.appendFailed.set(false);
-    try {
-      const page = await this.library.listRecipes({ ...this.listOptions(), cursor });
-      this.extraPages.update((pages) => [...pages, page]);
-    } catch {
-      this.appendFailed.set(true);
-    } finally {
-      this.isAppending.set(false);
-    }
+  /** Index of the first recipe on the current page. */
+  private readonly firstIndex = computed(() => (this.currentPage() - 1) * RECIPES_PER_PAGE);
+
+  /**
+   * Shows another page and returns to the top, so the new page starts in view.
+   * @param page Page the visitor picked, 1-based.
+   */
+  protected goToPage(page: number): void {
+    this.currentPage.set(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /** Reads the cuisine again after a failed attempt. */
   protected reload(): void {
-    this.firstPage.reload();
-  }
-
-  /**
-   * Finds the page that carries the current cursor.
-   * @returns The last appended page, or the first page when none was added.
-   */
-  private readLastPage(): RecipePage | undefined {
-    return this.extraPages().at(-1) ?? this.firstPage.value();
+    this.allRecipes.reload();
   }
 }

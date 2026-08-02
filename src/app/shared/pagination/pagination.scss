@@ -1,0 +1,70 @@
+:host {
+  display: block;
+}
+
+.pagination {
+  margin-top: var(--space-6);
+}
+
+// Wraps rather than scrolls, so a long bar stays reachable on a 375px screen.
+.pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pagination__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-green-middle);
+  font: var(--font-body-16);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--color-mist);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-green-middle);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    color: var(--color-chip);
+    cursor: default;
+  }
+}
+
+.pagination__button--current {
+  background: var(--color-olive-green);
+  color: var(--color-cream);
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: var(--color-olive-green);
+  }
+}
+
+// Meta character, therefore 14px per the project's type scale.
+.pagination__gap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 44px;
+  color: var(--color-green-dark);
+  font: var(--font-small-text);
+}

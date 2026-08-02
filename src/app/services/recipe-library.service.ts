@@ -9,13 +9,11 @@ import {
   limit,
   orderBy,
   query,
-  startAfter,
   updateDoc,
   where,
   type DocumentData,
   type Query,
   type QueryConstraint,
-  type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { FIRESTORE } from '../firebase/firestore.provider';
 import type { CuisineStyle } from '../models/recipe-filters.types';
@@ -23,30 +21,15 @@ import type { GeneratedRecipe, Recipe } from '../models/recipe.interface';
 import { buildRecipeDocument, toRecipe } from './recipe-document';
 
 /** Recipes per page of the cookbook list (User Story 12). */
-export const RECIPES_PER_PAGE = 20;
+export const RECIPES_PER_PAGE = 15;
 
 /** Entries of the "Most liked recipes" row of the cookbook header. */
 export const MOST_LIKED_COUNT = 10;
 
-/**
- * Position of the last loaded recipe. The cookbook treats it as an opaque
- * value and only hands it back to load the following page.
- */
-export type RecipeCursor = QueryDocumentSnapshot<DocumentData>;
-
-/** One page of the cookbook list. */
-export interface RecipePage {
-  recipes: Recipe[];
-  /** Start of the next page, null once the end of the list is reached. */
-  cursor: RecipeCursor | null;
-}
-
-/** Filter and paging options of a cookbook query. */
+/** Filter options of a cookbook query. */
 export interface RecipeListOptions {
   /** Category filter (User Story 13); undefined lists every cuisine. */
   cuisine?: CuisineStyle;
-  /** Cursor of the previous page, null or undefined for the first one. */
-  cursor?: RecipeCursor | null;
 }
 
 /**
@@ -80,15 +63,15 @@ export class RecipeLibraryService {
   }
 
   /**
-   * Lists the library newest first, optionally filtered by cuisine.
-   * @param options Category filter and cursor of the previous page.
-   * @returns One page of recipes plus the cursor of the next one.
+   * Lists the library newest first, optionally filtered by cuisine. The whole
+   * category is read in one query because the cookbook offers numbered pages:
+   * a Firestore cursor only walks forward and cannot jump straight to page N.
+   * @param options Category filter of the query.
+   * @returns Every matching recipe, newest first.
    */
-  async listRecipes(options: RecipeListOptions = {}): Promise<RecipePage> {
+  async listRecipes(options: RecipeListOptions = {}): Promise<Recipe[]> {
     const snapshot = await getDocs(this.buildListQuery(options));
-    const recipes = snapshot.docs.map(toRecipe);
-    const isLastPage = recipes.length < RECIPES_PER_PAGE;
-    return { recipes, cursor: isLastPage ? null : snapshot.docs[recipes.length - 1] };
+    return snapshot.docs.map(toRecipe);
   }
 
   /**
@@ -111,15 +94,14 @@ export class RecipeLibraryService {
   }
 
   /**
-   * Assembles the paginated list query.
-   * @param options Category filter and cursor of the previous page.
-   * @returns Query for one page of the library.
+   * Assembles the list query.
+   * @param options Category filter of the query.
+   * @returns Query for the matching part of the library.
    */
   private buildListQuery(options: RecipeListOptions): Query<DocumentData> {
     const constraints: QueryConstraint[] = [];
     if (options.cuisine !== undefined) constraints.push(where('cuisine', '==', options.cuisine));
     constraints.push(orderBy('createdAt', 'desc'));
-    if (options.cursor) constraints.push(startAfter(options.cursor));
-    return query(this.recipes, ...constraints, limit(RECIPES_PER_PAGE));
+    return query(this.recipes, ...constraints);
   }
 }

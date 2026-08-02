@@ -25,10 +25,10 @@
     </div>
 
     @if (recipes().length > 0) {
-      <ol class="cuisine-page__list">
+      <ol class="cuisine-page__list" [start]="firstPosition()">
         @for (recipe of recipes(); track recipe.id; let index = $index) {
           <li class="cuisine-page__item">
-            <app-recipe-row [recipe]="recipe" [position]="index + 1" />
+            <app-recipe-row [recipe]="recipe" [position]="firstPosition() + index" />
           </li>
         }
       </ol>
@@ -47,19 +47,10 @@
       </p>
     }
 
-    @if (hasMore()) {
-      <button
-        type="button"
-        class="cuisine-page__button"
-        [disabled]="isAppending()"
-        (click)="loadMore()"
-      >
-        {{ isAppending() ? 'Loading…' : 'Load more recipes' }}
-      </button>
-    }
-
-    @if (appendFailed()) {
-      <p class="cuisine-page__note" role="alert">Loading more recipes failed. Please try again.</p>
-    }
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      (pageChange)="goToPage($event)"
+    />
   </section>
 </div>
