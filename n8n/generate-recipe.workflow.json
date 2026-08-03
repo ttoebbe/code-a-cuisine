@@ -7,7 +7,8 @@
         "text": "={{ $json.userPrompt }}",
         "hasOutputParser": true,
         "options": {
-          "systemMessage": "={{ $json.systemPrompt }}"
+          "systemMessage": "={{ $json.systemPrompt }}",
+          "maxIterations": 2
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -16,7 +17,7 @@
       "id": "b23cab9e-556e-4dbf-af9a-cecc2612d48d",
       "name": "Generate recipes (AI Agent)",
       "onError": "continueErrorOutput",
-      "notes": "Single Gemini call via the AI Agent; output shape enforced by the Structured Output Parser. Errors continue on the error output and become an ai_failed envelope in the map node."
+      "notes": "At most two Gemini calls (maxIterations 2) via the AI Agent; output shape enforced by the Structured Output Parser. Errors continue on the error output and become an ai_failed envelope in the map node."
     },
     {
       "parameters": {
@@ -320,6 +321,7 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
+    "executionTimeout": 80,
     "errorWorkflow": "codeacuisine-error-handler"
   },
   "versionId": "96c852e7-28b4-4004-a446-6b2b1c7e5ef5",
