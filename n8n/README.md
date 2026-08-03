@@ -85,7 +85,13 @@ The cost airbag (3 recipes per IP per day, 12 across the whole system) counts in
 n8n data volume. To reset it, delete the file — it is recreated on the next run:
 
 ```bash
-docker exec n8n rm /home/node/.n8n/quota-state.json
+export MSYS_NO_PATHCONV=1   # in Git Bash, otherwise the path gets rewritten
+docker exec n8n rm -f /home/node/.n8n/quota-state.json
+docker exec n8n sh -c 'ls /home/node/.n8n/ | grep -c quota-state.json'   # 0 = reset
 ```
+
+Without `MSYS_NO_PATHCONV` Git Bash turns the container path into a Windows one, `rm` deletes
+nothing and still exits 0 — the reset looks like it worked while the counters stay put. The check
+line above is quoted, so it survives either way.
 
 That file access needs `NODE_FUNCTION_ALLOW_BUILTIN=fs` in the `docker-compose.yml` under `~/n8n`.
