@@ -12,10 +12,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.9,
-      "position": [
-        336,
-        240
-      ],
+      "position": [336, 240],
       "id": "b23cab9e-556e-4dbf-af9a-cecc2612d48d",
       "name": "Generate recipes (AI Agent)",
       "onError": "continueErrorOutput",
@@ -30,10 +27,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
-      "position": [
-        160,
-        544
-      ],
+      "position": [160, 544],
       "id": "40deeee3-8f26-42a3-a1a5-cf65c785cf6b",
       "name": "Google Gemini Chat Model",
       "credentials": {
@@ -50,10 +44,7 @@
       },
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.2,
-      "position": [
-        704,
-        528
-      ],
+      "position": [704, 528],
       "id": "1cae411b-7552-40d6-9a2b-5bfab97fd582",
       "name": "Structured Output Parser"
     },
@@ -70,25 +61,19 @@
       "name": "Receive recipe request",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        -496,
-        336
-      ],
+      "position": [-496, 336],
       "webhookId": "generate-recipe",
       "notes": "POST /webhook/generate-recipe. allowedOrigins answers the CORS preflight for the two dev origins. TODO(prod): add the deployed origin."
     },
     {
       "parameters": {
-        "jsCode": "// Guard node — server-side request validation and the daily cost cap\n// (Kostenairbag). Runs once for all items. Emits either a \"route: ok\" item\n// carrying the sanitised request plus the prompts for the AI Agent, or a\n// \"route: error\" item carrying the error envelope from the JSON contract.\n\nconst ALLOWED_ORIGINS = ['http://localhost:4200', 'http://localhost:4300'];\n// TODO(prod): add the deployed frontend origin here once it is known.\n\nconst TIME_CATEGORIES = ['quick', 'medium', 'complex'];\nconst CUISINES = ['german', 'italian', 'japanese', 'indian', 'gourmet', 'fusion'];\nconst DIETS = ['vegetarian', 'vegan', 'keto', 'none'];\nconst UNITS = ['g', 'ml', 'piece'];\n\n// Cost cap: how many recipes one IP and the whole system may generate per day.\nconst PER_IP_LIMIT = 3;\nconst SYSTEM_LIMIT = 12;\n\nconst webhook = $input.first().json;\nconst body = webhook.body || {};\nconst headers = webhook.headers || {};\n\n/** Reflects the request origin when it is allow-listed, else the first entry. */\nfunction resolveCorsOrigin(origin) {\n  return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];\n}\n\n/** Wraps an error envelope (JSON contract) into a single n8n item. */\nfunction fail(code, message, retryAfter) {\n  const envelope = { status: 'error', code, message, retryAfter: retryAfter || null };\n  return [{ json: { route: 'error', __error: envelope } }];\n}\n\n/** Collects human-readable problems with the incoming payload. */\nfunction collectValidationErrors(input) {\n  const errors = [];\n  validateIngredients(input.ingredients, errors);\n  if (!Number.isInteger(input.portions) || input.portions < 1 || input.portions > 12) {\n    errors.push('portions must be a whole number between 1 and 12');\n  }\n  if (!Number.isInteger(input.cooks) || input.cooks < 1 || input.cooks > 3) {\n    errors.push('cooks must be a whole number between 1 and 3');\n  }\n  if (!TIME_CATEGORIES.includes(input.timeCategory)) errors.push('time category is invalid');\n  if (!CUISINES.includes(input.cuisine)) errors.push('cuisine is invalid');\n  if (!DIETS.includes(input.diet)) errors.push('diet is invalid');\n  return errors;\n}\n\n/** Validates the ingredient list: at least one, each with name/amount/unit. */\nfunction validateIngredients(ingredients, errors) {\n  if (!Array.isArray(ingredients) || ingredients.length < 1) {\n    errors.push('at least one ingredient is required');\n    return;\n  }\n  ingredients.forEach((ingredient, index) => {\n    const label = 'ingredient ' + (index + 1);\n    const item = ingredient || {};\n    if (typeof item.name !== 'string' || item.name.trim() === '')\n      errors.push(label + ' needs a name');\n    if (typeof item.amount !== 'number' || !isFinite(item.amount) || item.amount <= 0) {\n      errors.push(label + ' needs a positive amount');\n    }\n    if (!UNITS.includes(item.unit)) errors.push(label + ' has an invalid unit');\n  });\n}\n\n/** Normalises the client IP so IPv4 and IPv6 map to a stable quota key. */\nfunction resolveIpKey(requestHeaders) {\n  const forwarded = String(requestHeaders['x-forwarded-for'] || '')\n    .split(',')[0]\n    .trim();\n  let ip = (forwarded || requestHeaders['x-real-ip'] || '').trim();\n  if (!ip) return 'unknown';\n  const mapped = ip.match(/^::ffff:(\\d+\\.\\d+\\.\\d+\\.\\d+)$/i);\n  if (mapped) ip = mapped[1];\n  ip = ip.replace(/%.*$/, '');\n  if (/^\\d{1,3}(\\.\\d{1,3}){3}$/.test(ip)) return 'v4:' + ip;\n  return 'v6:' + ip.toLowerCase().split(':').slice(0, 4).join(':');\n}\n\n/** ISO timestamp of the next UTC midnight — when the daily quota resets. */\nfunction nextUtcMidnight(now) {\n  return new Date(\n    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),\n  ).toISOString();\n}\n\n// Counter file on the n8n data volume. A plain JSON file is used on purpose:\n// n8n's workflow static data does not persist reliably for webhook runs, and a\n// hard cost cap must not depend on that. Requires NODE_FUNCTION_ALLOW_BUILTIN\n// to include `fs` (set in ~/n8n/docker-compose.yml).\nconst fs = require('fs');\nconst QUOTA_FILE = '/home/node/.n8n/quota-state.json';\n\n/** Reads the counter file, returning a fresh state when it is missing. */\nfunction readQuotaState() {\n  try {\n    return JSON.parse(fs.readFileSync(QUOTA_FILE, 'utf8'));\n  } catch (error) {\n    return { day: null, system: 0, perIp: {} };\n  }\n}\n\n/** Persists the counter file. */\nfunction writeQuotaState(state) {\n  fs.writeFileSync(QUOTA_FILE, JSON.stringify(state));\n}\n\n/**\n * Checks and reserves one quota slot. A request about to reach the LLM counts\n * against the cap even if the model later fails, so repeated failures cannot\n * drain the budget. Returns an error envelope on overrun, otherwise null.\n */\nfunction reserveQuota(requestHeaders) {\n  const now = new Date();\n  const day = now.toISOString().slice(0, 10);\n  const state = readQuotaState();\n  if (state.day !== day) {\n    state.day = day;\n    state.system = 0;\n    state.perIp = {};\n  }\n  const ipKey = resolveIpKey(requestHeaders);\n  const ipCount = (state.perIp && state.perIp[ipKey]) || 0;\n  const retryAfter = nextUtcMidnight(now);\n  if (state.system >= SYSTEM_LIMIT) {\n    return fail(\n      'quota_system_exceeded',\n      'The daily recipe limit for everyone has been reached. Please try again tomorrow.',\n      retryAfter,\n    );\n  }\n  if (ipCount >= PER_IP_LIMIT) {\n    return fail('quota_ip_exceeded', 'You have used all 3 recipes for today.', retryAfter);\n  }\n  state.system += 1;\n  state.perIp[ipKey] = ipCount + 1;\n  writeQuotaState(state);\n  return null;\n}\n\n/** Static instruction block that pins the model to the project rules. */\nfunction buildSystemPrompt() {\n  return [\n    'You are the recipe engine of \"Code a Cuisine\". Produce exactly three distinct recipes that match the request.',\n    'Hard rules:',\n    '- Honour the diet strictly (vegetarian, vegan, keto, or none).',\n    '- Use the requested cuisine and set portions and cooks to the requested numbers.',\n    '- timeCategory must fit cookingTimeMinutes: quick <= 20, medium 21-45, complex > 45.',\n    '- yourIngredients must reuse at least 70% of the ingredients the user provided.',\n    '- extraIngredients are basics the user still has to buy: at most three of them.',\n    '- When cooks > 1, split the work: assignedChef is between 1 and cooks, and steps that run at the same time share one parallelGroupId (an integer); serial steps use null.',\n    '- Fill nutrition for both perPortion and total; each macro carries grams and its percent share of the energy, and total = perPortion * portions.',\n    '- Write every title, step and note in English.',\n    'Answer with the JSON array of exactly three recipes only — no prose, no code fences.',\n  ].join('\\n');\n}\n\n/** Wraps the concrete request as the user turn. */\nfunction buildUserPrompt(request) {\n  return 'Generate three recipes for this request:\\n' + JSON.stringify(request, null, 2);\n}\n\n// --- main -------------------------------------------------------------------\nconst corsOrigin = resolveCorsOrigin(headers.origin);\nconst validationErrors = collectValidationErrors(body);\nif (validationErrors.length > 0) {\n  return fail(\n    'validation_failed',\n    'Your recipe request was rejected: ' + validationErrors.join('; ') + '.',\n  );\n}\n\nconst quotaError = reserveQuota(headers);\nif (quotaError) return quotaError;\n\nconst request = {\n  ingredients: body.ingredients,\n  portions: body.portions,\n  cooks: body.cooks,\n  timeCategory: body.timeCategory,\n  cuisine: body.cuisine,\n  diet: body.diet,\n};\n\nreturn [\n  {\n    json: {\n      route: 'ok',\n      corsOrigin,\n      request,\n      systemPrompt: buildSystemPrompt(),\n      userPrompt: buildUserPrompt(request),\n    },\n  },\n];\n"
+        "jsCode": "// Guard node — server-side request validation and the daily cost cap\n// (Kostenairbag). Runs once for all items. Emits either a \"route: ok\" item\n// carrying the sanitised request plus the prompts for the AI Agent, or a\n// \"route: error\" item carrying the error envelope from the JSON contract.\n\nconst ALLOWED_ORIGINS = ['http://localhost:4200', 'http://localhost:4300'];\n// TODO(prod): add the deployed frontend origin here once it is known.\n\nconst TIME_CATEGORIES = ['quick', 'medium', 'complex'];\nconst CUISINES = ['german', 'italian', 'japanese', 'indian', 'gourmet', 'fusion'];\nconst DIETS = ['vegetarian', 'vegan', 'keto', 'none'];\nconst UNITS = ['g', 'ml', 'piece'];\n\n// Cost cap: how many recipes one IP and the whole system may generate per day.\nconst PER_IP_LIMIT = 3;\nconst SYSTEM_LIMIT = 12;\n\nconst webhook = $input.first().json;\nconst body = webhook.body || {};\nconst headers = webhook.headers || {};\n\n/** Reflects the request origin when it is allow-listed, else the first entry. */\nfunction resolveCorsOrigin(origin) {\n  return ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];\n}\n\n/** Wraps an error envelope (JSON contract) into a single n8n item. */\nfunction fail(code, message, retryAfter) {\n  const envelope = { status: 'error', code, message, retryAfter: retryAfter || null };\n  return [{ json: { route: 'error', __error: envelope } }];\n}\n\n/** Collects human-readable problems with the incoming payload. */\nfunction collectValidationErrors(input) {\n  const errors = [];\n  validateIngredients(input.ingredients, errors);\n  if (!Number.isInteger(input.portions) || input.portions < 1 || input.portions > 12) {\n    errors.push('portions must be a whole number between 1 and 12');\n  }\n  if (!Number.isInteger(input.cooks) || input.cooks < 1 || input.cooks > 3) {\n    errors.push('cooks must be a whole number between 1 and 3');\n  }\n  if (!TIME_CATEGORIES.includes(input.timeCategory)) errors.push('time category is invalid');\n  if (!CUISINES.includes(input.cuisine)) errors.push('cuisine is invalid');\n  if (!DIETS.includes(input.diet)) errors.push('diet is invalid');\n  return errors;\n}\n\n/** Validates the ingredient list: at least one, each with name/amount/unit. */\nfunction validateIngredients(ingredients, errors) {\n  if (!Array.isArray(ingredients) || ingredients.length < 1) {\n    errors.push('at least one ingredient is required');\n    return;\n  }\n  ingredients.forEach((ingredient, index) => {\n    const label = 'ingredient ' + (index + 1);\n    const item = ingredient || {};\n    if (typeof item.name !== 'string' || item.name.trim() === '')\n      errors.push(label + ' needs a name');\n    if (typeof item.amount !== 'number' || !isFinite(item.amount) || item.amount <= 0) {\n      errors.push(label + ' needs a positive amount');\n    }\n    if (!UNITS.includes(item.unit)) errors.push(label + ' has an invalid unit');\n  });\n}\n\n/** Normalises the client IP so IPv4 and IPv6 map to a stable quota key. */\nfunction resolveIpKey(requestHeaders) {\n  const forwarded = String(requestHeaders['x-forwarded-for'] || '')\n    .split(',')[0]\n    .trim();\n  let ip = (forwarded || requestHeaders['x-real-ip'] || '').trim();\n  if (!ip) return 'unknown';\n  const mapped = ip.match(/^::ffff:(\\d+\\.\\d+\\.\\d+\\.\\d+)$/i);\n  if (mapped) ip = mapped[1];\n  ip = ip.replace(/%.*$/, '');\n  if (/^\\d{1,3}(\\.\\d{1,3}){3}$/.test(ip)) return 'v4:' + ip;\n  return 'v6:' + ip.toLowerCase().split(':').slice(0, 4).join(':');\n}\n\n/** ISO timestamp of the next UTC midnight — when the daily quota resets. */\nfunction nextUtcMidnight(now) {\n  return new Date(\n    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),\n  ).toISOString();\n}\n\n// Counter file on the n8n data volume. A plain JSON file is used on purpose:\n// n8n's workflow static data does not persist reliably for webhook runs, and a\n// hard cost cap must not depend on that. Requires NODE_FUNCTION_ALLOW_BUILTIN\n// to include `fs` (set in ~/n8n/docker-compose.yml).\nconst fs = require('fs');\nconst QUOTA_FILE = '/home/node/.n8n/quota-state.json';\n\n/** Reads the counter file, returning a fresh state when it is missing. */\nfunction readQuotaState() {\n  try {\n    return JSON.parse(fs.readFileSync(QUOTA_FILE, 'utf8'));\n  } catch (error) {\n    return { day: null, system: 0, perIp: {} };\n  }\n}\n\n/** Persists the counter file. */\nfunction writeQuotaState(state) {\n  fs.writeFileSync(QUOTA_FILE, JSON.stringify(state));\n}\n\n/**\n * Checks and reserves one quota slot. A request about to reach the LLM counts\n * against the cap even if the model later fails, so repeated failures cannot\n * drain the budget. Returns an error envelope on overrun, otherwise null.\n */\nfunction reserveQuota(requestHeaders) {\n  const now = new Date();\n  const day = now.toISOString().slice(0, 10);\n  const state = readQuotaState();\n  if (state.day !== day) {\n    state.day = day;\n    state.system = 0;\n    state.perIp = {};\n  }\n  const ipKey = resolveIpKey(requestHeaders);\n  const ipCount = (state.perIp && state.perIp[ipKey]) || 0;\n  const retryAfter = nextUtcMidnight(now);\n  if (state.system >= SYSTEM_LIMIT) {\n    return fail(\n      'quota_system_exceeded',\n      'The daily recipe limit for everyone has been reached. Please try again tomorrow.',\n      retryAfter,\n    );\n  }\n  if (ipCount >= PER_IP_LIMIT) {\n    return fail('quota_ip_exceeded', 'You have used all 3 recipes for today.', retryAfter);\n  }\n  state.system += 1;\n  state.perIp[ipKey] = ipCount + 1;\n  writeQuotaState(state);\n  return null;\n}\n\n/** Static instruction block that pins the model to the project rules. */\nfunction buildSystemPrompt() {\n  return [\n    'You are the recipe engine of \"Code a Cuisine\". Produce exactly three distinct recipes that match the request.',\n    'Hard rules:',\n    '- Honour the diet strictly (vegetarian, vegan, keto, or none).',\n    '- Use the requested cuisine and set portions and cooks to the requested numbers.',\n    '- timeCategory must fit cookingTimeMinutes: quick <= 20, medium 21-45, complex > 45.',\n    '- yourIngredients must reuse at least 70% of the ingredients the user provided.',\n    '- extraIngredients are basics the user still has to buy: at most three of them.',\n    '- When cooks > 1, split the work: assignedChef is between 1 and cooks, and steps that run at the same time share one parallelGroupId (an integer); omit parallelGroupId for serial steps.',\n    '- Fill nutrition for both perPortion and total; each macro carries grams and its percent share of the energy, and total = perPortion * portions.',\n    '- Write every title, step and note in English.',\n    'Answer with a JSON object holding a \"recipes\" array of exactly three recipes — no prose, no code fences. Omit optional fields you cannot fill; never write null.',\n  ].join('\\n');\n}\n\n/** Wraps the concrete request as the user turn. */\nfunction buildUserPrompt(request) {\n  return 'Generate three recipes for this request:\\n' + JSON.stringify(request, null, 2);\n}\n\n// --- main -------------------------------------------------------------------\nconst corsOrigin = resolveCorsOrigin(headers.origin);\nconst validationErrors = collectValidationErrors(body);\nif (validationErrors.length > 0) {\n  return fail(\n    'validation_failed',\n    'Your recipe request was rejected: ' + validationErrors.join('; ') + '.',\n  );\n}\n\nconst quotaError = reserveQuota(headers);\nif (quotaError) return quotaError;\n\nconst request = {\n  ingredients: body.ingredients,\n  portions: body.portions,\n  cooks: body.cooks,\n  timeCategory: body.timeCategory,\n  cuisine: body.cuisine,\n  diet: body.diet,\n};\n\nreturn [\n  {\n    json: {\n      route: 'ok',\n      corsOrigin,\n      request,\n      systemPrompt: buildSystemPrompt(),\n      userPrompt: buildUserPrompt(request),\n    },\n  },\n];\n"
       },
       "id": "a7b532f6-621a-4ebd-aa06-89dd157f0e5f",
       "name": "Validate & rate limit",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        -272,
-        336
-      ],
+      "position": [-272, 336],
       "notes": "Server-side validation (independent of the frontend) and the daily cost cap: 3 recipes/IP, 12 system-wide. Reserves a slot before the LLM call."
     },
     {
@@ -119,10 +104,7 @@
       "name": "Passed the guard?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        -64,
-        336
-      ],
+      "position": [-64, 336],
       "notes": "route=ok continues to the model; route=error goes straight to the error response."
     },
     {
@@ -133,10 +115,7 @@
       "name": "Map AI answer to recipes",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        752,
-        240
-      ],
+      "position": [752, 240],
       "notes": "Sanitises the model output into GeneratedRecipe[]; unusable output becomes an ai_failed envelope."
     },
     {
@@ -167,10 +146,7 @@
       "name": "Recipes usable?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        960,
-        240
-      ],
+      "position": [960, 240],
       "notes": "route=ok returns the recipes; route=error returns the ai_failed envelope."
     },
     {
@@ -197,10 +173,7 @@
       "name": "Respond: recipes",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1200,
-        160
-      ],
+      "position": [1200, 160],
       "notes": "Success envelope (status ok, three recipes) with CORS header."
     },
     {
@@ -227,10 +200,7 @@
       "name": "Respond: error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [
-        1200,
-        784
-      ],
+      "position": [1200, 784],
       "notes": "Error envelope from the JSON contract. HTTP 200 on purpose: the frontend reads the envelope from any status."
     }
   ],
