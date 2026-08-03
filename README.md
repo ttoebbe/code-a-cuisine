@@ -52,6 +52,20 @@ The full walkthrough — Firebase values, rules, index and the n8n setup — is 
 | `npm run watch` | Build in watch mode                     |
 | `npm run lint`  | ESLint including Angular template rules |
 
+## CI and deployment
+
+GitHub Actions runs the same three commands on every push and pull request, and puts the site online
+by itself once `main` moves:
+
+| Workflow              | Runs on                                      | Does                                         |
+| --------------------- | -------------------------------------------- | -------------------------------------------- |
+| `ci.yml`              | push and pull request, any branch            | `npm ci` → `npm run lint` → `npm run build`  |
+| `deploy-frontend.yml` | push to `main` touching the app, or manually | builds and uploads to the web space          |
+| `deploy-n8n.yml`      | manually only                                | ships compose files and workflows to the VPS |
+
+The required secrets, where each one comes from and the one-time server setup are in
+**[docs/deployment.md](docs/deployment.md)**.
+
 ## Project structure
 
 ```
@@ -73,6 +87,8 @@ public/          Static assets copied into the build, plus the Apache .htaccess
 n8n/             Both workflows as exported JSON
   deploy/        Compose file and Caddy config for the n8n server
 docs/            Installation, architecture, webhook interface, Firebase, deployment
+.github/
+  workflows/     CI plus the two deployment workflows
 ```
 
 ## Documentation

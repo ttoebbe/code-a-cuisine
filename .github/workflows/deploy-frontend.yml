@@ -1,0 +1,142 @@
+# Builds the Angular app and mirrors dist/code-a-cuisine/browser/ into the
+# document root on the Hetzner web space. Secrets and troubleshooting:
+# docs/deployment.md.
+
+name: Deploy frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'angular.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Two deployments writing into the same document root would interleave, so they
+# queue instead of cancelling — a cancelled mirror leaves a half-uploaded site.
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and upload
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Production configuration by default, so environment.prod.ts and with it
+      # the public webhook URL end up in the bundle.
+      - name: Build
+        run: npm run build
+
+      - name: Install lftp and sshpass
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lftp sshpass
+
+      - name: Prepare SFTP credentials
+        env:
+          SFTP_KEY: ${{ secrets.SFTP_KEY }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+
+          # lftp speaks the sftp protocol through a connect program, so both
+          # auth variants are configured on the ssh command line.
+          if [ -n "${SFTP_KEY:-}" ]; then
+            printf '%s\n' "$SFTP_KEY" > ~/.ssh/deploy_key
+            chmod 600 ~/.ssh/deploy_key
+            CONNECT_PROGRAM="ssh -a -x -i $HOME/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
+          elif [ -n "${SFTP_PASSWORD:-}" ]; then
+            # sshpass -e reads the password from SSHPASS, so it never appears in
+            # the process list. Keys are switched off or ssh would try them first.
+            CONNECT_PROGRAM="sshpass -e ssh -a -x -o PubkeyAuthentication=no -o StrictHostKeyChecking=accept-new"
+          else
+            echo "::error::Set either SFTP_KEY or SFTP_PASSWORD as a repository secret."
+            exit 1
+          fi
+
+          echo "CONNECT_PROGRAM=$CONNECT_PROGRAM" >> "$GITHUB_ENV"
+
+      - name: Upload the build output over SFTP
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_REMOTE_DIR: ${{ secrets.SFTP_REMOTE_DIR }}
+          SSHPASS: ${{ secrets.SFTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          LOCAL_DIR="$GITHUB_WORKSPACE/dist/code-a-cuisine/browser"
+          PORT="${SFTP_PORT:-22}"
+
+          # --delete removes everything in the target that is not in the build.
+          # Against the account root that would wipe unrelated subdomains, so the
+          # target has to be an absolute path with at least one segment below the
+          # root — anything vaguer is refused rather than mirrored into.
+          REMOTE_DIR="${SFTP_REMOTE_DIR:-}"
+          if [ -z "$REMOTE_DIR" ] ||
+             [ "${REMOTE_DIR#/}" = "$REMOTE_DIR" ] ||
+             [ -z "$(printf '%s' "$REMOTE_DIR" | tr -d '/')" ]; then
+            echo "::error::SFTP_REMOTE_DIR must be an absolute path to the document root of the subdomain (for example /code-a-cuisine.thomas-toebbe.de), not the account root."
+            exit 1
+          fi
+
+          # The .htaccess holds the SPA rewrite and the HTTPS redirect. It is a
+          # dotfile, so it is the one asset a deployment tends to drop silently:
+          # the landing page still works and every deep link 404s.
+          if [ ! -f "$LOCAL_DIR/.htaccess" ]; then
+            echo "::error::$LOCAL_DIR/.htaccess is missing — check the assets block in angular.json."
+            exit 1
+          fi
+
+          run_lftp() {
+            lftp -c "
+              set cmd:fail-exit yes;
+              set net:max-retries 2;
+              set net:timeout 20;
+              set sftp:auto-confirm yes;
+              set sftp:connect-program \"$CONNECT_PROGRAM\";
+              open -u \"$SFTP_USER\" sftp://$SFTP_HOST:$PORT;
+              $1
+            "
+          }
+
+          # mirror --reverse uploads; --delete is scoped to the target directory
+          # passed here and never walks above it. lftp lists the local directory
+          # itself, so dotfiles are part of the mirror without an extra flag.
+          run_lftp "mirror --reverse --delete --verbose --parallel=2 \"$LOCAL_DIR\" \"$REMOTE_DIR\";"
+
+          # Prove the dotfile actually arrived instead of trusting the mirror.
+          REMOTE_HTACCESS="$(run_lftp "cls -1 \"$REMOTE_DIR/.htaccess\";" || true)"
+          if [ -z "$(printf '%s' "$REMOTE_HTACCESS" | tr -d '[:space:]')" ]; then
+            echo "::error::.htaccess is not in the document root after the upload — deep links would 404."
+            exit 1
+          fi
+
+          echo "Uploaded, .htaccess confirmed on the server." >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,135 @@
+# Manual only: the VPS exists for the submission phase and is deleted again
+# afterwards, so nothing about this should fire on a push. Secrets, the one-off
+# server setup and the activation step: docs/deployment.md.
+
+name: Deploy n8n
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-n8n
+  cancel-in-progress: false
+
+env:
+  REMOTE_DIR: /opt/code-a-cuisine
+
+jobs:
+  deploy:
+    name: Ship compose files and workflows
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Prepare the SSH key
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/vps_key
+          chmod 600 ~/.ssh/vps_key
+
+          ssh-keyscan -t rsa,ecdsa,ed25519 "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          if [ ! -s ~/.ssh/known_hosts ]; then
+            echo "::error::No host key from VPS_HOST — is the server running and port 22 open?"
+            exit 1
+          fi
+
+      - name: Stage the files to copy
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/n8n-stage
+          mkdir -p /tmp/n8n-stage
+
+          cp -R n8n/deploy/. /tmp/n8n-stage/
+          cp n8n/*.workflow.json /tmp/n8n-stage/
+
+          # The filled-in .env belongs to the server and holds the encryption key
+          # for the stored credentials. It is gitignored, but deleting it here
+          # makes sure no stray local copy can ever travel up and overwrite it.
+          rm -f /tmp/n8n-stage/.env
+
+          ls -la /tmp/n8n-stage
+
+      - name: Copy the files to the server
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          # dotglob so .env.example is picked up, nullglob so an empty staging
+          # directory fails loudly instead of scp'ing a literal asterisk.
+          shopt -s dotglob nullglob
+
+          ssh -i ~/.ssh/vps_key "$VPS_USER@$VPS_HOST" "mkdir -p $REMOTE_DIR"
+          scp -i ~/.ssh/vps_key -r /tmp/n8n-stage/* "$VPS_USER@$VPS_HOST:$REMOTE_DIR/"
+
+      - name: Start the containers
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/vps_key "$VPS_USER@$VPS_HOST" "REMOTE_DIR=$REMOTE_DIR bash -euo pipefail" <<'REMOTE'
+          cd "$REMOTE_DIR"
+
+          if [ ! -f .env ]; then
+            echo "::error::$REMOTE_DIR/.env is missing. Create it once on the server from .env.example — this workflow never writes it."
+            exit 1
+          fi
+
+          docker compose up -d
+          docker compose ps
+          REMOTE
+
+      - name: Import the workflows
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/vps_key "$VPS_USER@$VPS_HOST" "REMOTE_DIR=$REMOTE_DIR bash -euo pipefail" <<'REMOTE'
+          cd "$REMOTE_DIR"
+
+          # The CLI talks to the SQLite database inside the container, so the
+          # container has to be up — it does not have to serve requests yet.
+          for _ in $(seq 1 30); do
+            docker compose exec -T n8n true 2>/dev/null && break
+            sleep 2
+          done
+          docker compose exec -T n8n true
+
+          docker compose cp error-handler.workflow.json   n8n:/tmp/
+          docker compose cp generate-recipe.workflow.json n8n:/tmp/
+
+          # Error handler first: the main workflow points at it through
+          # settings.errorWorkflow and the id has to exist by then.
+          docker compose exec -T n8n n8n import:workflow --input=/tmp/error-handler.workflow.json
+          docker compose exec -T n8n n8n import:workflow --input=/tmp/generate-recipe.workflow.json
+          REMOTE
+
+      - name: Explain the remaining manual step
+        run: |
+          {
+            echo '### n8n deployed — one manual step left'
+            echo
+            echo 'Both workflows were imported **inactive**. The n8n import never carries an active'
+            echo 'flag, so the webhook does not answer yet. Activate the main workflow once on the server:'
+            echo
+            echo '```bash'
+            echo "cd $REMOTE_DIR"
+            echo 'docker compose exec -T n8n n8n update:workflow --id=codeacuisine-generate-recipe --active=true'
+            echo 'docker compose restart n8n   # registers the production webhook URL'
+            echo '```'
+            echo
+            echo 'The two credentials (Gemini API, SMTP) live in the n8n UI only and are never part of'
+            echo 'this deployment. If they do not exist yet, create them first — see n8n/README.md.'
+          } >> "$GITHUB_STEP_SUMMARY"
