@@ -58,9 +58,22 @@ every relevant push to `main`.
 | `SFTP_KEY`        | one of the two     | private OpenSSH key **including** the `-----BEGIN/END-----` lines, whose public half sits in konsoleH |
 | `SFTP_PORT`       | no, defaults to 22 | only needed if the host listens elsewhere                                                             |
 | `SFTP_REMOTE_DIR` | yes                | **absolute** path of the subdomain's document root, e.g. `/code-a-cuisine.thomas-toebbe.de`           |
+| `FIREBASE_CONFIG` | yes                | the contents of your local `src/environments/firebase.config.ts`                                      |
 
 `SFTP_KEY` wins if both are set. A key is the better option — a password ends up in `sshpass`, which
 works but is one more secret that can leak.
+
+`firebase.config.ts` is gitignored, so the build has no Firebase values on a clean checkout. Store
+the filled-in file as a secret in one go:
+
+```bash
+gh secret set FIREBASE_CONFIG < src/environments/firebase.config.ts
+```
+
+The deployment refuses to run if that secret is missing or still carries the `TODO-` placeholders.
+Falling back to the example would put a site online that loads fine and whose cookbook silently talks
+to a Firebase project that does not exist. CI does use the example values — it only proves the code
+compiles and deploys nothing.
 
 > `SFTP_REMOTE_DIR` has to be absolute and point one level below the account root. The upload runs
 > `mirror --delete`, so whatever sits in that directory and is not part of the build gets removed.

@@ -26,6 +26,12 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
 
+      # firebase.config.ts is gitignored, so a clean checkout does not have it and
+      # the build cannot resolve the import. CI only has to prove that the code
+      # compiles and nothing is deployed here, so the example values are enough.
+      - name: Provide a Firebase config
+        run: cp src/environments/firebase.config.example.ts src/environments/firebase.config.ts
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:

@@ -35,6 +35,33 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v4
 
+      # firebase.config.ts is gitignored, so it has to come from a secret here.
+      # Falling back to the example would put a site online that loads fine and
+      # whose cookbook silently talks to a project that does not exist — so a
+      # missing or unfilled config fails the run instead.
+      - name: Write the Firebase config
+        env:
+          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${FIREBASE_CONFIG:-}" ]; then
+            echo "::error::FIREBASE_CONFIG is not set. Store the contents of src/environments/firebase.config.ts as a repository secret."
+            exit 1
+          fi
+
+          printf '%s\n' "$FIREBASE_CONFIG" > src/environments/firebase.config.ts
+
+          if ! grep -q 'export const firebaseConfig' src/environments/firebase.config.ts; then
+            echo "::error::FIREBASE_CONFIG does not look like firebase.config.ts — it has to export firebaseConfig."
+            exit 1
+          fi
+
+          if grep -q 'TODO-' src/environments/firebase.config.ts; then
+            echo "::error::FIREBASE_CONFIG still holds the placeholder values from firebase.config.example.ts."
+            exit 1
+          fi
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
