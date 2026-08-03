@@ -8,9 +8,9 @@ running instance.
 | `generate-recipe.workflow.json` | Main workflow (webhook → validation/quota → AI Agent → answer) |
 | `error-handler.workflow.json`   | Error trigger: logs failed runs and mails them                 |
 
-> Changes to the code nodes (`guard`, `map-ai`, `log-error`) and to the schema in the **Structured
-> Output Parser** are made **directly in the n8n UI**; export the workflow again afterwards so these
-> files stay current.
+> Changes to the code nodes (**Validate & rate limit**, **Map AI answer to recipes**, and **Log the
+> failure** in the error handler) and to the schema in the **Structured Output Parser** are made
+> **directly in the n8n UI**; export the workflow again afterwards so these files stay current.
 
 How the workflow talks to the frontend is described in
 [`docs/n8n-webhook.md`](../docs/n8n-webhook.md).
@@ -36,6 +36,15 @@ docker restart n8n          # needed so the production webhook URL gets register
 
 The workflow IDs are fixed (`codeacuisine-generate-recipe`, `codeacuisine-error-handler`) so the main
 workflow can reference the error handler through `settings.errorWorkflow`.
+
+## Export hygiene
+
+A fresh export from n8n carries instance-specific fields that the import does not need and that only
+produce diff noise. Clean them up **before committing**:
+
+- `"active"` → `false` in both files. Activation belongs to the instance, not the repository — the
+  `update:workflow --active=true` line above (or the toggle in the UI) does it after the import.
+- Remove the top-level keys `"versionId"` and `"meta"` (the latter holds the `instanceId`).
 
 ## Creating the credentials (before importing)
 

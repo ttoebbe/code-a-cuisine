@@ -51,19 +51,19 @@ directly — everything goes through two services:
 Firestore (saving, reading with pagination and category filter, liking).
 
 **n8n workflow (local, in Docker).** The webhook takes the POST, a code node validates the payload
-server-side and reserves a quota slot, then an **AI Agent** node runs the single model call: the
-system and user prompt come from the code node, the **Google Gemini Chat Model** sub-node holds model
-and credential, and a **Structured Output Parser** sub-node pins the answer to the recipe schema. A
-second code node unpacks the answer, cleans it up and checks it; only with exactly three valid
-recipes does it go to the success respond node, otherwise to the error node. Both answer with
-**HTTP 200** — the only discriminator is the `status` field in the body. A separate error handler
-workflow catches unexpected crashes and sends a mail; expected failures (validation, quota, AI) never
-reach it and come back as a regular envelope instead — the agent runs with _Continue (using error
-output)_, so a failed model call takes the same path into the code node and leaves as an `ai_failed`
-envelope rather than crashing the run.
+server-side and reserves a quota slot, then an **AI Agent** node runs at most two model calls per
+request (`maxIterations` 2): system and user prompt come from the code node, while the
+**Google Gemini Chat Model** sub-node holds model and credential and a **Structured Output Parser**
+sub-node pins the answer to the recipe schema. A second code node unpacks the answer, cleans it up
+and checks it; only with exactly three valid recipes does it go to the success respond node,
+otherwise to the error node. Both answer with **HTTP 200** — the only discriminator is the `status`
+field in the body. A separate error handler workflow catches unexpected crashes and sends a mail;
+expected failures (validation, quota, AI) never reach it and come back as a regular envelope
+instead — the agent runs with _Continue (using error output)_, so a failed model call takes the same
+path into the code node and leaves as an `ai_failed` envelope rather than crashing the run.
 
-**Google Gemini (external).** The one and only LLM call, triggered by n8n alone. The API key lives as
-an n8n credential, never in the repository and never in the browser.
+**Google Gemini (external).** At most two model calls per request (`maxIterations` 2), triggered by
+n8n alone. The API key lives as an n8n credential, never in the repository and never in the browser.
 
 **Firestore (external).** The public library. The app has no sign-in, which is why the
 [security rules](../firestore.rules) carry the entire protection.
