@@ -317,17 +317,12 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "executionTimeout": 80,
     "errorWorkflow": "codeacuisine-error-handler"
-  },
-  "versionId": "96c852e7-28b4-4004-a446-6b2b1c7e5ef5",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "0b840595ecaffac060c9455832493e5bc164150dbdf1aa94060082717256bb8f"
   },
   "nodeGroups": [],
   "id": "codeacuisine-generate-recipe",
