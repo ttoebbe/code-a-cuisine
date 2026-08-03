@@ -3,13 +3,14 @@
 Two workflows, kept here as exported JSON. They are the **single source** and in sync with the
 running instance.
 
-| File                            | Content                                                      |
-| ------------------------------- | ------------------------------------------------------------ |
-| `generate-recipe.workflow.json` | Main workflow (webhook → validation/quota → Gemini → answer) |
-| `error-handler.workflow.json`   | Error trigger: logs failed runs and mails them               |
+| File                            | Content                                                        |
+| ------------------------------- | -------------------------------------------------------------- |
+| `generate-recipe.workflow.json` | Main workflow (webhook → validation/quota → AI Agent → answer) |
+| `error-handler.workflow.json`   | Error trigger: logs failed runs and mails them                 |
 
-> Changes to the code nodes (`guard`, `map-ai`, `log-error`) are made **directly in the n8n UI**;
-> export the workflow again afterwards so these files stay current.
+> Changes to the code nodes (`guard`, `map-ai`, `log-error`) and to the schema in the **Structured
+> Output Parser** are made **directly in the n8n UI**; export the workflow again afterwards so these
+> files stay current.
 
 How the workflow talks to the frontend is described in
 [`docs/n8n-webhook.md`](../docs/n8n-webhook.md).
@@ -41,15 +42,15 @@ workflow can reference the error handler through `settings.errorWorkflow`.
 Both credentials have to exist **before** the import, otherwise the nodes show an empty credential
 picker. The secrets live in the n8n UI only, never in the repository.
 
-**1. Gemini API key** — Credentials → New → _Header Auth_, name
-`Google Gemini API key (x-goog-api-key)`:
+**1. Gemini API key** — Credentials → New → _Google Gemini(PaLM) Api_, name `Google Gemini API`:
 
-| Field | Value                         |
-| ----- | ----------------------------- |
-| Name  | `x-goog-api-key`              |
-| Value | the key from Google AI Studio |
+| Field   | Value                                                 |
+| ------- | ----------------------------------------------------- |
+| Host    | `https://generativelanguage.googleapis.com` (default) |
+| API Key | the key from Google AI Studio                         |
 
-With Gemini the model (`gemini-3.5-flash`) is part of the URL, not the body.
+The credential carries the key only. The model (`models/gemini-3.5-flash`) and `maxOutputTokens` are
+set in the **Google Gemini Chat Model** node that hangs off the AI Agent.
 
 **2. Gmail SMTP** — Credentials → New → _SMTP_, name `Code a Cuisine SMTP (error mails)`:
 

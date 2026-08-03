@@ -49,8 +49,8 @@ cd ~/n8n && docker compose up -d     # then: http://localhost:5678
 
 Then, inside n8n:
 
-1. **Create the credentials** — Gemini header auth (`x-goog-api-key`) and Gmail SMTP for the error
-   mails. This has to happen **before** the import.
+1. **Create the credentials** — the Google Gemini credential and Gmail SMTP for the error mails. This
+   has to happen **before** the import.
 2. **Import both workflows** from [`n8n/`](../n8n/) — via CLI or via Import from File.
 3. **Activate the main workflow**, then run `docker restart n8n` so the production webhook URL gets
    registered.

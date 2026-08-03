@@ -13,7 +13,7 @@ flowchart LR
   fs["Firestore · external"]
 
   ng -- "POST RecipeRequest" --> n8n
-  n8n -- "generateContent" --> ai
+  n8n -- "AI Agent · one Gemini call" --> ai
   ai -- "3 recipes as JSON" --> n8n
   n8n -- "HTTP 200 with envelope" --> ng
   ng -- "save, read, like" --> fs
