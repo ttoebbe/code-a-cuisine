@@ -29,6 +29,9 @@ Firestore directly and creates the three suggestions itself as soon as the respo
   `localhost:5678`
 - **Library:** Firebase Firestore, collection `recipes` — external
 
+Deployed, the same two parts split across a static web space and a small cloud server —
+see **[docs/deployment.md](docs/deployment.md)**.
+
 ## Getting started
 
 ```bash
@@ -66,8 +69,10 @@ src/app/
   firebase/      Firestore provider for the app config
   guards/        Route guards for the results page and the cuisine routes
   shared/        Pagination component and formatting helpers for recipe data
+public/          Static assets copied into the build, plus the Apache .htaccess
 n8n/             Both workflows as exported JSON
-docs/            Installation, architecture, webhook interface, Firebase, design mockups
+  deploy/        Compose file and Caddy config for the n8n server
+docs/            Installation, architecture, webhook interface, Firebase, deployment
 ```
 
 ## Documentation
@@ -76,4 +81,5 @@ docs/            Installation, architecture, webhook interface, Firebase, design
 - [docs/architecture.md](docs/architecture.md) — the big picture and the decisions behind it
 - [docs/n8n-webhook.md](docs/n8n-webhook.md) — webhook interface, error codes, quota
 - [docs/firebase.md](docs/firebase.md) — config, schema, rules, index, test data
+- [docs/deployment.md](docs/deployment.md) — putting the site and n8n online
 - [n8n/README.md](n8n/README.md) — importing the workflows, creating credentials

@@ -6,10 +6,10 @@ This page covers the rest: the endpoint, the error codes, and the rules that liv
 
 ## Endpoint
 
-| Environment | URL                                             | File                              |
-| ----------- | ----------------------------------------------- | --------------------------------- |
-| Dev         | `http://localhost:5678/webhook/generate-recipe` | `src/environments/environment.ts` |
-| Prod        | Placeholder until the n8n instance is deployed  | `environment.prod.ts`             |
+| Environment | URL                                                    | File                              |
+| ----------- | ------------------------------------------------------ | --------------------------------- |
+| Dev         | `http://localhost:5678/webhook/generate-recipe`        | `src/environments/environment.ts` |
+| Prod        | `https://n8n.thomas-toebbe.de/webhook/generate-recipe` | `environment.prod.ts`             |
 
 `POST`, `Content-Type: application/json`, and the frontend waits at most 90 s
 (`environment.webhookTimeoutMs`). The endpoint is only ever called through `RecipeApiService`, never
@@ -89,6 +89,7 @@ keeps no counters of its own.
 
 > Without a proxy in front, the browser sets no `x-forwarded-for`, so on `localhost` every request
 > ends up in the IP bucket `unknown`. The system-wide limit still applies and is the hard ceiling.
+> Deployed, Caddy sits in front and sets the header, so the per-IP cap works as intended.
 
 ## What else is decided inside n8n
 
@@ -104,10 +105,14 @@ The frontend deliberately does **not** check any of this — it only displays wh
 
 ## CORS
 
-The webhook node answers the preflight (`OPTIONS`) via `allowedOrigins`
-(`http://localhost:4200,http://localhost:4300`); both respond nodes mirror `headers.origin` back into
-`Access-Control-Allow-Origin` as long as it is on the allow list. Without those headers Chrome blocks
-the call and the frontend shows the generic `internal_error` dialog.
+The webhook node answers the preflight (`OPTIONS`) via `allowedOrigins` — the two dev ports plus the
+deployed frontend (`https://code-a-cuisine.thomas-toebbe.de`); both respond nodes mirror
+`headers.origin` back into `Access-Control-Allow-Origin` as long as it is on the allow list. Without
+those headers Chrome blocks the call and the frontend shows the generic `internal_error` dialog.
+
+The allow list appears in three places that have to stay in step: `allowedOrigins` on the webhook
+node, `ALLOWED_ORIGINS` in the **Validate & rate limit** code node, and the origin check in both
+respond nodes. [deployment.md](deployment.md) lists them alongside the files to change.
 
 ## Testing it by hand
 

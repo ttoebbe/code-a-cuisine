@@ -17,7 +17,10 @@ How the workflow talks to the frontend is described in
 
 ## Importing
 
-n8n runs locally in Docker on `http://localhost:5678` (compose file under `~/n8n`).
+n8n runs locally in Docker on `http://localhost:5678` (compose file under `~/n8n`). The same import
+steps apply to the server instance — how to set that one up is in
+[`docs/deployment.md`](../docs/deployment.md), the compose and Caddy files for it live in
+[`deploy/`](deploy/).
 
 **Via CLI** (in Git Bash, set `MSYS_NO_PATHCONV=1` or the paths get rewritten):
 
@@ -94,4 +97,5 @@ Without `MSYS_NO_PATHCONV` Git Bash turns the container path into a Windows one,
 nothing and still exits 0 — the reset looks like it worked while the counters stay put. The check
 line above is quoted, so it survives either way.
 
-That file access needs `NODE_FUNCTION_ALLOW_BUILTIN=fs` in the `docker-compose.yml` under `~/n8n`.
+That file access needs `NODE_FUNCTION_ALLOW_BUILTIN=fs` in the `docker-compose.yml` — under `~/n8n`
+locally, in [`deploy/docker-compose.yml`](deploy/docker-compose.yml) on the server.

@@ -1,13 +1,12 @@
 import { firebaseConfig } from './firebase.config';
 
 /**
- * Production environment. The webhook URL is a placeholder until the n8n
- * instance is deployed; the build replaces environment.ts with this file.
+ * Production environment. Points at the n8n instance on the Hetzner VPS;
+ * the build replaces environment.ts with this file. See docs/deployment.md.
  */
 export const environment = {
   production: true,
-  /** TODO: replace with the public n8n webhook URL once the instance is deployed. */
-  recipeWebhookUrl: 'https://n8n.example.invalid/webhook/generate-recipe',
+  recipeWebhookUrl: 'https://n8n.thomas-toebbe.de/webhook/generate-recipe',
   webhookTimeoutMs: 90_000,
   /**
    * Same library as development for now. Once a separate production project

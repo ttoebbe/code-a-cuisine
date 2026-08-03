@@ -1,0 +1,48 @@
+# Apache config for the static build on the Hetzner web space.
+# Copied into the build output as-is; see docs/deployment.md.
+
+# --- Force HTTPS -------------------------------------------------------------
+# The n8n webhook is only reachable over https, so a page served over http
+# would fail on mixed content. Drop this block if the host already redirects.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# --- SPA routing -------------------------------------------------------------
+# Angular routes on real paths (/generator, /library/:id, ...). Without this
+# rule every direct hit or reload on a sub-page ends in a 404 from Apache.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# --- Caching -----------------------------------------------------------------
+# The build hashes every asset filename (outputHashing: all), so those may be
+# cached forever. index.html must not be, otherwise a deployment stays invisible.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|woff2|png|jpg|jpeg|svg|ico|webp)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(html|webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# --- Compression -------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# --- Misc --------------------------------------------------------------------
+Options -Indexes
+ErrorDocument 404 /index.html
