@@ -21,7 +21,7 @@ import type { GeneratedRecipe, Recipe } from '../models/recipe.interface';
 import { buildRecipeDocument, toRecipe } from './recipe-document';
 
 /** Recipes per page of the cookbook list (User Story 12). */
-export const RECIPES_PER_PAGE = 15;
+export const RECIPES_PER_PAGE = 20;
 
 /** Entries of the "Most liked recipes" row of the cookbook header. */
 export const MOST_LIKED_COUNT = 10;

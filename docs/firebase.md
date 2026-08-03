@@ -54,8 +54,8 @@ as the placeholders are still in place the app runs normally, only the library s
   string.
 
 > `serverTimestamp()` inevitably writes a `Timestamp`, not an ISO string — a single write cannot do
-> both. The timestamp wins because it uses the server clock: sorting and the pagination cursor no
-> longer depend on the client's clock, and the security rule can enforce `createdAt == request.time`.
+> both. The timestamp wins because it uses the server clock: the sort order no longer depends on the
+> client's clock, and the security rule can enforce `createdAt == request.time`.
 
 ### Access from the frontend
 
@@ -63,13 +63,13 @@ Every read and write goes through
 [`RecipeLibraryService`](../src/app/services/recipe-library.service.ts) (`providedIn: 'root'`) — no
 Firestore calls from components:
 
-| Method                            | Query / write                                 |
-| --------------------------------- | --------------------------------------------- |
-| `saveRecipe(GeneratedRecipe)`     | `addDoc()`, returns the document ID           |
-| `getRecipeById(id)`               | `getDoc()`, `null` if the document is missing |
-| `listRecipes({cuisine?, cursor})` | paginated list, 20 per page                   |
-| `listMostLiked(count)`            | the most-liked row                            |
-| `incrementLike(id)`               | `updateDoc()` with `increment(1)`             |
+| Method                        | Query / write                                 |
+| ----------------------------- | --------------------------------------------- |
+| `saveRecipe(GeneratedRecipe)` | `addDoc()`, returns the document ID           |
+| `getRecipeById(id)`           | `getDoc()`, `null` if the document is missing |
+| `listRecipes({cuisine?})`     | full list of a cuisine, paged client-side     |
+| `listMostLiked(count)`        | the most-liked row                            |
+| `incrementLike(id)`           | `updateDoc()` with `increment(1)`             |
 
 ## Security rules — what is allowed
 
@@ -114,7 +114,7 @@ filled-in `firebase.config.ts`. Likes come from the heart in the detail view —
 | ------------------------ | --------------------------------------------------------------- |
 | Empty library            | `/library/cuisine/italian` before the first generation          |
 | Filled list              | after a few generation runs (3 recipes each)                    |
-| Pagination (20 per page) | from 21 recipes on → "Load more recipes" fetches the rest       |
+| Pagination (20 per page) | from 21 recipes on → numbered page navigation below the list    |
 | Category page            | `/library/cuisine/italian`, or click a tile                     |
 | Unknown category         | `/library/cuisine/klingon` → back to `/library`                 |
 | Detail view              | "View" on a card → `/library/<id>`                              |
