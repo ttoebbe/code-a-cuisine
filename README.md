@@ -58,14 +58,14 @@ src/app/
   results/       List of the three suggestions
   recipe-view/   Recipe view — for suggestions and saved recipes alike
   library/       Cookbook: category tiles, card list, "Most liked" row
-  header/        Header with the navigation
-  footer/        Footer
+  header/        Header with the logo link back to the landing page
+  footer/        Footer with the imprint link
   imprint/       Imprint
-  models/        Interface types (request, response, recipe)
+  models/        Interface and union types (request, response, recipe, filters)
   services/      n8n webhook, generation state, Firestore access
   firebase/      Firestore provider for the app config
-  guards/        Route guard for the results page
-  shared/        Formatting helpers for recipe data
+  guards/        Route guards for the results page and the cuisine routes
+  shared/        Pagination component and formatting helpers for recipe data
 n8n/             Both workflows as exported JSON
 docs/            Installation, architecture, webhook interface, Firebase, design mockups
 ```
