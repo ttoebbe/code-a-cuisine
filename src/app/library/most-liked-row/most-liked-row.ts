@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Recipe } from '../../models/recipe.interface';
 import { formatCookingTime } from '../../shared/recipe-format';
@@ -29,6 +29,12 @@ export class MostLikedRow {
 
   /** True while the first read is still running. */
   readonly isLoading = input(false);
+
+  /** True when the favourites could not be read, so empty means failed. */
+  readonly hasFailed = input(false);
+
+  /** Asks the cookbook to read the favourites again. */
+  readonly retry = output<void>();
 
   /** Entries of the row. */
   protected readonly cards = computed<MostLikedCard[]>(() =>

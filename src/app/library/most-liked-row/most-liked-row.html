@@ -27,6 +27,13 @@
     </ul>
   } @else if (isLoading()) {
     <p class="most-liked__note">Loading the favourites…</p>
+  } @else if (hasFailed()) {
+    <div class="most-liked__failure">
+      <p class="most-liked__note most-liked__note--flat" role="alert">
+        The favourites could not be loaded. Please check your connection.
+      </p>
+      <button type="button" class="most-liked__button" (click)="retry.emit()">Try again</button>
+    </div>
   } @else {
     <p class="most-liked__note">No recipes in the cookbook yet.</p>
   }

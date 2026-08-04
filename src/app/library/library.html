@@ -15,7 +15,12 @@
       </p>
     </div>
 
-    <app-most-liked-row [recipes]="mostLiked.value()" [isLoading]="mostLiked.isLoading()" />
+    <app-most-liked-row
+      [recipes]="favourites()"
+      [isLoading]="isLoading()"
+      [hasFailed]="hasFailed()"
+      (retry)="reload()"
+    />
   </section>
 
   <app-cuisine-filter />

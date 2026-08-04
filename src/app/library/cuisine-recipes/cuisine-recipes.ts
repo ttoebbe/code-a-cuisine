@@ -52,20 +52,29 @@ export class CuisineRecipes {
     defaultValue: [] as Recipe[],
   });
 
+  /**
+   * Recipes of the cuisine, empty while the read is loading or has failed.
+   * Reading `value()` directly would throw a ResourceValueError in the error
+   * state and take the whole page down before the retry block is rendered.
+   */
+  private readonly loaded = computed<Recipe[]>(() =>
+    this.allRecipes.hasValue() ? this.allRecipes.value() : [],
+  );
+
   /** Page on display, back to the first one whenever the cuisine changes. */
   protected readonly currentPage = linkedSignal<Recipe[], number>({
-    source: () => this.allRecipes.value(),
+    source: () => this.loaded(),
     computation: () => 1,
   });
 
   /** Number of pages, at least one so the empty state keeps its layout. */
   protected readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.allRecipes.value().length / RECIPES_PER_PAGE)),
+    Math.max(1, Math.ceil(this.loaded().length / RECIPES_PER_PAGE)),
   );
 
   /** Recipes of the current page. */
   protected readonly recipes = computed<Recipe[]>(() =>
-    this.allRecipes.value().slice(this.firstIndex(), this.firstIndex() + RECIPES_PER_PAGE),
+    this.loaded().slice(this.firstIndex(), this.firstIndex() + RECIPES_PER_PAGE),
   );
 
   /** Ordinal of the first recipe on the page, so numbering runs across pages. */
@@ -82,7 +91,7 @@ export class CuisineRecipes {
 
   /** True when the cuisine holds no recipe at all. */
   protected readonly isEmpty = computed(
-    () => !this.isLoading() && !this.hasFailed() && this.allRecipes.value().length === 0,
+    () => !this.isLoading() && !this.hasFailed() && this.loaded().length === 0,
   );
 
   /** Index of the first recipe on the current page. */
