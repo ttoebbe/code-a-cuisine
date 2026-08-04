@@ -12,6 +12,7 @@
       autocomplete="off"
       aria-autocomplete="list"
       formControlName="name"
+      [attr.maxlength]="maxNameLength"
       [attr.aria-expanded]="isListboxOpen()"
       [attr.aria-controls]="suggestionListId"
       [attr.aria-activedescendant]="activeOptionId()"
@@ -57,6 +58,7 @@
     <button
       type="submit"
       class="ingredient-form__submit"
+      [disabled]="isAddBlocked()"
       [attr.aria-label]="isEditing() ? 'Save ingredient' : 'Add ingredient'"
     >
       <img
@@ -69,5 +71,5 @@
     </button>
   </div>
 
-  <p class="ingredient-form__error" role="alert">{{ errorMessage() }}</p>
+  <p class="ingredient-form__error" role="alert">{{ noticeText() }}</p>
 </form>

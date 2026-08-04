@@ -1,6 +1,13 @@
 import type { AbstractControl, ValidationErrors } from '@angular/forms';
 
 /**
+ * Longest ingredient name the workflow accepts. Mirrors MAX_NAME_LENGTH in the
+ * guard node of n8n/generate-recipe.workflow.json, which rejects the request
+ * outright when a name exceeds it.
+ */
+export const MAX_INGREDIENT_NAME_LENGTH = 60;
+
+/**
  * Parses the raw amount input into a number. Kept separate from the validator
  * so the form can reuse the exact same interpretation when emitting a result.
  * @param value Raw control value, may contain a comma as decimal separator.

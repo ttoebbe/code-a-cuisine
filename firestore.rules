@@ -34,11 +34,15 @@ service cloud.firestore {
     }
 
     // Lists and nested objects; extraIngredients is capped at 3 (User Story 7).
+    // The upper bounds keep a single document from growing without limit, and
+    // nutrition may carry the two scopes of the contract and nothing else.
     function hasValidContent(data) {
       return data.yourIngredients is list && data.yourIngredients.size() > 0
+        && data.yourIngredients.size() <= 30
         && data.extraIngredients is list && data.extraIngredients.size() <= 3
         && data.steps is list && data.steps.size() > 0 && data.steps.size() <= 40
-        && data.nutrition is map;
+        && data.nutrition is map
+        && data.nutrition.keys().hasOnly(['perPortion', 'total']);
     }
 
     // A new recipe always starts unliked and carries the server clock, so the

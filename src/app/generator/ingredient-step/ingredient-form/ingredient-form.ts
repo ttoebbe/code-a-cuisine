@@ -17,7 +17,12 @@ import {
   SUGGESTION_LIST_ID,
   buildSuggestionId,
 } from '../ingredient-suggestions/ingredient-suggestions';
-import { blankNameValidator, parseAmount, positiveAmountValidator } from '../ingredient-validators';
+import {
+  MAX_INGREDIENT_NAME_LENGTH,
+  blankNameValidator,
+  parseAmount,
+  positiveAmountValidator,
+} from '../ingredient-validators';
 
 /**
  * Input card of step 1: ingredient name with autocomplete, serving size and the
@@ -36,14 +41,21 @@ export class IngredientForm {
   /** Ingredient currently being edited, or null while adding a new one. */
   readonly editing = input<RequestIngredient | null>(null);
 
+  /** True once the list holds as many ingredients as the workflow accepts. */
+  readonly isFull = input(false);
+
   /** Emits a validated ingredient on add or on save. */
   readonly save = output<RequestIngredient>();
 
   protected readonly unitOptions = UNIT_OPTIONS;
   protected readonly suggestionListId = SUGGESTION_LIST_ID;
+  protected readonly maxNameLength = MAX_INGREDIENT_NAME_LENGTH;
 
   protected readonly form = this.formBuilder.nonNullable.group({
-    name: ['', [Validators.required, blankNameValidator]],
+    name: [
+      '',
+      [Validators.required, blankNameValidator, Validators.maxLength(MAX_INGREDIENT_NAME_LENGTH)],
+    ],
     amount: ['', [Validators.required, positiveAmountValidator]],
     unit: ['g' as IngredientUnit],
   });
@@ -62,6 +74,9 @@ export class IngredientForm {
 
   /** True while the form edits an existing entry instead of adding a new one. */
   protected readonly isEditing = computed(() => this.editing() !== null);
+
+  /** True while nothing may be added; editing an existing entry stays possible. */
+  protected readonly isAddBlocked = computed(() => this.isFull() && !this.isEditing());
 
   constructor() {
     effect(() => this.applyEditing(this.editing()));
@@ -156,14 +171,29 @@ export class IngredientForm {
    */
   protected errorMessage(): string {
     const { name, amount } = this.form.controls;
+    if (name.touched && name.errors?.['maxlength'])
+      return `Please use at most ${this.maxNameLength} characters.`;
     if (name.touched && name.invalid) return 'Please enter an ingredient.';
     if (amount.touched && amount.invalid) return 'Please enter an amount greater than zero.';
     return '';
   }
 
+  /**
+   * Message below the form: the first violated rule, or the limit hint once
+   * the list is full, so the disabled add button explains itself.
+   * @returns Text to display, or an empty string when there is nothing to say.
+   */
+  protected noticeText(): string {
+    const error = this.errorMessage();
+    if (error !== '') return error;
+    if (!this.isAddBlocked()) return '';
+    return 'The ingredient list is full. Remove one to add another.';
+  }
+
   /** Validates the form and emits the ingredient, then returns to a clean state. */
   protected submit(): void {
     this.closeSuggestions();
+    if (this.isAddBlocked()) return;
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     const { name, amount, unit } = this.form.getRawValue();
