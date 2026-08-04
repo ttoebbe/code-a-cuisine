@@ -68,9 +68,7 @@ npm start           # http://localhost:4200
 
 ---
 
-## Before a deployment
+## Going live
 
-- `environment.prod.ts`: replace the placeholder URL with the public n8n webhook URL.
-- n8n webhook node: add the production origin to `allowedOrigins` and to the CORS headers in both
-  respond nodes — directly in n8n, then export the workflow again.
-- Google Cloud console: set an HTTP referrer restriction on the Firebase browser key.
+Putting the app online is its own walkthrough — the static build goes onto a web space, n8n onto a
+small cloud server: **[deployment.md](deployment.md)**.

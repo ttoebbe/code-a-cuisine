@@ -1,0 +1,32 @@
+# TLS terminates here; Let's Encrypt certificates are issued automatically as
+# soon as the DNS A record for N8N_HOST points at this server.
+{
+	email {$ACME_EMAIL}
+}
+
+{$N8N_HOST} {
+	encode zstd gzip
+
+	# Only the webhook endpoints are public. The editor UI stays unreachable
+	# from the internet — reach it over an SSH tunnel instead:
+	#   ssh -L 5678:localhost:5678 root@<server-ip>
+	@webhook path /webhook/* /webhook-test/*
+	handle @webhook {
+		reverse_proxy n8n:5678 {
+			# The workflow calls Gemini and can take well over a minute;
+			# the frontend waits up to 90 s (environment.webhookTimeoutMs).
+			transport http {
+				read_timeout 120s
+				write_timeout 120s
+			}
+		}
+	}
+
+	handle {
+		respond "Not found" 404
+	}
+
+	log {
+		output file /data/access.log
+	}
+}

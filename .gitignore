@@ -44,6 +44,10 @@ __screenshots__/
 /src/environments/firebase.config.ts
 /src/environments/firebase.config.prod.ts
 
+# Server secrets — the filled-in deployment env stays on the VPS.
+# Copy n8n/deploy/.env.example over it, see docs/deployment.md.
+/n8n/deploy/.env
+
 # System files
 .DS_Store
 Thumbs.db

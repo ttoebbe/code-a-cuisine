@@ -1,0 +1,61 @@
+# n8n on a Hetzner Cloud VPS (CX22 is enough), behind Caddy for TLS.
+# Setup instructions: ../../docs/deployment.md
+#
+# n8n itself publishes no port. Everything from outside goes through Caddy,
+# which only lets the webhook paths through — the editor UI is not public.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - N8N_HOST=${N8N_HOST}
+      - ACME_EMAIL=${ACME_EMAIL}
+    depends_on:
+      - n8n
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      # Bound to loopback on purpose: not reachable from the internet, but an
+      # SSH tunnel can pick it up for the editor UI. See docs/deployment.md.
+      - '127.0.0.1:5678:5678'
+    environment:
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://${N8N_HOST}/
+      - N8N_EDITOR_BASE_URL=https://${N8N_HOST}/
+      # Credentials are encrypted with this key. Losing it means re-entering
+      # the Gemini credential, so keep it in .env and out of git.
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      # One proxy hop (Caddy), otherwise n8n treats the container IP as the
+      # client and the per-IP quota lumps everyone into the same bucket.
+      - N8N_PROXY_HOPS=1
+      # The quota resets at UTC midnight, so the container runs on UTC too.
+      - GENERIC_TIMEZONE=UTC
+      - TZ=UTC
+      # Required: the "Validate & rate limit" code node writes the quota
+      # counters with `fs`. Without this the guard node throws on every call.
+      - NODE_FUNCTION_ALLOW_BUILTIN=fs
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_DIAGNOSTICS_ENABLED=false
+      # Keeps the small disk from filling up with old execution data.
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+    volumes:
+      # Workflows, credentials and quota-state.json live here.
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  caddy_data:
+  caddy_config:
+  n8n_data:
