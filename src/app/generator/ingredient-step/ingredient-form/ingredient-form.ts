@@ -78,6 +78,25 @@ export class IngredientForm {
   /** True while nothing may be added; editing an existing entry stays possible. */
   protected readonly isAddBlocked = computed(() => this.isFull() && !this.isEditing());
 
+  /**
+   * True once the name field has been touched and is rejected. Drives
+   * aria-invalid, so the message is tied to the field it belongs to.
+   * @returns Whether the name currently violates a rule.
+   */
+  protected isNameInvalid(): boolean {
+    const { name } = this.form.controls;
+    return name.touched && name.invalid;
+  }
+
+  /**
+   * True once the amount field has been touched and is rejected.
+   * @returns Whether the amount currently violates a rule.
+   */
+  protected isAmountInvalid(): boolean {
+    const { amount } = this.form.controls;
+    return amount.touched && amount.invalid;
+  }
+
   constructor() {
     effect(() => this.applyEditing(this.editing()));
   }
@@ -170,11 +189,11 @@ export class IngredientForm {
    * @returns Error text, or an empty string while the form is acceptable.
    */
   protected errorMessage(): string {
-    const { name, amount } = this.form.controls;
-    if (name.touched && name.errors?.['maxlength'])
+    const { name } = this.form.controls;
+    if (this.isNameInvalid() && name.errors?.['maxlength'])
       return `Please use at most ${this.maxNameLength} characters.`;
-    if (name.touched && name.invalid) return 'Please enter an ingredient.';
-    if (amount.touched && amount.invalid) return 'Please enter an amount greater than zero.';
+    if (this.isNameInvalid()) return 'Please enter an ingredient.';
+    if (this.isAmountInvalid()) return 'Please enter an amount greater than zero.';
     return '';
   }
 

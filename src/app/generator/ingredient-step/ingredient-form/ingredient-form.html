@@ -13,6 +13,8 @@
       aria-autocomplete="list"
       formControlName="name"
       [attr.maxlength]="maxNameLength"
+      [attr.aria-invalid]="isNameInvalid() ? 'true' : null"
+      [attr.aria-describedby]="isNameInvalid() ? 'ingredient-notice' : null"
       [attr.aria-expanded]="isListboxOpen()"
       [attr.aria-controls]="suggestionListId"
       [attr.aria-activedescendant]="activeOptionId()"
@@ -45,6 +47,8 @@
       autocomplete="off"
       placeholder="100"
       formControlName="amount"
+      [attr.aria-invalid]="isAmountInvalid() ? 'true' : null"
+      [attr.aria-describedby]="isAmountInvalid() ? 'ingredient-notice' : null"
     />
 
     <span class="ingredient-form__unit">
@@ -71,5 +75,5 @@
     </button>
   </div>
 
-  <p class="ingredient-form__error" role="alert">{{ noticeText() }}</p>
+  <p id="ingredient-notice" class="ingredient-form__error" role="alert">{{ noticeText() }}</p>
 </form>

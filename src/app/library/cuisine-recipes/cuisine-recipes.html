@@ -35,7 +35,7 @@
     }
 
     @if (isLoading()) {
-      <p class="cuisine-page__note">Loading recipes…</p>
+      <p class="cuisine-page__note" role="status">Loading recipes…</p>
     } @else if (hasFailed()) {
       <p class="cuisine-page__note" role="alert">
         The recipes could not be loaded. Please check your connection.
