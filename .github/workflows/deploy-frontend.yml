@@ -142,6 +142,13 @@ jobs:
             exit 1
           fi
 
+          # ssh authenticates through sshpass, so lftp needs no password of its
+          # own. Handing -u a bare user name still makes lftp ask for one, and
+          # with no tty on the runner that prompt fails — lftp then falls back
+          # to an anonymous login ("GetPass() failed -- assume anonymous
+          # login"), which the server rejects as Permission denied. A
+          # placeholder silences the prompt without putting the real password
+          # into the process list.
           run_lftp() {
             lftp -c "
               set cmd:fail-exit yes;
@@ -149,7 +156,7 @@ jobs:
               set net:timeout 20;
               set sftp:auto-confirm yes;
               set sftp:connect-program \"$CONNECT_PROGRAM\";
-              open -u \"$SFTP_USER\" sftp://$SFTP_HOST:$PORT;
+              open -u \"$SFTP_USER\",unused-by-sftp sftp://$SFTP_HOST:$PORT;
               $1
             "
           }
