@@ -1,9 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, of, timeout } from 'rxjs';
+import { Observable, catchError, map, of, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
 import type { RecipeRequest } from '../models/recipe-request.interface';
-import type { RecipeErrorResponse, RecipeResponse } from '../models/recipe-response.interface';
+import type {
+  RecipeErrorResponse,
+  RecipeResponse,
+  RecipeSuccessResponse,
+} from '../models/recipe-response.interface';
 
 /** Fallback envelope for failures that never reached the workflow. */
 function buildTransportError(): RecipeErrorResponse {
@@ -30,9 +34,27 @@ export class RecipeApiService {
    * @returns Stream that always emits exactly one RecipeResponse and never errors.
    */
   generateRecipes(request: RecipeRequest): Observable<RecipeResponse> {
-    return this.http.post<RecipeResponse>(environment.recipeWebhookUrl, request).pipe(
+    return this.http.post<unknown>(environment.recipeWebhookUrl, request).pipe(
       timeout(environment.webhookTimeoutMs),
+      map((body: unknown) =>
+        this.isSuccessResponse(body) ? body : this.toErrorResponse({ error: body }),
+      ),
       catchError((error: unknown) => of(this.toErrorResponse(error))),
+    );
+  }
+
+  /**
+   * Type guard for the success envelope defined in the JSON contract. The
+   * workflow answers with HTTP 200 even on failure, so an unchecked body would
+   * reach the UI as a successful run and break the result screens.
+   * @param body Parsed response body of a completed call.
+   * @returns True when the body carries at least one recipe.
+   */
+  private isSuccessResponse(body: unknown): body is RecipeSuccessResponse {
+    if (typeof body !== 'object' || body === null) return false;
+    const candidate = body as Partial<RecipeSuccessResponse>;
+    return (
+      candidate.status === 'ok' && Array.isArray(candidate.recipes) && candidate.recipes.length > 0
     );
   }
 
