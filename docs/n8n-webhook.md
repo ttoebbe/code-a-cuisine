@@ -134,5 +134,5 @@ curl -X POST https://n8n.thomas-toebbe.de/webhook/generate-recipe \
   -d '{"ingredients":[{"name":"Pasta","amount":200,"unit":"g"}],"portions":2,"cooks":2,"timeCategory":"quick","cuisine":"italian","diet":"vegetarian"}'
 ```
 
-A `404` here means the workflow is inactive — that happens after every `deploy-n8n.yml` run, see
+A `404` here means the workflow is inactive — check the toggle in the n8n editor, see
 [deployment.md](deployment.md). Each successful call spends one of the twelve daily system slots.

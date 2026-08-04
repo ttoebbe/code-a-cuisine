@@ -30,7 +30,7 @@ flowchart LR
 | Part           | Where it runs                                 | Gets there via                      |
 | -------------- | --------------------------------------------- | ----------------------------------- |
 | Frontend       | Hetzner web space (Apache), static build      | `deploy-frontend.yml` → SFTP mirror |
-| Generation     | Hetzner Cloud VPS, n8n in Docker behind Caddy | `deploy-n8n.yml`, manually          |
+| Generation     | Hetzner Cloud VPS, n8n in Docker behind Caddy | manual import in the n8n editor     |
 | Recipe library | Firebase Firestore, collection `recipes`      | nothing to deploy, console only     |
 
 The frontend is a plain static bundle — the Angular CLI build (esbuild/Vite under the hood) produces
@@ -86,14 +86,17 @@ The full walkthrough — Firebase values, rules, index and the local n8n setup �
 
 ## CI and deployment
 
-GitHub Actions runs the same three commands on every push and pull request. Both deployments are
-started by hand, so merging into `main` verifies the code without publishing it:
+GitHub Actions runs the same three commands on every push and pull request. The deployment is started
+by hand, so merging into `main` verifies the code without publishing it:
 
-| Workflow              | Runs on                           | Does                                         |
-| --------------------- | --------------------------------- | -------------------------------------------- |
-| `ci.yml`              | push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build`  |
-| `deploy-frontend.yml` | manually only                     | builds and uploads to the web space          |
-| `deploy-n8n.yml`      | manually only                     | ships compose files and workflows to the VPS |
+| Workflow              | Runs on                           | Does                                        |
+| --------------------- | --------------------------------- | ------------------------------------------- |
+| `ci.yml`              | push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build` |
+| `deploy-frontend.yml` | manually only                     | builds and uploads to the web space         |
+
+The n8n side has no workflow of its own: the JSONs in [n8n/](n8n/) are imported in the n8n editor via
+**Import from File**, which keeps the live workflow active and its webhook registered — the CLI
+import does not.
 
 The nine required secrets, where each one comes from and the one-time server setup are in
 **[docs/deployment.md](docs/deployment.md)**.

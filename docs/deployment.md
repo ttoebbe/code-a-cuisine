@@ -30,55 +30,83 @@ reproducible on a fresh account. Day to day only [Running a deployment](#running
 
 ## The workflows
 
-Everything that is repeatable runs in GitHub Actions. What is left by hand is the one-time server
-setup further down — creating a VPS or an SSH key is not something a pipeline should do.
+The static site is built and uploaded by GitHub Actions. What is left by hand is the one-time server
+setup further down — creating a VPS or an SSH key is not something a pipeline should do — and the
+n8n workflow import, for the reason given below.
 
-| Workflow                                                        | Runs on                                 | Does                                                     |
-| --------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------- |
-| [ci.yml](../.github/workflows/ci.yml)                           | every push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build`              |
-| [deploy-frontend.yml](../.github/workflows/deploy-frontend.yml) | **`workflow_dispatch` only**            | builds and mirrors the build output onto the web space   |
-| [deploy-n8n.yml](../.github/workflows/deploy-n8n.yml)           | **`workflow_dispatch` only**            | copies compose files and workflows to the VPS, starts it |
+| Workflow                                                        | Runs on                                 | Does                                                   |
+| --------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------ |
+| [ci.yml](../.github/workflows/ci.yml)                           | every push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build`            |
+| [deploy-frontend.yml](../.github/workflows/deploy-frontend.yml) | **`workflow_dispatch` only**            | builds and mirrors the build output onto the web space |
 
 CI is the cheap gate: it writes the _example_ Firebase config, lints and builds — nothing is deployed
 from it, so it stays green on branches that have no secrets. `deploy-frontend.yml` repeats lint and
 build with the real config before it connects to anything, so a broken build never reaches the web
 space half-uploaded.
 
-Neither deployment has a push trigger, for two different reasons. `deploy-frontend.yml` is manual so
-that merging into `main` is a code decision and publishing is a separate, deliberate one — the live
-site only moves when someone starts the run. `deploy-n8n.yml` is manual because the VPS only exists
-for the submission phase and gets deleted afterwards; a workflow firing at a server that is gone
-would just produce red runs.
+`deploy-frontend.yml` has no push trigger on purpose: merging into `main` is a code decision,
+publishing is a separate and deliberate one — the live site only moves when someone starts the run.
 
-> **A `deploy-n8n.yml` run leaves both workflows inactive.** The n8n CLI import carries no active
-> flag, so after every run the webhook stops answering until the main workflow is activated again on
-> the server — see [step 6](#6-activate-the-main-workflow). The run summary prints the two commands.
-> This is the one deployment that is not fire-and-forget; do not trigger it and walk away.
+**n8n has no deployment workflow.** The workflow JSONs are versioned in [n8n/](../n8n/) and go onto
+the server through **Import from File** in the n8n editor — see
+[Updating the n8n workflows](#updating-the-n8n-workflows). There used to be a `deploy-n8n.yml` that
+did this over SSH with the n8n CLI, but the CLI import carries no active flag: every run dropped the
+main workflow back to inactive and the webhook stopped answering until someone reactivated it by
+hand. Importing in the editor keeps the workflow active and keeps its webhook registered, which makes
+the manual route both shorter and safer than the automated one.
 
-Both deploy workflows run under the `production` environment, so their runs show up under
+`deploy-frontend.yml` runs under the `production` environment, so its runs show up under
 **Deployments** in the repository. GitHub creates that environment on the first run; it has no
 approval rules unless you add them.
 
-Both also use a `concurrency` group with `cancel-in-progress: false`. Two runs writing into the same
-document root (or onto the same server) queue instead of cancelling each other — a cancelled mirror
-would leave a half-uploaded site behind.
+It also uses a `concurrency` group with `cancel-in-progress: false`. Two runs writing into the same
+document root queue instead of cancelling each other — a cancelled mirror would leave a half-uploaded
+site behind.
 
 ### Running a deployment
 
-**Actions** tab → pick the workflow → **Run workflow**. Both deployments are started this way and
-only this way; nothing publishes on its own. From VS Code the GitHub Actions extension offers the
-same thing without leaving the editor: the workflow's ▶ button in its **Workflows** view.
+**Actions** tab → **Deploy frontend** → **Run workflow**. That is the only way the live site moves;
+nothing publishes on its own. From VS Code the GitHub Actions extension offers the same thing without
+leaving the editor: the workflow's ▶ button in its **Workflows** view.
 
 Pushing to `main` still runs CI, so the merge is verified either way — it just no longer moves the
 live site.
+
+Changes to the n8n side do not go through Actions at all; see the next section.
+
+### Updating the n8n workflows
+
+The workflow JSONs live in [n8n/](../n8n/) and are versioned like the rest of the code. Getting a
+change onto the live instance is a manual import:
+
+1. Open an SSH tunnel to the server: `ssh -L 5678:localhost:5678 root@<server-ip>` — the editor is
+   not reachable from outside, Caddy answers everything except `/webhook/*` with a 404.
+2. In the editor at `http://localhost:5678`, open the **live** workflow and choose
+   **Import from File** (⋯ menu, top right). Point it at the file from `n8n/`.
+3. Save.
+
+Importing onto the existing workflow this way **keeps it active and keeps its webhook registered**,
+so the live site never sees a gap. That is the whole reason this is not automated: the n8n CLI
+(`n8n import:workflow`) carries no active flag, so every CLI import dropped the workflow to inactive
+and the webhook answered 404 until someone flipped it back — a failure the frontend can only report
+as a generic `internal_error`.
+
+The direction matters too. The repository is the source of truth, so an edit made in the editor has
+to be exported back into `n8n/*.workflow.json` and committed, or the next import silently reverts it.
+[n8n/README.md](../n8n/README.md) describes which instance-specific fields to strip from a fresh
+export.
 
 ---
 
 ## Secrets
 
 **Settings → Secrets and variables → Actions → New repository secret.** Names have to match exactly.
-Nine secrets are set on this repository — six for the web space, three for the VPS. CI needs none of
-them, which is why it stays green on forks and branches.
+Only `deploy-frontend.yml` reads secrets; CI needs none of them, which is why it stays green on forks
+and branches.
+
+> Three secrets are still stored on the repository but no longer read by anything: `VPS_HOST`,
+> `VPS_USER` and `VPS_SSH_KEY`. They belonged to the removed `deploy-n8n.yml`. They come out together
+> with the server when the VPS is deleted after grading.
 
 `gh secret list` prints the names and when each was last written; values are never readable again
 after they are stored, not through the API and not in the UI. A wrong value can only be replaced, not
@@ -121,22 +149,16 @@ compiles and deploys nothing.
 > The workflow refuses a relative path, an empty value or plain `/` rather than mirroring into the
 > account root and taking other subdomains with it.
 
-### VPS — used by `deploy-n8n.yml`
+### The VPS needs no secrets
 
-| Secret        | Required | What the workflow does with it                                                        | Where it comes from                                                                  |
-| ------------- | -------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `VPS_HOST`    | yes      | `ssh-keyscan` target, then the `scp`/`ssh` host for every remote step                 | the server's IPv4 address, or `n8n.thomas-toebbe.de` once the A record resolves      |
-| `VPS_USER`    | yes      | the SSH login; it needs to be able to run `docker compose`                            | `root` (that is the user the Hetzner image ships with)                               |
-| `VPS_SSH_KEY` | yes      | written to `~/.ssh/vps_key` on the runner and used for the copy and the compose calls | private OpenSSH key whose public half you handed to Hetzner when creating the server |
+Nothing in Actions talks to the VPS any more. The server is reached over your own SSH login, and the
+values it needs live on the server itself: the Gemini key and the SMTP password as n8n credentials,
+`N8N_ENCRYPTION_KEY` in `/opt/code-a-cuisine/.env`. See [step 3](#3-create-the-environment-file) and
+[step 5](#5-create-the-credentials).
 
-Note what is **not** on this list: no Gemini key, no SMTP password, no `N8N_ENCRYPTION_KEY`. Those
-live on the server — the first two as n8n credentials, the third in `/opt/code-a-cuisine/.env` — and
-the workflow deliberately never writes either. See [step 3](#3-create-the-environment-file) and
-[step 4](#4-create-the-credentials).
-
-Private keys go in as-is, line breaks and all — GitHub stores multi-line secrets fine. Generate a
-deploy-only pair with `ssh-keygen -t ed25519 -f deploy_key -C "github-actions"` rather than reusing a
-personal key.
+Private keys go into GitHub secrets as-is, line breaks and all, if you ever need one there again —
+and generate a deploy-only pair with `ssh-keygen -t ed25519 -f deploy_key -C "github-actions"` rather
+than reusing a personal key.
 
 ---
 
@@ -217,8 +239,8 @@ curl -fsSL https://get.docker.com | sh
 
 ### 3. Create the environment file
 
-`deploy-n8n.yml` deliberately never writes `.env` — it holds `N8N_ENCRYPTION_KEY`, and overwriting it
-would make the stored Gemini credential undecryptable. So it is created once, by hand:
+`.env` holds `N8N_ENCRYPTION_KEY`; overwriting it would make the stored Gemini credential
+undecryptable. It is created once, by hand, and never copied from a local machine:
 
 ```bash
 mkdir -p /opt/code-a-cuisine
@@ -229,10 +251,23 @@ nano .env                     # template: n8n/deploy/.env.example in the reposit
 
 Write the encryption key down. Without it a restored volume cannot decrypt the credentials.
 
-The deployment checks for this file and stops with a clear error if it is missing, rather than
-starting containers with empty variables.
+`docker compose up -d` starts the containers with empty variables if this file is missing, so create
+it before the first start.
 
-### 4. Create the credentials
+### 4. Start the containers
+
+Copy [n8n/deploy/](../n8n/deploy/) to `/opt/code-a-cuisine/` on the server (`scp`, or clone the
+repository there) and start it:
+
+```bash
+cd /opt/code-a-cuisine
+docker compose up -d
+docker compose ps
+```
+
+Caddy needs ports 80 and 443. If the Hetzner firewall is on, both have to be open.
+
+### 5. Create the credentials
 
 The two credentials (Gemini API key, Gmail SMTP) live in the n8n UI only and are never part of a
 deployment. They have to exist **before** the first workflow import, otherwise the nodes come up with
@@ -246,40 +281,18 @@ ssh -L 5678:localhost:5678 root@<server-ip>
 Then open `http://localhost:5678`, create the owner account, and follow
 [n8n/README.md](../n8n/README.md).
 
-Chicken and egg: the credentials need a running n8n, and the first `deploy-n8n.yml` run is what
-starts it. So run the workflow once, create the credentials through the tunnel, then run it again —
-the second run imports the workflows against existing credentials.
+### 6. Import and activate the workflows
 
-### 5. Deploy
+Through the SSH tunnel from step 5, in the n8n editor: **Workflows → Import from File**. Read in
+[error-handler.workflow.json](../n8n/error-handler.workflow.json) first — the main workflow points at
+it through `settings.errorWorkflow` and the id has to exist by then — then
+[generate-recipe.workflow.json](../n8n/generate-recipe.workflow.json). Activate the main workflow with
+the toggle in the editor.
 
-Actions → **Deploy n8n** → **Run workflow**. It copies `n8n/deploy/` and both `*.workflow.json` files
-to `/opt/code-a-cuisine/`, runs `docker compose up -d`, and imports the workflows through the n8n CLI
-inside the container.
-
-Caddy needs ports 80 and 443. If the Hetzner firewall is on, both have to be open.
-
-### 6. Activate the main workflow
-
-**The import leaves both workflows inactive** — an n8n import never carries an active flag, and
-`n8n/*.workflow.json` is exported with `"active": false` on purpose (activation belongs to the
-instance, not the repository). So the webhook does not answer yet:
-
-```bash
-cd /opt/code-a-cuisine
-docker compose exec -T n8n n8n update:workflow --id=codeacuisine-generate-recipe --active=true
-docker compose restart n8n   # registers the production webhook URL
-```
-
-**This is not a one-off.** Every `deploy-n8n.yml` run re-imports and drops the workflow back to
-inactive, so these two commands belong to every deployment, not just the first. Skip them and the
-live site keeps loading while every generation comes back as `internal_error` — the webhook answers
-404 and the frontend cannot tell that apart from any other transport failure. The run summary prints
-the commands for exactly that reason.
-
-> Re-running the deployment imports by workflow ID and **overwrites** what is on the server. That is
-> what makes the repository the source of truth — but it also means edits made in the server UI are
-> gone unless they were exported back into `n8n/*.workflow.json` first. See
-> [n8n/README.md](../n8n/README.md).
+`n8n/*.workflow.json` is exported with `"active": false` on purpose: activation belongs to the
+instance, not the repository. On a **first** import the workflow therefore arrives inactive and the
+toggle is a one-off step. Later imports onto the already-active workflow keep it running — that is
+exactly why this is done in the editor and not with the CLI.
 
 ### 7. Smoke test
 
@@ -355,8 +368,9 @@ did not, check whether the asset block in `angular.json` still lists it. See
 
 In order of likelihood:
 
-1. **The main workflow is inactive.** After every `deploy-n8n.yml` run, see
-   [step 6](#6-activate-the-main-workflow).
+1. **The main workflow is inactive.** Check the toggle in the editor — see
+   [step 6](#6-import-and-activate-the-workflows). An import through the editor keeps it active; a
+   CLI import does not, which is why that route is not used.
 2. **CORS.** The origin is not on all three allow lists — see
    [Changing the domains](#changing-the-domains). A blocked preflight reaches the frontend as nothing
    at all, and `internal_error` is the only code it can invent for that.
