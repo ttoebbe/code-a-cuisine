@@ -65,8 +65,14 @@ export class RecipeView {
     loader: ({ params }) => this.library.getRecipeById(params.id),
   });
 
-  /** Stored recipe, null while it loads or when the id is unknown. */
-  protected readonly storedRecipe = computed(() => this.stored.value() ?? null);
+  /**
+   * Stored recipe, null while it loads, when the id is unknown or when the
+   * read failed. Reading `value()` directly would throw a ResourceValueError
+   * in the error state instead of falling through to the explanation below.
+   */
+  protected readonly storedRecipe = computed(() =>
+    this.stored.hasValue() ? (this.stored.value() ?? null) : null,
+  );
 
   /** Position of the suggestion in the result list as a number. */
   private readonly suggestionIndex = computed(() => Number(this.index()));

@@ -9,6 +9,13 @@ export const PORTIONS_RANGE = { min: 1, max: 12 } as const;
 export const COOKS_RANGE = { min: 1, max: 3 } as const;
 
 /**
+ * Most ingredients one request may carry. Mirrors MAX_INGREDIENTS in the guard
+ * node of n8n/generate-recipe.workflow.json, which rejects longer lists — the
+ * cap exists there, this is only the matching UI state.
+ */
+export const MAX_INGREDIENTS = 20;
+
+/**
  * Keeps a value inside an inclusive range.
  * @param value Raw value coming from a stepper control.
  * @param range Inclusive minimum and maximum.
@@ -53,6 +60,9 @@ export class GeneratorStateService {
   /** True as soon as the request holds at least one ingredient. */
   readonly hasIngredients = computed(() => this.ingredientList().length > 0);
 
+  /** True once the list reached the limit the workflow accepts. */
+  readonly isFull = computed(() => this.ingredientList().length >= MAX_INGREDIENTS);
+
   /** True once cooking time, cuisine and diet are all chosen. */
   readonly hasAllPreferences = computed(
     () =>
@@ -69,7 +79,9 @@ export class GeneratorStateService {
    * @param ingredient Validated ingredient from the input form.
    */
   addIngredient(ingredient: RequestIngredient): void {
-    this.ingredientList.update((list) => [...list, ingredient]);
+    this.ingredientList.update((list) =>
+      list.length >= MAX_INGREDIENTS ? list : [...list, ingredient],
+    );
   }
 
   /**

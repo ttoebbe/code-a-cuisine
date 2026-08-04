@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  type ElementRef,
+  Injector,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { RecipeGenerationService } from '../services/recipe-generation.service';
 import { GenerationErrorDialog } from './generation-error-dialog/generation-error-dialog';
 import { GenerationLoading } from './generation-loading/generation-loading';
@@ -22,6 +32,10 @@ export type WizardStep = 1 | 2;
 })
 export class Generator {
   protected readonly generation = inject(RecipeGenerationService);
+  private readonly injector = inject(Injector);
+
+  /** Heading of the active step, focused after every step change. */
+  private readonly stepHeading = viewChild.required<ElementRef<HTMLElement>>('stepHeading');
 
   /** Step currently shown to the user. */
   protected readonly step = signal<WizardStep>(1);
@@ -32,11 +46,14 @@ export class Generator {
   );
 
   /**
-   * Switches the wizard to another step.
+   * Switches the wizard to another step and moves focus to its heading. The
+   * step content is swapped out entirely, so without this the focused control
+   * disappears and focus falls back to the document body.
    * @param step Step to display.
    */
   protected goToStep(step: WizardStep): void {
     this.step.set(step);
+    afterNextRender(() => this.stepHeading().nativeElement.focus(), { injector: this.injector });
   }
 
   /** Sends the unchanged request again after a technical failure. */

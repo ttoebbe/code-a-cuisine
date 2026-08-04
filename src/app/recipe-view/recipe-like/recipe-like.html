@@ -10,11 +10,13 @@
     </span>
   </p>
 
+  <!-- aria-disabled instead of disabled: the button keeps its place in the tab
+       order, so the focus does not vanish the moment the heart is given. -->
   <button
     type="button"
     class="like__button"
     aria-label="Like this recipe"
-    [disabled]="!isEnabled()"
+    [attr.aria-disabled]="!isEnabled() ? 'true' : null"
     [attr.aria-pressed]="liked()"
     (click)="like()"
   >
@@ -26,7 +28,7 @@
     />
   </button>
 
-  <p class="like__count">
+  <p class="like__count" aria-live="polite">
     <span class="visually-hidden">Likes:</span>
     {{ total() }}
   </p>
