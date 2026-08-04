@@ -76,6 +76,6 @@ npm start           # http://localhost:4200
 
 ## Going live
 
-The app is already deployed at <https://code-a-cuisine.thomas-toebbe.de>, and a push to `main` moves
-it there by itself. How that works, which secrets it needs, and how the two servers were set up:
-**[deployment.md](deployment.md)**.
+The app is already deployed at <https://code-a-cuisine.thomas-toebbe.de>. Publishing a new version is
+a manual step — the `deploy-frontend.yml` workflow is started from the **Actions** tab. How that
+works, which secrets it needs, and how the two servers were set up: **[deployment.md](deployment.md)**.

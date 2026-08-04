@@ -33,19 +33,22 @@ reproducible on a fresh account. Day to day only [Running a deployment](#running
 Everything that is repeatable runs in GitHub Actions. What is left by hand is the one-time server
 setup further down — creating a VPS or an SSH key is not something a pipeline should do.
 
-| Workflow                                                        | Runs on                                                                                                        | Does                                                     |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| [ci.yml](../.github/workflows/ci.yml)                           | every push and pull request, any branch                                                                        | `npm ci` → `npm run lint` → `npm run build`              |
-| [deploy-frontend.yml](../.github/workflows/deploy-frontend.yml) | push to `main` touching `src/`, `public/`, `angular.json`, `package*.json` or the workflow itself; or manually | builds and mirrors the build output onto the web space   |
-| [deploy-n8n.yml](../.github/workflows/deploy-n8n.yml)           | **`workflow_dispatch` only**                                                                                   | copies compose files and workflows to the VPS, starts it |
+| Workflow                                                        | Runs on                                 | Does                                                     |
+| --------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------- |
+| [ci.yml](../.github/workflows/ci.yml)                           | every push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build`              |
+| [deploy-frontend.yml](../.github/workflows/deploy-frontend.yml) | **`workflow_dispatch` only**            | builds and mirrors the build output onto the web space   |
+| [deploy-n8n.yml](../.github/workflows/deploy-n8n.yml)           | **`workflow_dispatch` only**            | copies compose files and workflows to the VPS, starts it |
 
 CI is the cheap gate: it writes the _example_ Firebase config, lints and builds — nothing is deployed
 from it, so it stays green on branches that have no secrets. `deploy-frontend.yml` repeats lint and
 build with the real config before it connects to anything, so a broken build never reaches the web
 space half-uploaded.
 
-`deploy-n8n.yml` has no push trigger on purpose: the VPS only exists for the submission phase and
-gets deleted afterwards. A workflow firing at a server that is gone would just produce red runs.
+Neither deployment has a push trigger, for two different reasons. `deploy-frontend.yml` is manual so
+that merging into `main` is a code decision and publishing is a separate, deliberate one — the live
+site only moves when someone starts the run. `deploy-n8n.yml` is manual because the VPS only exists
+for the submission phase and gets deleted afterwards; a workflow firing at a server that is gone
+would just produce red runs.
 
 > **A `deploy-n8n.yml` run leaves both workflows inactive.** The n8n CLI import carries no active
 > flag, so after every run the webhook stops answering until the main workflow is activated again on
@@ -62,8 +65,12 @@ would leave a half-uploaded site behind.
 
 ### Running a deployment
 
-**Actions** tab → pick the workflow → **Run workflow**. `deploy-frontend.yml` also fires by itself on
-every relevant push to `main`; that is the normal way the live site moves.
+**Actions** tab → pick the workflow → **Run workflow**. Both deployments are started this way and
+only this way; nothing publishes on its own. From VS Code the GitHub Actions extension offers the
+same thing without leaving the editor: the workflow's ▶ button in its **Workflows** view.
+
+Pushing to `main` still runs CI, so the merge is verified either way — it just no longer moves the
+live site.
 
 ---
 
@@ -153,7 +160,7 @@ ls /code-a-cuisine.thomas-toebbe.de
 
 ### 3. Deploy
 
-Push to `main`, or run `deploy-frontend.yml` manually. In order, the workflow
+Run `deploy-frontend.yml` from the **Actions** tab. In order, the workflow
 
 1. writes `firebase.config.ts` from `FIREBASE_CONFIG` and refuses to continue if the secret is
    missing, is not a `firebase.config.ts`, or still holds `TODO-` placeholders,

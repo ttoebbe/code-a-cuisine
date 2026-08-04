@@ -86,14 +86,14 @@ The full walkthrough — Firebase values, rules, index and the local n8n setup �
 
 ## CI and deployment
 
-GitHub Actions runs the same three commands on every push and pull request, and puts the site online
-by itself once `main` moves:
+GitHub Actions runs the same three commands on every push and pull request. Both deployments are
+started by hand, so merging into `main` verifies the code without publishing it:
 
-| Workflow              | Runs on                                      | Does                                         |
-| --------------------- | -------------------------------------------- | -------------------------------------------- |
-| `ci.yml`              | push and pull request, any branch            | `npm ci` → `npm run lint` → `npm run build`  |
-| `deploy-frontend.yml` | push to `main` touching the app, or manually | builds and uploads to the web space          |
-| `deploy-n8n.yml`      | manually only                                | ships compose files and workflows to the VPS |
+| Workflow              | Runs on                           | Does                                         |
+| --------------------- | --------------------------------- | -------------------------------------------- |
+| `ci.yml`              | push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build`  |
+| `deploy-frontend.yml` | manually only                     | builds and uploads to the web space          |
+| `deploy-n8n.yml`      | manually only                     | ships compose files and workflows to the VPS |
 
 The nine required secrets, where each one comes from and the one-time server setup are in
 **[docs/deployment.md](docs/deployment.md)**.
