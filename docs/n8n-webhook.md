@@ -116,8 +116,23 @@ respond nodes. [deployment.md](deployment.md) lists them alongside the files to 
 
 ## Testing it by hand
 
+Against the local instance:
+
 ```bash
 curl -X POST http://localhost:5678/webhook/generate-recipe \
   -H "Content-Type: application/json" \
   -d '{"ingredients":[{"name":"Pasta","amount":200,"unit":"g"}],"portions":2,"cooks":2,"timeCategory":"quick","cuisine":"italian","diet":"vegetarian"}'
 ```
+
+Against the deployed one, with an `Origin` header — without it the respond nodes fall back to the
+first entry of the allow list and you learn nothing about CORS:
+
+```bash
+curl -X POST https://n8n.thomas-toebbe.de/webhook/generate-recipe \
+  -H "Content-Type: application/json" \
+  -H "Origin: https://code-a-cuisine.thomas-toebbe.de" \
+  -d '{"ingredients":[{"name":"Pasta","amount":200,"unit":"g"}],"portions":2,"cooks":2,"timeCategory":"quick","cuisine":"italian","diet":"vegetarian"}'
+```
+
+A `404` here means the workflow is inactive — that happens after every `deploy-n8n.yml` run, see
+[deployment.md](deployment.md). Each successful call spends one of the twelve daily system slots.

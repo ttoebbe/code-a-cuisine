@@ -6,13 +6,13 @@ the backend.
 
 ```mermaid
 flowchart TB
-  subgraph browser["Browser — Angular app · LOCAL"]
+  subgraph browser["Browser — Angular app · web space (dev: localhost:4200)"]
     ui["Generator wizard and recipe view"]
     apiSvc["RecipeApiService · wraps the webhook call"]
     libSvc["RecipeLibraryService · wraps Firestore"]
   end
 
-  subgraph n8nbox["n8n in Docker · localhost:5678 · LOCAL"]
+  subgraph n8nbox["n8n in Docker · VPS behind Caddy (dev: localhost:5678)"]
     hook["Webhook POST /webhook/generate-recipe"]
     guard["Validation and quota"]
     mapai["Unpack and check the answer"]
@@ -40,9 +40,26 @@ flowchart TB
   libSvc -- "updateDoc · likeCount plus 1" --> store
 ```
 
+## Where it runs
+
+The same two paths run in both environments; only the two hosts differ, and the frontend learns which
+one to call from `environment.recipeWebhookUrl` alone.
+
+| Piece     | Development                    | Production                                     |
+| --------- | ------------------------------ | ---------------------------------------------- |
+| Angular   | `ng serve` on `localhost:4200` | static build on the Hetzner web space (Apache) |
+| n8n       | Docker on `localhost:5678`     | Docker on a Hetzner Cloud VPS, Caddy in front  |
+| Gemini    | external, same key             | external, same key                             |
+| Firestore | external, same project         | external, same project                         |
+
+Caddy is not decoration: the site is served over HTTPS, so a call to an `http` webhook would be
+blocked as mixed content. It also terminates TLS, hides the n8n editor UI behind a 404 for everything
+outside `/webhook/*`, and sets `x-forwarded-for` — which is what makes the per-IP quota work at all.
+Details in [deployment.md](deployment.md).
+
 ## The building blocks
 
-**Frontend (Angular 21, local on `localhost:4200`).** No component ever calls HTTP or Firestore
+**Frontend (Angular 21).** No component ever calls HTTP or Firestore
 directly — everything goes through two services:
 [`RecipeApiService`](../src/app/services/recipe-api.service.ts) is the only way into the workflow
 (webhook URL from `environment`, 90 s timeout, every failure normalised into the
@@ -50,7 +67,7 @@ directly — everything goes through two services:
 [`RecipeLibraryService`](../src/app/services/recipe-library.service.ts) is the only way into
 Firestore (saving, reading with pagination and category filter, liking).
 
-**n8n workflow (local, in Docker).** The webhook takes the POST, a code node validates the payload
+**n8n workflow (Docker).** The webhook takes the POST, a code node validates the payload
 server-side and reserves a quota slot, then an **AI Agent** node runs at most two model calls per
 request (`maxIterations` 2): system and user prompt come from the code node, while the
 **Google Gemini Chat Model** sub-node holds model and credential and a **Structured Output Parser**
@@ -68,7 +85,13 @@ n8n alone. The API key lives as an n8n credential, never in the repository and n
 **Firestore (external).** The public library. The app has no sign-in, which is why the
 [security rules](../firestore.rules) carry the entire protection.
 
-## Two decisions that explain the setup
+## Three decisions that explain the setup
+
+**There is no sign-in.** Nobody creates an account, the cookbook is one shared public library, and
+the app ships no auth code at all. That keeps the way in short — the landing page leads straight into
+the wizard — and it is why the security rules and the API key restriction have to be exact: they are
+the only thing standing between the collection and the open internet. The cost airbag in n8n follows
+from the same decision, since without accounts there is nobody to bill or rate-limit but an IP.
 
 **n8n does not write to Firestore.** The write lives in the frontend:
 [`RecipeGenerationService`](../src/app/services/recipe-generation.service.ts) creates all three
@@ -85,4 +108,5 @@ that decision: the library also holds recipes nobody ever cooked. It sorts by `c
 
 - [docs/n8n-webhook.md](n8n-webhook.md) — webhook interface, error codes, quota
 - [docs/firebase.md](firebase.md) — Firestore schema, rules, indexes, test data
+- [docs/deployment.md](deployment.md) — how the two halves get onto their hosts
 - [n8n/README.md](../n8n/README.md) — importing the workflows and creating the credentials
