@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 /**
- * App-shell footer. Minimal by design: copyright note plus the imprint link
- * (required by Lastenheft "Weitere Seiten → Impressum"). Uses the small-text
- * type token (14px) allowed for meta content.
+ * App-shell footer. Minimal by design: copyright note plus the legal links
+ * (imprint, required by Lastenheft "Weitere Seiten → Impressum", and the
+ * privacy policy). Uses the small-text type token (14px) for meta content.
  */
 @Component({
   selector: 'app-footer',

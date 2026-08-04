@@ -60,5 +60,10 @@ export const routes: Routes = [
     loadComponent: () => import('./imprint/imprint').then((m) => m.Imprint),
     title: 'Imprint · Code à Cuisine',
   },
+  {
+    path: 'privacy',
+    loadComponent: () => import('./privacy/privacy').then((m) => m.Privacy),
+    title: 'Privacy policy · Code à Cuisine',
+  },
   { path: '**', redirectTo: '' },
 ];

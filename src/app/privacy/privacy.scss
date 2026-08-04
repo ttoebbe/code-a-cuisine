@@ -4,7 +4,7 @@
   display: block;
 }
 
-.imprint {
+.privacy {
   max-width: var(--content-max-width-narrow);
   margin: 0 auto;
   padding: var(--space-7) var(--space-5);
@@ -14,34 +14,28 @@
   }
 }
 
-.imprint__title {
+.privacy__title {
   font: var(--font-h3);
   color: var(--color-olive-green);
   margin-bottom: var(--space-6);
 }
 
-.imprint__section {
+.privacy__section {
   margin-bottom: var(--space-6);
 }
 
-.imprint__heading {
+.privacy__heading {
   font: var(--font-h5-semi);
   color: var(--color-green-dark);
   margin-bottom: var(--space-3);
 }
 
-.imprint__text {
+.privacy__text {
   font: var(--font-body-16);
   color: var(--color-green-dark);
 }
 
-.imprint__note {
-  font: var(--font-body-16);
-  color: var(--color-green-middle);
-  margin-top: var(--space-3);
-}
-
-.imprint__link {
+.privacy__link {
   color: var(--color-green-middle);
   text-decoration: underline;
   text-underline-offset: 4px;

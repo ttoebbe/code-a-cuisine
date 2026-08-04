@@ -111,8 +111,9 @@ src/app/
   recipe-view/   Recipe view — for suggestions and saved recipes alike
   library/       Cookbook: category tiles, card list, "Most liked" row
   header/        Header with the logo link back to the landing page
-  footer/        Footer with the imprint link
+  footer/        Footer with the imprint and privacy links
   imprint/       Imprint
+  privacy/       Privacy policy
   models/        Interface and union types (request, response, recipe, filters)
   services/      n8n webhook, generation state, Firestore access
   firebase/      Firestore provider for the app config

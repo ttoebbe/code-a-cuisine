@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 /**
- * Imprint page. Structure follows German §5 TMG requirements; concrete
- * personal data is left as bracketed placeholders and must be replaced
- * before deployment.
+ * Imprint page. Structure and contact details follow German §5 TMG
+ * requirements for a private, non-commercial project; the privacy policy
+ * lives on its own route and is linked from here.
  */
 @Component({
   selector: 'app-imprint',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './imprint.html',
   styleUrl: './imprint.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
