@@ -5,15 +5,6 @@
 name: Deploy frontend
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'angular.json'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
 
 permissions:
@@ -33,7 +24,7 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # firebase.config.ts is gitignored, so it has to come from a secret here.
       # Falling back to the example would put a site online that loads fine and
@@ -63,7 +54,7 @@ jobs:
           fi
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '24'
           cache: npm
