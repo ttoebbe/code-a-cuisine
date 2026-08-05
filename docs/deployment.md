@@ -324,7 +324,9 @@ a domain change.
   a recipe, open the cookbook.
 - **Watch the quota.** Behind Caddy the real client IP arrives in `x-forwarded-for`, so the per-IP
   cap works properly for the first time — on `localhost` everything used to land in the bucket
-  `unknown`. Limits and reset are described in [n8n-webhook.md](n8n-webhook.md).
+  `unknown`. The limits are described in [n8n-webhook.md](n8n-webhook.md); resetting them by hand
+  runs through `docker compose exec` from `/opt/code-a-cuisine` and is in
+  [n8n/README.md](../n8n/README.md#resetting-the-quota).
 
 ---
 

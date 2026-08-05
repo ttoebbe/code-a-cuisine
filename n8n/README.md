@@ -17,12 +17,12 @@ How the workflow talks to the frontend is described in
 
 ## Importing
 
-n8n runs locally in Docker on `http://localhost:5678` (compose file under `~/n8n`). The same import
-steps apply to the server instance — how to set that one up is in
-[`docs/deployment.md`](../docs/deployment.md), the compose and Caddy files for it live in
-[`deploy/`](deploy/).
+n8n runs locally in Docker on `http://localhost:5678` (compose file under `~/n8n`). How to set up
+the server instance is in [`docs/deployment.md`](../docs/deployment.md), the compose and Caddy files
+for it live in [`deploy/`](deploy/) — on the live instance the import goes through the **UI** route
+below, because the CLI one drops the workflow to inactive.
 
-**Via CLI** (in Git Bash, set `MSYS_NO_PATHCONV=1` or the paths get rewritten):
+**Via CLI**, local only (in Git Bash, set `MSYS_NO_PATHCONV=1` or the paths get rewritten):
 
 ```bash
 export MSYS_NO_PATHCONV=1
@@ -84,8 +84,17 @@ affected node once in the imported workflow and pick the credential again.
 
 ## Resetting the quota
 
-The cost airbag (3 recipes per IP per day, 12 across the whole system) counts in a JSON file on the
-n8n data volume. To reset it, delete the file — it is recreated on the next run:
+The cost airbag (`PER_IP_LIMIT = 3` recipes per IP per day, `SYSTEM_LIMIT = 12` across the whole
+system — both set in the **Validate & rate limit** node) counts in a JSON file on the n8n data
+volume. It resets itself at UTC midnight: the counters are read lazily, so an entry from an earlier
+day counts as zero on the next request. Deleting the file is the manual shortcut when you do not
+want to wait — it is recreated on the next run.
+
+The command differs per environment, because the container is only called `n8n` locally. On the VPS
+Compose names it after the project directory (`code-a-cuisine-n8n-1`), so `docker exec n8n` there
+fails with `No such container` — address the **service** through `docker compose` instead.
+
+**Locally** (Git Bash, container `n8n`):
 
 ```bash
 export MSYS_NO_PATHCONV=1   # in Git Bash, otherwise the path gets rewritten
@@ -96,6 +105,18 @@ docker exec n8n sh -c 'ls /home/node/.n8n/ | grep -c quota-state.json'   # 0 = r
 Without `MSYS_NO_PATHCONV` Git Bash turns the container path into a Windows one, `rm` deletes
 nothing and still exits 0 — the reset looks like it worked while the counters stay put. The check
 line above is quoted, so it survives either way.
+
+**On the production VPS** (over SSH as `root@<server-ip>`, verified 2026-08-05):
+
+```bash
+cd /opt/code-a-cuisine
+docker compose exec n8n rm -f /home/node/.n8n/quota-state.json
+docker compose exec n8n sh -c 'ls /home/node/.n8n/ | grep -c quota-state.json'   # 0 = reset
+```
+
+`docker compose` resolves the service through the compose file, so the `cd` is part of the
+procedure — from anywhere else it aborts with `no configuration file provided`. `MSYS_NO_PATHCONV`
+is not needed here: the SSH session is a plain Linux shell, nothing rewrites the path.
 
 That file access needs `NODE_FUNCTION_ALLOW_BUILTIN=fs` in the `docker-compose.yml` — under `~/n8n`
 locally, in [`deploy/docker-compose.yml`](deploy/docker-compose.yml) on the server.

@@ -84,8 +84,9 @@ keeps no counters of its own.
   the next UTC midnight).
 - The slot is reserved **before** the LLM call — otherwise repeated failed attempts would eat into
   the budget.
-- The counters live in `/home/node/.n8n/quota-state.json` on the n8n data volume. Resetting them:
-  see [n8n/README.md](../n8n/README.md).
+- The counters live in `/home/node/.n8n/quota-state.json` on the n8n data volume. Resetting them
+  early means deleting that file, with a different command locally than on the VPS — see
+  [n8n/README.md](../n8n/README.md#resetting-the-quota).
 
 > Without a proxy in front, the browser sets no `x-forwarded-for`, so on `localhost` every request
 > ends up in the IP bucket `unknown`. The system-wide limit still applies and is the hard ceiling.
