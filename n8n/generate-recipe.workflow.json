@@ -36,7 +36,10 @@
           "id": "4oF8hZgaDw68xkNN",
           "name": "Google Gemini API"
         }
-      }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
     },
     {
       "parameters": {
