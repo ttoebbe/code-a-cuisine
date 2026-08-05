@@ -49,12 +49,3 @@
     font: 600 40px/1.2 var(--font-family-body);
   }
 }
-
-// The progress image is an animated GIF/WebP and runs far longer than five
-// seconds, which CSS cannot pause. When reduced motion is requested it is
-// dropped entirely; logo and wording carry the state on their own.
-@media (prefers-reduced-motion: reduce) {
-  .loading__figure {
-    display: none;
-  }
-}
