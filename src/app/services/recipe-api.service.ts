@@ -72,16 +72,21 @@ export class RecipeApiService {
   }
 
   /**
-   * Accepts a completed call, or reports why its body is unusable.
+   * Accepts a completed call, or reports why its body is unusable. A proper
+   * error envelope is not logged here: the workflow answers with HTTP 200 on
+   * failure too, so it lands in this branch by design and is reported once,
+   * with its code, where the run ends up in the error state.
    * @param body Parsed response body of a call that answered with HTTP 200.
    * @returns The success envelope, or an error envelope for the UI.
    */
   private readResponse(body: unknown): RecipeResponse {
     if (this.isSuccessResponse(body)) return body;
-    logError(
-      `webhook answered 200 with an unusable body: ${describeRejection(body)}`,
-      describeBody(body),
-    );
+    if (!this.isErrorResponse(body)) {
+      logError(
+        `webhook answered 200 with an unusable body: ${describeRejection(body)}`,
+        describeBody(body),
+      );
+    }
     return this.toErrorResponse({ error: body });
   }
 
