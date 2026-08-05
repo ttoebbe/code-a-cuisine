@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import type { RecipeRequest } from '../models/recipe-request.interface';
 import type { RecipeErrorResponse, RecipeResponse } from '../models/recipe-response.interface';
 import type { GeneratedRecipe } from '../models/recipe.interface';
+import { describeBody, logError } from '../shared/diagnostics';
 import { GeneratorStateService } from './generator-state.service';
 import { RecipeApiService } from './recipe-api.service';
 import { RecipeLibraryService } from './recipe-library.service';
@@ -106,8 +107,7 @@ export class RecipeGenerationService {
    */
   private applyResponse(response: RecipeResponse, payload: RecipeRequest): void {
     if (response.status === 'error') {
-      this.errorState.set(response);
-      this.statusState.set('error');
+      this.applyFailure(response);
       return;
     }
     this.recipeList.set(response.recipes);
@@ -116,6 +116,17 @@ export class RecipeGenerationService {
     this.statusState.set('success');
     void this.router.navigate(['/results']);
     void this.storeRecipes(response.recipes);
+  }
+
+  /**
+   * Puts the run into the error state and names the reason in the console,
+   * where the UI only offers a retry.
+   * @param response Error envelope the workflow returned.
+   */
+  private applyFailure(response: RecipeErrorResponse): void {
+    logError(`generation failed with code "${response.code}"`, describeBody(response));
+    this.errorState.set(response);
+    this.statusState.set('error');
   }
 
   /**
@@ -138,7 +149,7 @@ export class RecipeGenerationService {
     try {
       return await this.library.saveRecipe(recipe);
     } catch (error) {
-      console.error('[code-a-cuisine] a generated recipe could not be saved', error);
+      logError('a generated recipe could not be saved', error);
       return null;
     }
   }

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, map, of, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -8,6 +8,7 @@ import type {
   RecipeResponse,
   RecipeSuccessResponse,
 } from '../models/recipe-response.interface';
+import { describeBody, logError } from '../shared/diagnostics';
 
 /** Fallback envelope for failures that never reached the workflow. */
 function buildTransportError(): RecipeErrorResponse {
@@ -17,6 +18,35 @@ function buildTransportError(): RecipeErrorResponse {
     message: 'The recipe service is not reachable right now. Please try again in a moment.',
     retryAfter: null,
   };
+}
+
+/**
+ * Logs everything a failed call reveals: status, status text, the URL that was
+ * called and the body n8n sent along. Without it the UI only says "Try again".
+ * @param error Error thrown by HttpClient or by the timeout operator.
+ */
+function logTransportFailure(error: unknown): void {
+  if (!(error instanceof HttpErrorResponse)) {
+    logError(`webhook call to ${environment.recipeWebhookUrl} failed without a response`, error);
+    return;
+  }
+  const target = error.url ?? environment.recipeWebhookUrl;
+  logError(
+    `webhook call failed: HTTP ${error.status} ${error.statusText} at ${target}`,
+    describeBody(error.error),
+  );
+}
+
+/**
+ * Names why the success guard turned a body down.
+ * @param body Body of a call that completed with HTTP 200.
+ * @returns Short reason for the console.
+ */
+function describeRejection(body: unknown): string {
+  if (typeof body !== 'object' || body === null) return 'body is not an object';
+  const candidate = body as Partial<RecipeSuccessResponse>;
+  if (candidate.status !== 'ok') return `status !== "ok", was: ${String(candidate.status)}`;
+  return Array.isArray(candidate.recipes) ? 'recipes empty' : 'recipes missing';
 }
 
 /**
@@ -36,11 +66,33 @@ export class RecipeApiService {
   generateRecipes(request: RecipeRequest): Observable<RecipeResponse> {
     return this.http.post<unknown>(environment.recipeWebhookUrl, request).pipe(
       timeout(environment.webhookTimeoutMs),
-      map((body: unknown) =>
-        this.isSuccessResponse(body) ? body : this.toErrorResponse({ error: body }),
-      ),
-      catchError((error: unknown) => of(this.toErrorResponse(error))),
+      map((body: unknown) => this.readResponse(body)),
+      catchError((error: unknown) => of(this.handleFailure(error))),
     );
+  }
+
+  /**
+   * Accepts a completed call, or reports why its body is unusable.
+   * @param body Parsed response body of a call that answered with HTTP 200.
+   * @returns The success envelope, or an error envelope for the UI.
+   */
+  private readResponse(body: unknown): RecipeResponse {
+    if (this.isSuccessResponse(body)) return body;
+    logError(
+      `webhook answered 200 with an unusable body: ${describeRejection(body)}`,
+      describeBody(body),
+    );
+    return this.toErrorResponse({ error: body });
+  }
+
+  /**
+   * Reports a failed call and normalises it into the error envelope.
+   * @param error Error thrown by HttpClient or by the timeout operator.
+   * @returns Error envelope for the UI.
+   */
+  private handleFailure(error: unknown): RecipeErrorResponse {
+    logTransportFailure(error);
+    return this.toErrorResponse(error);
   }
 
   /**
