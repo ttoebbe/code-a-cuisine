@@ -37,8 +37,24 @@ docker restart n8n          # needed so the production webhook URL gets register
 **Via the UI:** Workflows → Import from File, read in both files, then **activate**
 **Code a Cuisine — Generate Recipe** with the toggle in the top right.
 
-The workflow IDs are fixed (`codeacuisine-generate-recipe`, `codeacuisine-error-handler`) so the main
-workflow can reference the error handler through `settings.errorWorkflow`.
+> **The UI import carries no workflow settings.** It reads nodes, connections and node parameters;
+> everything under the JSON's `settings` key is ignored without a word. After **every** UI import,
+> open **Workflow → Settings** on the main workflow and set both values by hand:
+>
+> | Setting        | Value                          |
+> | -------------- | ------------------------------ |
+> | Timeout        | 80 seconds                     |
+> | Error Workflow | Code a Cuisine — Error Handler |
+>
+> Nothing flags them as missing — the workflow imports and runs. A hanging Gemini call then blocks
+> until the instance default cuts it off, and a failed run mails nobody.
+
+The workflow IDs in the files (`codeacuisine-generate-recipe`, `codeacuisine-error-handler`) only
+hold for the **CLI** import, which takes the id from the JSON — that is what lets
+`settings.errorWorkflow` name the error handler in the first place. The UI import assigns a random
+id instead (`HQyWcoikP46KEtXV` and the like), so on a UI-imported instance that reference is dead
+twice over: the setting never arrives, and the id it names does not exist either. Hence the dropdown
+above.
 
 ## Export hygiene
 

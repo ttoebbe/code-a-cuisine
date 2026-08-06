@@ -84,6 +84,10 @@ change onto the live instance is a manual import:
 2. In the editor at `http://localhost:5678`, open the **live** workflow and choose
    **Import from File** (⋯ menu, top right). Point it at the file from `n8n/`.
 3. Save.
+4. **Workflow → Settings**: check **Timeout** (80 seconds) and **Error Workflow**
+   (_Code a Cuisine — Error Handler_). The import ignores everything under the JSON's `settings`
+   key, so a change made there reaches the instance only if you repeat it here by hand — see
+   [n8n/README.md](../n8n/README.md#importing).
 
 Importing onto the existing workflow this way **keeps it active and keeps its webhook registered**,
 so the live site never sees a gap. That is the whole reason this is not automated: the n8n CLI
@@ -293,6 +297,13 @@ the toggle in the editor.
 instance, not the repository. On a **first** import the workflow therefore arrives inactive and the
 toggle is a one-off step. Later imports onto the already-active workflow keep it running — that is
 exactly why this is done in the editor and not with the CLI.
+
+Then, on the main workflow, **Workflow → Settings**: set **Timeout** to 80 seconds and
+**Error Workflow** to _Code a Cuisine — Error Handler_. The UI import brings in nodes and their
+parameters but drops everything under the JSON's `settings` key, and it hands the imported workflow
+a random id rather than the `codeacuisine-*` one from the file — so the `settings.errorWorkflow`
+reference cannot survive the trip and the handler has to be picked from the dropdown. This applies
+to every later import as well; [n8n/README.md](../n8n/README.md#importing) has the details.
 
 ### 7. Smoke test
 
