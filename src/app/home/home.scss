@@ -127,36 +127,41 @@
 // The stack ignores the hero padding and reaches past its top edge, so the
 // first plate starts flush with the top of the page and paints in front of the
 // header band — as in the design, where the plates are the frontmost element.
-// It stops at the hero's bottom edge so the footer text stays readable.
-// `--plate-span` is that reach and `--plate-size` the reference width every
-// plate and every offset is derived from: the three plates are 2.19 reference
-// widths tall and the design lets the third bleed 0.09 past the bottom, so 2.11
-// widths fill the span exactly. The size is uncapped on purpose — the design
-// asks for exactly three plates filling the hero, so on a tall viewport they
-// grow instead of leaving a gap that a fourth plate would have to close.
+//
+// Both of its dimensions have to stay inside the box, and they used to be
+// measured against different axes: the plate size came from the viewport
+// height, the column it sits in from the viewport width. Whenever the height
+// won, the surplus left the box on the left, because the plates are anchored to
+// the right — the reported clipping.
+//
+// The width now takes the smaller of the two limits, so neither axis can push
+// the stack out:
+//   * the column it may occupy, and
+//   * the width at which the stack is exactly as tall as the band it may fill.
+// `--plate-stack-ratio` is that height, measured in stack widths: the three
+// plates overlap so that the last one ends 2.192 widths below the first one's
+// top edge. `aspect-ratio` gives the stack that height, which lets every plate
+// place itself in percentages of it — no clipping left to hide.
 .hero__plates {
   // Hero height plus the header band above it — the footer is all that is left.
   --plate-span: calc(100vh - var(--footer-height));
-  --plate-size: calc(var(--plate-span) / 2.11);
+  --plate-stack-ratio: 2.192;
 
   position: absolute;
-  inset: calc(-1 * var(--header-height-mobile)) auto 0 63%;
-  width: var(--plate-size);
+  top: calc(-1 * var(--header-height-mobile));
+  left: 63%;
+  // On mobile the stack bleeds off the right edge by design; the hero clips that
+  // one axis. The cap keeps the bleed at the width of the content column plus
+  // the gutter, so a tall viewport cannot push the plates further out of sight.
+  width: min(calc(100% + var(--page-gutter)), calc(var(--plate-span) / var(--plate-stack-ratio)));
+  aspect-ratio: 1 / var(--plate-stack-ratio);
   pointer-events: none;
 
-  // The stack is the containing block of its plates, so clipping it here cuts
-  // the last plate at the footer edge while the hero itself stays open upwards.
-  overflow: hidden;
-
   @include desktop {
-    inset: calc(-1 * var(--header-height-desktop)) var(--page-gutter) 0 auto;
-    width: 50%;
-  }
-
-  // The stack is positioned against the hero's padding box, which stays full
-  // width, so the widescreen column has to be applied explicitly.
-  @include widescreen {
-    width: calc(var(--content-max-width) / 2);
+    top: calc(-1 * var(--header-height-desktop));
+    right: var(--page-gutter);
+    left: auto;
+    width: min(50%, calc(var(--plate-span) / var(--plate-stack-ratio)));
   }
 }
 
@@ -168,18 +173,19 @@
 }
 
 // Widths keep the ratio of the native exports, so the three photos scale as one
-// stack; the top offsets are the overlap measured in the design.
+// stack; the top offsets are the overlap measured in the design, expressed as a
+// share of the stack height (0.58 and 1.275 of a stack width).
 .hero__plate--1 {
   top: 0;
-  width: calc(var(--plate-size) * 480 / 494);
+  width: calc(100% * 480 / 494);
 }
 
 .hero__plate--2 {
-  top: calc(var(--plate-size) * 0.58);
-  width: var(--plate-size);
+  top: 26.46%;
+  width: 100%;
 }
 
 .hero__plate--3 {
-  top: calc(var(--plate-size) * 1.275);
-  width: calc(var(--plate-size) * 493 / 494);
+  top: 58.17%;
+  width: calc(100% * 493 / 494);
 }
