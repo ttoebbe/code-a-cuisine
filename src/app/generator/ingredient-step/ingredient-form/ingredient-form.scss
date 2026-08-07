@@ -16,9 +16,10 @@
     'size-field'
     'error';
   gap: var(--space-3);
-  padding: var(--space-5);
+  padding: 25px var(--space-5);
   border-radius: var(--radius-20);
-  background: var(--color-sage);
+  // Spec 4.9 fills the card with olive green at 30% rather than a flat grey.
+  background: color-mix(in srgb, var(--color-olive-green) 30%, transparent);
 
   @include desktop {
     grid-template-columns: 1fr auto;
@@ -34,7 +35,9 @@
     align-content: start;
     column-gap: var(--space-6);
     row-gap: var(--space-2);
-    padding: var(--space-5) var(--space-6);
+    // Spec 4.9 gives the card no horizontal padding: the name field and the
+    // serving-size group fill its 577px width edge to edge.
+    padding: 25px 0;
   }
 }
 
@@ -57,7 +60,8 @@
   height: 44px;
   border: 0;
   border-radius: var(--radius-0);
-  background: var(--color-cream);
+  // Spec 4.6: `cremy` at 80%, so the card's green shows through.
+  background: color-mix(in srgb, var(--color-cream) 80%, transparent);
   color: var(--color-green-dark);
   font: 500 18px/44px var(--font-family-body);
 
@@ -126,10 +130,12 @@
 
 .ingredient-form__unit-select {
   height: 44px;
-  padding: 0 var(--space-5) 0 var(--space-3);
+  // Spec 4.7 pads 16 on both sides; the right side keeps room for the triangle
+  // the design draws instead of the native arrow.
+  padding: 0 var(--space-6) 0 var(--space-4);
   border: 0;
   border-radius: var(--radius-16);
-  background: var(--color-cream);
+  background: var(--color-surface);
   color: var(--color-green-dark);
   // One step below the other fields: the control sizes itself to its longest
   // option ("milliliter"), which the design's "gram"-only width cannot hold.

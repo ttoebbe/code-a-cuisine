@@ -58,7 +58,7 @@
   align-self: flex-start;
   min-height: 52px;
   margin-top: auto;
-  padding: 0 var(--space-5);
+  padding-inline: var(--button-padding-inline);
   border-radius: var(--radius-0);
   background: var(--color-cream);
   color: var(--color-green-middle);
@@ -66,6 +66,10 @@
   transition:
     background 0.2s ease,
     color 0.2s ease;
+
+  @include desktop {
+    min-height: var(--button-height);
+  }
 
   &:hover,
   &:focus-visible {

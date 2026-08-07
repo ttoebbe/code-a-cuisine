@@ -47,8 +47,8 @@
 
   @include desktop {
     min-width: 161px;
-    min-height: 62px;
-    padding: 0 var(--space-5);
+    min-height: var(--button-height);
+    padding-inline: var(--button-padding-inline);
     font: var(--font-button);
   }
 

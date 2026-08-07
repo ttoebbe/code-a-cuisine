@@ -68,8 +68,8 @@
     opacity 0.2s ease;
 
   @include desktop {
-    min-height: 62px;
-    padding: 0 var(--space-6);
+    min-height: var(--button-height);
+    padding-inline: var(--button-padding-inline);
     font: var(--font-button);
   }
 

@@ -10,8 +10,14 @@
   background: var(--shell-bg);
   color: var(--shell-fg);
 
+  // Spec 4.1 pads the menu bar asymmetrically — 68 left, 40 right, 40 top and
+  // nothing at the bottom — and puts the logo at the top of the band, not in
+  // its middle. The shared gutter wins wherever it is the larger value, so the
+  // band edge never ends up inside the centred content column.
   @include desktop {
+    align-items: flex-start;
     min-height: var(--header-height-desktop);
+    padding: 40px max(40px, var(--page-gutter)) 0 max(68px, var(--page-gutter));
   }
 }
 

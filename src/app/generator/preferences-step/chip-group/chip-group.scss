@@ -1,5 +1,3 @@
-@use '../../../../styles/mixins' as *;
-
 :host {
   display: block;
 }
@@ -60,20 +58,15 @@
   justify-content: center;
   gap: var(--space-1);
   min-height: 44px;
-  padding: var(--space-2) var(--space-4);
+  padding: 6px var(--space-3);
   border: 1px solid transparent;
   border-radius: var(--radius-30);
   background: var(--color-cream);
-  color: var(--color-green-dark);
+  color: var(--color-green-middle);
   cursor: pointer;
   transition:
     background 0.2s ease,
     color 0.2s ease;
-
-  // Kept tight enough for all six cuisine chips to share one row, as designed.
-  @include desktop {
-    padding: var(--space-2) var(--space-4);
-  }
 }
 
 .chip-group__label {
@@ -84,10 +77,10 @@
   font: var(--font-small-text);
 }
 
-// Inverted chip marks the selection; the design does not show a selected state.
+// Spec 4.8's `active` variant: the olive fill at 20%, not inverted.
 .chip-group__input:checked + .chip-group__chip {
-  background: var(--color-olive-green);
-  color: var(--color-cream);
+  background: color-mix(in srgb, var(--color-olive-green) 20%, transparent);
+  color: var(--color-green-dark);
 }
 
 .chip-group__input:focus-visible + .chip-group__chip {

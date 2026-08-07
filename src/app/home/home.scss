@@ -79,12 +79,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-4) var(--space-6);
+  min-height: 52px;
+  padding-inline: var(--button-padding-inline);
   border-radius: var(--radius-0);
   background: var(--color-cream);
   color: var(--color-green-middle);
   font: var(--font-button);
   transition: background 0.2s ease;
+
+  @include desktop {
+    min-height: var(--button-height);
+  }
 
   &:hover,
   &:focus-visible {

@@ -104,12 +104,17 @@
   justify-content: center;
   min-height: 52px;
   margin-top: var(--space-5);
-  padding: 0 var(--space-6);
+  padding-inline: var(--button-padding-inline);
   border-radius: var(--radius-0);
   background: var(--color-olive-green);
   color: var(--color-cream);
   font: var(--font-h6);
   transition: background 0.2s ease;
+
+  @include desktop {
+    min-height: var(--button-height);
+    font: var(--font-button);
+  }
 
   &:hover,
   &:focus-visible {
@@ -123,7 +128,7 @@
   }
 
   &:disabled {
-    background: var(--color-chip);
+    background: var(--color-sage);
     color: var(--color-green-dark);
     cursor: progress;
   }
@@ -138,13 +143,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 0 var(--space-5);
+  min-height: 52px;
+  padding-inline: var(--button-padding-inline);
   border-radius: var(--radius-0);
   background: var(--color-olive-green);
   color: var(--color-cream);
   font: var(--font-h6);
   transition: background 0.2s ease;
+
+  @include desktop {
+    min-height: var(--button-height);
+    font: var(--font-button);
+  }
 
   &:hover,
   &:focus-visible {

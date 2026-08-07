@@ -8,13 +8,13 @@
 // onto the heading.
 .ingredient-list {
   min-height: 132px;
+  // Spec 4.10: 24 on all four sides at both sizes, same fill as the form card.
   padding: var(--space-5);
   border-radius: var(--radius-20);
-  background: var(--color-sage);
+  background: color-mix(in srgb, var(--color-olive-green) 30%, transparent);
 
   @include desktop {
     min-height: 209px;
-    padding: var(--space-6);
   }
 }
 
