@@ -25,23 +25,37 @@
   min-height: 44px;
 }
 
+// The design's button is 28x28 (spec 4.13) — below the 44px touch target the
+// project requires. Spec 6.7 asks for the hit area to grow without the visual
+// following, so the button itself is 44x44 and invisible, and its fill is drawn
+// by a pseudo-element inset to the design's 28x28 box. `isolation` keeps that
+// pseudo-element above the button's own background and below its icon.
+//
 // Spec 4.13 gives the two buttons different fills but only one fill per button,
 // so hover and press darken the button's own fill by the same step instead of
 // inventing a second colour.
 .stepper-field__button {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 44px;
   min-height: 44px;
-  padding: var(--space-2);
-  border-radius: var(--radius-4);
-  background: var(--stepper-button-fill);
   cursor: pointer;
-  transition: background 0.2s ease;
 
-  &:hover:not(:disabled),
-  &:active:not(:disabled) {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    z-index: -1;
+    border-radius: var(--radius-4);
+    background: var(--stepper-button-fill);
+    transition: background 0.2s ease;
+  }
+
+  &:hover:not(:disabled)::before,
+  &:active:not(:disabled)::before {
     background: color-mix(in srgb, var(--stepper-button-fill) 88%, var(--color-olive-green));
   }
 

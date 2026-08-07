@@ -20,24 +20,35 @@
 }
 
 .pagination__button {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 44px;
   min-height: 44px;
   padding: 0 var(--space-2);
-  border-radius: var(--radius-2);
-  background: transparent;
   color: var(--color-green-dark);
   font: var(--font-body-16);
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+
+  // The design's item is 33x27 (spec 4.17), below the project's 44px touch
+  // target. Spec 6.7 asks the hit area to grow without the visual following, so
+  // the button spans 44px and the fill sits on a pseudo-element inset to the
+  // design's box: 44 - 2 x 5.5 = 33 wide, 44 - 2 x 8.5 = 27 tall.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 8.5px 5.5px;
+    z-index: -1;
+    border-radius: var(--radius-2);
+    background: var(--pagination-fill, transparent);
+    transition: background 0.2s ease;
+  }
 
   // Spec 4.17: only hover and active carry a fill, and it is the same one; the
   // text stays `Green dark` in all three states.
   &:hover:not(:disabled) {
-    background: var(--color-sage);
+    --pagination-fill: var(--color-sage);
   }
 
   &:focus-visible {
@@ -52,12 +63,9 @@
 }
 
 .pagination__button--current {
-  background: var(--color-sage);
-  font-weight: 600;
+  --pagination-fill: var(--color-sage);
 
-  &:hover:not(:disabled) {
-    background: var(--color-sage);
-  }
+  font-weight: 600;
 }
 
 // Meta character, therefore 14px per the project's type scale.
