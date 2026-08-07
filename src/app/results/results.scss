@@ -25,9 +25,7 @@
     'save-note'
     'list'
     'footnote';
-  max-width: calc(var(--content-max-width) + 2 * var(--space-4));
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-4) var(--space-8);
+  padding: var(--space-6) var(--page-gutter) var(--space-8);
 
   @include desktop {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -40,8 +38,7 @@
       'footnote footnote';
     align-items: start;
     column-gap: var(--space-7);
-    max-width: calc(var(--content-max-width) + 2 * var(--space-6));
-    padding: var(--space-7) var(--space-6) var(--space-8);
+    padding: var(--space-7) var(--page-gutter) var(--space-8);
   }
 }
 

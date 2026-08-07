@@ -12,16 +12,13 @@
   }
 }
 
-// --content-max-width is the content area of the design at 1440px; the
-// max-width adds the horizontal padding on top of it.
+// The container spans the full width and lets `--page-gutter` centre its
+// content, so it sits on exactly the same column as the header and footer band.
 .generator {
-  max-width: calc(var(--content-max-width) + 2 * var(--space-4));
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-4) var(--space-8);
+  padding: var(--space-6) var(--page-gutter) var(--space-8);
 
   @include desktop {
-    max-width: calc(var(--content-max-width) + 2 * var(--space-6));
-    padding: var(--space-8) var(--space-6);
+    padding: var(--space-8) var(--page-gutter);
   }
 }
 

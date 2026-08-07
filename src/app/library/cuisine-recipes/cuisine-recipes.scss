@@ -38,13 +38,10 @@
 }
 
 .cuisine-page {
-  max-width: calc(var(--content-max-width) + 2 * var(--space-4));
-  margin: 0 auto;
-  padding: var(--space-4) var(--space-4) var(--space-8);
+  padding: var(--space-4) var(--page-gutter) var(--space-8);
 
   @include desktop {
-    max-width: calc(var(--content-max-width) + 2 * var(--space-6));
-    padding: var(--space-5) var(--space-6) var(--space-8);
+    padding: var(--space-5) var(--page-gutter) var(--space-8);
   }
 }
 
