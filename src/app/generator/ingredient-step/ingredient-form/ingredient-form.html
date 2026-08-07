@@ -65,13 +65,10 @@
       [disabled]="isAddBlocked()"
       [attr.aria-label]="isEditing() ? 'Save ingredient' : 'Add ingredient'"
     >
-      <img
-        class="ingredient-form__submit-icon"
-        [src]="isEditing() ? '/img/preferences/check.png' : '/img/plus.png'"
-        alt=""
-        width="24"
-        height="24"
-      />
+      <span
+        class="icon ingredient-form__submit-icon"
+        [class.ingredient-form__submit-icon--save]="isEditing()"
+      ></span>
     </button>
   </div>
 

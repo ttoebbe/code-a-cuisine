@@ -72,10 +72,20 @@
 
 .stepper-field__button--decrease {
   --stepper-button-fill: var(--color-mint);
+  --stepper-button-icon: url('/img/preferences/delete-box.svg');
 }
 
 .stepper-field__button--increase {
   --stepper-button-fill: var(--color-sage);
+  --stepper-button-icon: url('/img/preferences/add-box.svg');
+}
+
+// 28px box minus 4px of padding on each side (spec 4.13).
+.stepper-field__icon {
+  --icon-size: 20px;
+
+  color: var(--color-green-dark);
+  mask-image: var(--stepper-button-icon);
 }
 
 // Fixed width so stepping from 9 to 10 cannot shift the buttons sideways.

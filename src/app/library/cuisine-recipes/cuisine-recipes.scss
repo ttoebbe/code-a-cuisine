@@ -40,6 +40,12 @@
   }
 }
 
+.cuisine-page__back-icon {
+  --icon-size: 20px;
+
+  mask-image: url('/img/arrow-left.svg');
+}
+
 .cuisine-page {
   padding: var(--space-4) var(--page-gutter) var(--space-8);
 

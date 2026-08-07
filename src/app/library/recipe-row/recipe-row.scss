@@ -115,3 +115,9 @@
 .recipe-row__chip--likes {
   background: var(--color-sage);
 }
+
+.recipe-row__time-icon {
+  --icon-size: 20px;
+
+  mask-image: url('/img/preferences/schedule.svg');
+}

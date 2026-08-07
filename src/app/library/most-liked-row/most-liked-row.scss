@@ -160,3 +160,9 @@
     outline-offset: 2px;
   }
 }
+
+.most-liked__time-icon {
+  --icon-size: 20px;
+
+  mask-image: url('/img/preferences/schedule.svg');
+}

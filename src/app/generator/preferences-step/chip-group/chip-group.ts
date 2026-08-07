@@ -25,11 +25,19 @@ export class ChipGroup<T extends string> {
   /** Currently selected value, null while the group is untouched. */
   readonly selected = input<T | null>(null);
 
-  /** Source of the decorative icon shown next to the legend. */
+  /** Name of the decorative icon shown next to the legend, e.g. `schedule`. */
   readonly icon = input.required<string>();
 
   /** Emits the value of the chip the user picked. */
   readonly pick = output<T>();
+
+  /**
+   * Modifier class that selects the legend icon.
+   * @returns Class name matching the icon input.
+   */
+  protected iconClass(): string {
+    return `chip-group__icon--${this.icon()}`;
+  }
 
   /**
    * Builds the DOM id of an option so its label stays uniquely addressable.

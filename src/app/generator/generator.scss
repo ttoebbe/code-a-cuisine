@@ -54,6 +54,12 @@
   }
 }
 
+.generator__back-icon {
+  --icon-size: 20px;
+
+  mask-image: url('/img/arrow-left.svg');
+}
+
 // The design shows the arrow alone on mobile; the button keeps its aria-label.
 .generator__back-text {
   display: none;

@@ -39,6 +39,12 @@
   }
 }
 
+.recipe-view__back-icon {
+  --icon-size: 20px;
+
+  mask-image: url('/img/arrow-left.svg');
+}
+
 .recipe-view__back-text {
   display: none;
 

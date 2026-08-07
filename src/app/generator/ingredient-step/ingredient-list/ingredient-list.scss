@@ -68,3 +68,15 @@
     outline-offset: 2px;
   }
 }
+
+.ingredient-list__action-icon {
+  --icon-size: 20px;
+}
+
+.ingredient-list__action-icon--edit {
+  mask-image: url('/img/preferences/edit.svg');
+}
+
+.ingredient-list__action-icon--delete {
+  mask-image: url('/img/delete.svg');
+}

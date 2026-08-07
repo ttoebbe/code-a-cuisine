@@ -19,9 +19,16 @@
   color: var(--color-green-dark);
 }
 
-.chip-group__icon {
-  width: 24px;
-  height: 24px;
+.chip-group__icon--schedule {
+  mask-image: url('/img/preferences/schedule.svg');
+}
+
+.chip-group__icon--public {
+  mask-image: url('/img/preferences/public.svg');
+}
+
+.chip-group__icon--fork-spoon {
+  mask-image: url('/img/preferences/fork-spoon.svg');
 }
 
 .chip-group__options {

@@ -9,7 +9,7 @@
       [disabled]="atMin()"
       (click)="step(-1)"
     >
-      <img src="/img/preferences/delete-box.png" alt="" width="20" height="20" />
+      <span class="icon stepper-field__icon"></span>
     </button>
 
     <output class="stepper-field__value">{{ value() }}</output>
@@ -22,7 +22,7 @@
       [disabled]="atMax()"
       (click)="step(1)"
     >
-      <img src="/img/preferences/add-box.png" alt="" width="20" height="20" />
+      <span class="icon stepper-field__icon"></span>
     </button>
   </div>
 </fieldset>

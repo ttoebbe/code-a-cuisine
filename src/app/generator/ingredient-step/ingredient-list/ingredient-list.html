@@ -13,7 +13,7 @@
           [attr.aria-label]="'Edit ' + ingredient.name"
           (click)="edit.emit($index)"
         >
-          <img src="/img/preferences/edit.png" alt="" width="20" height="20" />
+          <span class="icon ingredient-list__action-icon ingredient-list__action-icon--edit"></span>
         </button>
 
         <button
@@ -22,7 +22,7 @@
           [attr.aria-label]="'Delete ' + ingredient.name"
           (click)="remove.emit($index)"
         >
-          <img src="/img/delete.png" alt="" width="20" height="20" />
+          <span class="icon ingredient-list__action-icon ingredient-list__action-icon--delete"></span>
         </button>
       </li>
     }

@@ -180,9 +180,13 @@
   }
 }
 
+// The button adds an ingredient and turns into a save button while editing.
 .ingredient-form__submit-icon {
-  width: 24px;
-  height: 24px;
+  mask-image: url('/img/plus.svg');
+}
+
+.ingredient-form__submit-icon--save {
+  mask-image: url('/img/preferences/check.svg');
 }
 
 // Always rendered so a validation message cannot shift the card.

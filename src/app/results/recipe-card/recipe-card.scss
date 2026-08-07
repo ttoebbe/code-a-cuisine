@@ -79,3 +79,9 @@
     outline-offset: 2px;
   }
 }
+
+.recipe-card__time-icon {
+  --icon-size: 20px;
+
+  mask-image: url('/img/preferences/schedule.svg');
+}

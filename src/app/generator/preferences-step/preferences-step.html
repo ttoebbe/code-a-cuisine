@@ -24,7 +24,7 @@
     <app-chip-group
       legend="Cooking time:"
       name="cooking-time"
-      icon="/img/preferences/schedule.png"
+      icon="schedule"
       [options]="timeOptions"
       [selected]="state.timeCategory()"
       (pick)="state.setTimeCategory($event)"
@@ -33,7 +33,7 @@
     <app-chip-group
       legend="Cuisine"
       name="cuisine"
-      icon="/img/preferences/public.png"
+      icon="public"
       [options]="cuisineOptions"
       [selected]="state.cuisine()"
       (pick)="state.setCuisine($event)"
@@ -42,7 +42,7 @@
     <app-chip-group
       legend="Diet preferences"
       name="diet"
-      icon="/img/preferences/fork-spoon.png"
+      icon="fork-spoon"
       [options]="dietOptions"
       [selected]="state.diet()"
       (pick)="state.setDiet($event)"
