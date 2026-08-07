@@ -168,6 +168,14 @@
     left: auto;
     width: min(50%, calc(var(--plate-span) / var(--plate-stack-ratio)));
   }
+
+  // The widescreen set has five plates instead of three, and they are whole
+  // circles rather than the cropped exports, so the stack is 3.161 widths tall
+  // instead of 2.192. Everything else — the two caps and the aspect ratio —
+  // reads the variable and follows.
+  @include widescreen {
+    --plate-stack-ratio: 3.161;
+  }
 }
 
 .hero__plate {
@@ -193,4 +201,62 @@
 .hero__plate--3 {
   top: 58.17%;
   width: calc(100% * 493 / 494);
+}
+
+// Widescreen set. Widths are shares of the widest plate, tops shares of the
+// stack height, both taken from the native exports and the overlap of the
+// three-plate stack. The drop shadow is part of every file, so the plates carry
+// no CSS shadow of their own.
+.hero__plate-wide {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+@include widescreen {
+  .hero__plate {
+    display: none;
+  }
+
+  .hero__plate-wide {
+    display: block;
+  }
+
+  .hero__plate-wide--1 {
+    top: 0;
+    width: 86.81%;
+    aspect-ratio: 960 / 956;
+    background-image: url('/hero/plate-wide-1.png');
+  }
+
+  .hero__plate-wide--2 {
+    top: 16.39%;
+    width: 89.33%;
+    aspect-ratio: 988 / 984;
+    background-image: url('/hero/plate-wide-2.png');
+  }
+
+  .hero__plate-wide--3 {
+    top: 36.03%;
+    width: 89.16%;
+    aspect-ratio: 986 / 1022;
+    background-image: url('/hero/plate-wide-3.png');
+  }
+
+  .hero__plate-wide--4 {
+    top: 54.05%;
+    width: 100%;
+    aspect-ratio: 1106 / 1102;
+    background-image: url('/hero/plate-wide-4.png');
+  }
+
+  .hero__plate-wide--5 {
+    top: 72.07%;
+    width: 88.61%;
+    aspect-ratio: 980 / 976;
+    background-image: url('/hero/plate-wide-5.png');
+  }
 }
