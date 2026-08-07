@@ -35,9 +35,10 @@
     align-content: start;
     column-gap: var(--space-6);
     row-gap: var(--space-2);
-    // Spec 4.9 gives the card no horizontal padding: the name field and the
-    // serving-size group fill its 577px width edge to edge.
-    padding: 25px 0;
+    // Spec 4.9 reads `0 horizontal` off the outermost auto-layout frame of the
+    // Figma component, where the side spacing comes from the children. Those
+    // were never measured, so the card keeps the padding it had before.
+    padding: 25px var(--space-6);
   }
 }
 
