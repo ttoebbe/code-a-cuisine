@@ -70,14 +70,17 @@
   }
 }
 
+// The old PNGs drew a box around the sign, which was the flattened Figma
+// button — inside the button's own box that made two nested squares. The
+// symbols are bare now and the box comes from the button.
 .stepper-field__button--decrease {
   --stepper-button-fill: var(--color-mint);
-  --stepper-button-icon: url('/img/preferences/delete-box.svg');
+  --stepper-button-icon: url('/img/minus.svg');
 }
 
 .stepper-field__button--increase {
   --stepper-button-fill: var(--color-sage);
-  --stepper-button-icon: url('/img/preferences/add-box.svg');
+  --stepper-button-icon: url('/img/plus.svg');
 }
 
 // 28px box minus 4px of padding on each side (spec 4.13).
