@@ -18,15 +18,12 @@ export interface CuisineCategory {
   bannerHeight: number;
 }
 
-/** Pixel size of every banner file in public/img/cookbook/banners. */
-const BANNER_SIZES: Record<CuisineStyle, { width: number; height: number }> = {
-  italian: { width: 1146, height: 144 },
-  german: { width: 1143, height: 151 },
-  japanese: { width: 2286, height: 312 },
-  gourmet: { width: 1143, height: 165 },
-  indian: { width: 1143, height: 132 },
-  fusion: { width: 1143, height: 132 },
-};
+/**
+ * Pixel size of every banner file in public/img/cookbook/banners. All six are
+ * the same 3x export of the design's 1143 x 144 band (spec 4.19), so one pair
+ * of numbers covers them and every row on the page is the same height.
+ */
+const BANNER_SIZE = { width: 3437, height: 432 };
 
 /** Tile order of the design mock-up, which differs from the generator chips. */
 const CATEGORY_ORDER: readonly CuisineStyle[] = [
@@ -50,8 +47,8 @@ function buildCategory(value: CuisineStyle): CuisineCategory {
     icon: `/img/cookbook/icons/${value}.png`,
     image: `/img/cookbook/category-${value}.png`,
     banner: `/img/cookbook/banners/${value}.png`,
-    bannerWidth: BANNER_SIZES[value].width,
-    bannerHeight: BANNER_SIZES[value].height,
+    bannerWidth: BANNER_SIZE.width,
+    bannerHeight: BANNER_SIZE.height,
   };
 }
 
