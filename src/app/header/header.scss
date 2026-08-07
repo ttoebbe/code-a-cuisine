@@ -27,15 +27,16 @@
   min-height: 44px;
 }
 
-// The logo art is a single-colour shape on transparency, so masking it with the
-// shell foreground keeps it cream on the green pages and dark green on the
-// white ones from one export. `aspect-ratio` reserves the space up front.
+// The logo vector carries its own palette, but masking it with the shell
+// foreground uses only its silhouette — which keeps it cream on the green pages
+// and dark green on the white ones from one file. `aspect-ratio` reserves the
+// space up front.
 .header__logo-mark {
   display: block;
   width: 100px;
   aspect-ratio: 142 / 48;
   background: currentcolor;
-  mask: url('/logo-broccoli-cream.png') no-repeat center / contain;
+  mask: url('/logo-broccoli-cream.svg') no-repeat center / contain;
 
   @include desktop {
     width: 142px;

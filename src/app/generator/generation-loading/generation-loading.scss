@@ -15,13 +15,17 @@
   background: var(--color-olive-green);
 }
 
-// Anchored to the top-left corner like the header logo it replaces.
+// Anchored to the top-left corner like the header logo it replaces, and masked
+// the same way — the loading screen is always the green one, so the silhouette
+// is always cream.
 .loading__logo {
   position: absolute;
   top: var(--space-4);
   left: var(--space-5);
   width: 100px;
-  height: auto;
+  aspect-ratio: 142 / 48;
+  background: var(--color-cream);
+  mask: url('/logo-broccoli-cream.svg') no-repeat center / contain;
 
   @include desktop {
     left: var(--space-6);
