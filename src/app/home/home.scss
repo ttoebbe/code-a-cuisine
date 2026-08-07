@@ -67,7 +67,7 @@
 }
 
 .hero__title {
-  font: 700 72px/0.95 var(--font-family-brand);
+  font: var(--font-mobile-h1);
   color: var(--color-cream);
 
   @include desktop {

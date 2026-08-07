@@ -70,7 +70,7 @@
 .results__lead {
   grid-area: lead;
   margin-bottom: var(--space-4);
-  font: 500 18px/1.4 var(--font-family-body);
+  font: var(--font-body-18);
 
   @include desktop {
     max-width: 46ch;

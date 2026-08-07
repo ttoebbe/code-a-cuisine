@@ -65,7 +65,7 @@
 .cookbook__title {
   margin-bottom: var(--space-4);
   color: var(--color-olive-green);
-  font: 600 40px/1.1 var(--font-family-body);
+  font: var(--font-h4);
 
   @include desktop {
     font: var(--font-h3);
@@ -74,7 +74,7 @@
 
 .cookbook__text {
   color: var(--color-green-dark);
-  font: 500 18px/1.4 var(--font-family-body);
+  font: var(--font-body-18);
 
   @include desktop {
     max-width: 40ch;

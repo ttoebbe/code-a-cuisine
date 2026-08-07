@@ -107,7 +107,7 @@
   border-radius: var(--radius-0);
   background: var(--color-olive-green);
   color: var(--color-cream);
-  font: 600 18px/1.2 var(--font-family-body);
+  font: var(--font-h6);
   transition: background 0.2s ease;
 
   @include desktop {

@@ -33,17 +33,27 @@
   --font-family-brand: 'Ubuntu', system-ui, sans-serif;
   --font-family-body: 'Quicksand', system-ui, sans-serif;
 
-  // Font shortcuts: font-weight / font-size / line-height family
+  // Font shortcuts: font-weight / font-size / line-height family.
+  // Sizes and line heights follow the desktop scale of spec 1.3; `Auto` line
+  // heights become the ratio the component needs. The one deviation is `small
+  // text`, where Figma's line height of 10 is smaller than the glyph and almost
+  // certainly a source error — it keeps 1.
   --font-h1: 700 104px/1 var(--font-family-brand);
-  --font-h2: 600 56px/1.1 var(--font-family-body);
+  --font-h2: 600 54px/65px var(--font-family-body);
   --font-h3: 600 48px/1 var(--font-family-body);
+  --font-h4: 600 40px/1.1 var(--font-family-body);
   --font-card-headline: 600 28px/1 var(--font-family-body);
   --font-h5: 500 24px/1 var(--font-family-body);
   --font-h5-semi: 600 24px/1 var(--font-family-body);
   --font-button: 600 24px/1 var(--font-family-body);
   --font-small-label: 500 20px/20px var(--font-family-body);
-  --font-body-16: 500 16px/1.5 var(--font-family-body);
+  --font-h6: 600 18px/1.2 var(--font-family-body);
+  --font-body-18: 500 18px/1.4 var(--font-family-body);
+  --font-body-16: 500 16px/20px var(--font-family-body);
   --font-small-text: 500 14px/1 var(--font-family-body);
+
+  // Mobile scale (groups `mobile` and `Mob.` of spec 1.3).
+  --font-mobile-h1: 700 64px/72px var(--font-family-brand);
 
   // Spacing scale
   --space-1: 4px;

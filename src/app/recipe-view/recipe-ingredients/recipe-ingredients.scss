@@ -25,7 +25,7 @@
 .ingredients__title {
   position: absolute;
   color: var(--color-green-middle);
-  font: 600 22px/1.2 var(--font-family-body);
+  font: 600 24px/1.2 var(--font-family-body);
 
   @include desktop {
     font: 600 32px/1.2 var(--font-family-body);
@@ -57,7 +57,7 @@
 .ingredients__subtitle {
   margin-bottom: var(--space-3);
   color: var(--color-green-middle);
-  font: 600 18px/1.2 var(--font-family-body);
+  font: var(--font-h6);
 
   @include desktop {
     font: var(--font-h5-semi);
@@ -81,7 +81,7 @@
 
   @include desktop {
     grid-template-columns: 96px minmax(0, 1fr);
-    font: 500 18px/1.4 var(--font-family-body);
+    font: var(--font-body-18);
   }
 }
 
