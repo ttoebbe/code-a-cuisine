@@ -5,22 +5,29 @@
 @use 'mixins' as *;
 
 :root {
-  // Colors — palette "Rezepten"
+  // Colors — palette "Rezepten". Note the naming trap in the source: the style
+  // *named* `#1E5515` holds `#008000`, while `Middle green` is the style that
+  // actually carries `1E5515`. Dark green is always `--color-green-middle`.
   --color-olive-green: #396039;
-  --color-green-dark: #10310b;
+  --color-green-dark: #103108;
   --color-green-middle: #1e5515;
   --color-cream: #faf0e6;
-  --color-sage: #c4cfc4;
   --color-surface: #ffffff;
   --color-error: #8f2d1b;
 
-  // Recipe view palette (sampled from "One recipe view - one cook")
+  // Literal colours the design puts on components without binding them to a
+  // style (spec 1.1). Names describe the hue; the comment names the component.
+  --color-green-bright: #055e05; // primary button green, hover fill
+  --color-peach: #fae0c6; // primary + secondary button creme, hover fill
+  --color-sage: #c4d0c4; // edit / delete / plus buttons, pagination
+  --color-fog: #dbe0db; // result card, default fill
+  --color-mist: #d7dfd7; // result card hover fill, check button
+  --color-mint: #e7ece7; // heart and minus button fills
+
+  // Recipe view palette (sampled from "One recipe view - one cook"), no Figma
+  // style behind it.
   --color-card: #fefaf7;
-  --color-mint: #eaefeb;
   --color-chip: #d2d3c3;
-  --color-mist: #d8dfd7;
-  --color-peach: #ffd9b4;
-  --color-green-accent: #007e00;
 
   // Font families
   --font-family-brand: 'Ubuntu', system-ui, sans-serif;

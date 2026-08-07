@@ -20,7 +20,7 @@
   align-items: center;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
-  color: var(--color-green-accent);
+  color: var(--color-green-middle);
   font: 600 18px/1.2 var(--font-family-body);
 }
 
@@ -54,7 +54,7 @@
   padding: 0 var(--space-5);
   border-radius: var(--radius-0);
   background: var(--color-cream);
-  color: var(--color-green-accent);
+  color: var(--color-green-middle);
   font: 600 18px/1.2 var(--font-family-body);
   transition:
     background 0.2s ease,
