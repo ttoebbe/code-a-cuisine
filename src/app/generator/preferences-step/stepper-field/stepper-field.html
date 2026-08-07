@@ -4,7 +4,7 @@
   <div class="stepper-field__control">
     <button
       type="button"
-      class="stepper-field__button"
+      class="stepper-field__button stepper-field__button--decrease"
       [attr.aria-label]="'Decrease ' + unit()"
       [disabled]="atMin()"
       (click)="step(-1)"
@@ -17,7 +17,7 @@
 
     <button
       type="button"
-      class="stepper-field__button"
+      class="stepper-field__button stepper-field__button--increase"
       [attr.aria-label]="'Increase ' + unit()"
       [disabled]="atMax()"
       (click)="step(1)"

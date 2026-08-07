@@ -60,12 +60,15 @@
   height: 100%;
   padding: var(--space-4);
   border-radius: var(--radius-16);
-  background: var(--color-mist);
+  // Spec 4.16: the same fill throughout, at 70% by default and solid on hover —
+  // the card gains weight instead of changing colour.
+  background: color-mix(in srgb, var(--color-fog) 70%, transparent);
   color: var(--color-green-dark);
+  transition: background 0.2s ease;
 
   &:hover,
   &:focus-visible {
-    background: var(--color-chip);
+    background: var(--color-fog);
   }
 
   &:focus-visible {
@@ -143,7 +146,8 @@
 
   &:hover,
   &:focus-visible {
-    background: var(--color-green-middle);
+    background: var(--color-green-bright);
+    color: var(--color-surface);
   }
 
   &:focus-visible {

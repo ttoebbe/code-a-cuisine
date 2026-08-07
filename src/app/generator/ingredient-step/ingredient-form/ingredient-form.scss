@@ -142,6 +142,20 @@
   font: 500 16px/44px var(--font-family-body);
   appearance: none;
   cursor: pointer;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+
+  // Spec 4.7 draws the two states as an inside stroke, so `box-shadow: inset`
+  // rather than a border: the control keeps its size when the stroke appears.
+  &:hover {
+    box-shadow: inset 0 0 0 1px var(--color-olive-green);
+  }
+
+  &:active {
+    background: color-mix(in srgb, var(--color-cream) 60%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-olive-green) 50%, transparent);
+  }
 
   &:focus-visible {
     outline: 2px solid var(--color-green-middle);

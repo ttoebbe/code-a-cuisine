@@ -49,11 +49,17 @@
   justify-content: center;
   flex: 0 0 auto;
   width: 52px;
-  height: 52px;
+  height: 48px;
   border-radius: var(--radius-5);
-  transition: transform 0.2s ease;
+  // Spec 4.13 lists one fill for all three heart variants, so hover darkens the
+  // button's own fill by the same step the stepper buttons use.
+  background: var(--color-mint);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 
   &:hover:not([aria-disabled='true']) {
+    background: color-mix(in srgb, var(--color-mint) 88%, var(--color-olive-green));
     transform: scale(1.08);
   }
 

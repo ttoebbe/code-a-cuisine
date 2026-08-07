@@ -27,14 +27,16 @@
   padding: 0 var(--space-2);
   border-radius: var(--radius-2);
   background: transparent;
-  color: var(--color-green-middle);
+  color: var(--color-green-dark);
   font: var(--font-body-16);
   transition:
     background 0.2s ease,
     color 0.2s ease;
 
+  // Spec 4.17: only hover and active carry a fill, and it is the same one; the
+  // text stays `Green dark` in all three states.
   &:hover:not(:disabled) {
-    background: var(--color-mist);
+    background: var(--color-sage);
   }
 
   &:focus-visible {
@@ -49,12 +51,11 @@
 }
 
 .pagination__button--current {
-  background: var(--color-olive-green);
-  color: var(--color-cream);
+  background: var(--color-sage);
   font-weight: 600;
 
   &:hover:not(:disabled) {
-    background: var(--color-olive-green);
+    background: var(--color-sage);
   }
 }
 

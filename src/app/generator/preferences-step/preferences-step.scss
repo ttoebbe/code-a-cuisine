@@ -75,7 +75,8 @@
 
   &:hover:not(:disabled),
   &:focus-visible:not(:disabled) {
-    background: var(--color-green-middle);
+    background: var(--color-green-bright);
+    color: var(--color-surface);
   }
 
   &:focus-visible {

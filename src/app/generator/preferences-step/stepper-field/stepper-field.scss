@@ -25,6 +25,9 @@
   min-height: 44px;
 }
 
+// Spec 4.13 gives the two buttons different fills but only one fill per button,
+// so hover and press darken the button's own fill by the same step instead of
+// inventing a second colour.
 .stepper-field__button {
   display: inline-flex;
   align-items: center;
@@ -33,7 +36,14 @@
   min-height: 44px;
   padding: var(--space-2);
   border-radius: var(--radius-4);
+  background: var(--stepper-button-fill);
   cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--stepper-button-fill) 88%, var(--color-olive-green));
+  }
 
   &:focus-visible {
     outline: 2px solid var(--color-green-middle);
@@ -44,6 +54,14 @@
     opacity: 0.35;
     cursor: not-allowed;
   }
+}
+
+.stepper-field__button--decrease {
+  --stepper-button-fill: var(--color-mint);
+}
+
+.stepper-field__button--increase {
+  --stepper-button-fill: var(--color-sage);
 }
 
 // Fixed width so stepping from 9 to 10 cannot shift the buttons sideways.

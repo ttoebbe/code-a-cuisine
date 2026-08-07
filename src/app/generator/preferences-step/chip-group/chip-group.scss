@@ -95,6 +95,8 @@
   outline-offset: 2px;
 }
 
+// Spec 4.8 gives the hover variant its own fill and keeps the text dark green.
 .chip-group__input:not(:checked) + .chip-group__chip:hover {
-  background: color-mix(in srgb, var(--color-cream) 88%, var(--color-olive-green));
+  background: var(--color-peach);
+  color: var(--color-green-middle);
 }
