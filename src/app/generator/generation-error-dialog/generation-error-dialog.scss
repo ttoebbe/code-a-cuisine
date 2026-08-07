@@ -3,15 +3,18 @@
 // Native dialog keeps focus trapping and Esc for free; only its chrome is reset.
 .error-dialog {
   position: relative;
-  width: min(420px, calc(100vw - 2 * var(--space-5)));
+  width: min(340px, calc(100vw - 2 * var(--space-5)));
+  min-height: 314px;
   margin: auto;
-  padding: var(--space-6) var(--space-5) var(--space-5);
+  padding: var(--space-5) var(--space-4) var(--space-5) var(--space-5);
   border: 0;
   border-radius: var(--radius-30);
   background: var(--color-olive-green);
   color: var(--color-cream);
 
   @include desktop {
+    width: 567px;
+    min-height: 345px;
     padding: var(--space-6);
   }
 

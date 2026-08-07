@@ -81,6 +81,11 @@
   // component set does not cover.
   --radius-full: 999px;
 
+  // Distance between the sections of a page: every mobile frame uses 40, the
+  // desktop frames 64 — except the cuisine list page, which sets 40 itself
+  // (spec 3.1 / 3.2).
+  --section-gap: 40px;
+
   // Box of the primary button, green and creme alike (spec 4.2 / 4.3). Kept
   // here because seven screens draw that button and none of them shares a
   // component with the others.
@@ -110,6 +115,7 @@
 // scrollbar and therefore matches the centred containers exactly.
 @include desktop {
   :root {
+    --section-gap: var(--space-8);
     --page-gutter: max(var(--space-6), (100% - var(--content-max-width)) / 2);
   }
 }

@@ -111,15 +111,14 @@
   display: grid;
   grid-area: list;
   grid-template-columns: 1fr;
-  gap: var(--space-5);
-  margin: var(--space-7) 0 0;
+  // Spec 4.14 puts 31px between two result cards.
+  gap: 31px;
+  margin: var(--section-gap) 0 0;
   padding: 0;
   list-style: none;
 
   @include desktop {
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-6);
-    margin-top: var(--space-8);
   }
 }
 
@@ -130,11 +129,10 @@
 
 .results__footnote {
   grid-area: footnote;
-  margin-top: var(--space-6);
+  margin-top: var(--section-gap);
   text-align: center;
 
   @include desktop {
-    margin-top: var(--space-7);
     text-align: right;
   }
 }

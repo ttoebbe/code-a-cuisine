@@ -59,13 +59,12 @@
 .recipe-view__card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--section-gap);
   padding: var(--space-4) var(--space-3) var(--space-6);
   border-radius: var(--radius-16);
   background: var(--color-card);
 
   @include desktop {
-    gap: var(--space-7);
     padding: var(--space-5) var(--space-5) var(--space-7);
   }
 }
@@ -75,7 +74,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-4);
-  margin-top: var(--space-6);
+  margin-top: var(--section-gap);
   padding: var(--space-5);
   border-radius: var(--radius-16);
   background: var(--color-mint);
@@ -129,7 +128,7 @@
 }
 
 .recipe-view__regenerate {
-  margin-top: var(--space-6);
+  margin-top: var(--section-gap);
   text-align: right;
 }
 

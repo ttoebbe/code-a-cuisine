@@ -1,6 +1,9 @@
 @use '../../../styles/mixins' as *;
 
 :host {
+  // Spec 3.1: the cuisine list page is the one desktop frame that stays at 40.
+  --section-gap: 40px;
+
   display: block;
   min-height: calc(100vh - var(--header-height-mobile) - var(--footer-height));
   background: var(--color-surface);
@@ -51,11 +54,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-5);
-
-  @include desktop {
-    margin-bottom: var(--space-6);
-  }
+  margin-bottom: var(--section-gap);
 }
 
 .cuisine-page__banner-image {
@@ -65,7 +64,7 @@
 
 .cuisine-page__title {
   position: absolute;
-  color: var(--color-green-middle);
+  color: var(--color-green-dark);
   font: 600 24px/1.2 var(--font-family-body);
 
   @include desktop {
@@ -94,7 +93,7 @@
 }
 
 .cuisine-page__note {
-  margin-top: var(--space-5);
+  margin-top: var(--section-gap);
   font: var(--font-body-16);
 }
 
@@ -135,7 +134,7 @@
 }
 
 .cuisine-page__action {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--section-gap);
   text-align: right;
 }
 

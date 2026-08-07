@@ -83,15 +83,11 @@
 
 app-cuisine-filter {
   display: block;
-  margin-top: var(--space-7);
-
-  @include desktop {
-    margin-top: var(--space-8);
-  }
+  margin-top: var(--section-gap);
 }
 
 .cookbook__footnote {
-  margin-top: var(--space-7);
+  margin-top: var(--section-gap);
   text-align: center;
 
   @include desktop {

@@ -12,9 +12,10 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
+  // Wrapper of spec 4.17: 12px between the items, 20/16 around the bar.
+  gap: var(--space-3);
   margin: 0;
-  padding: 0;
+  padding: var(--space-4) var(--space-5);
   list-style: none;
 }
 

@@ -21,7 +21,7 @@
 .ingredient-step__actions {
   display: flex;
   justify-content: center;
-  margin-top: var(--space-7);
+  margin-top: var(--section-gap);
 
   @include desktop {
     justify-content: flex-end;
