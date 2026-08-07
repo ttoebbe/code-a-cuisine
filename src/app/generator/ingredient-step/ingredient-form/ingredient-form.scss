@@ -26,11 +26,11 @@
       'name-label size-label'
       'name-field size-field'
       'error      error';
-    // Height of the design's card with an open suggestion list. Reserving it
-    // upfront lets the list overlay the free area instead of resizing the card.
-    min-height: 209px;
-    // Keeps the rows at their content height so the reserved space stays at the
-    // bottom of the card, where the suggestion list overlays it.
+    // Resting height of the design's card (spec 4.9). The autocomplete variant
+    // is 33px taller, so the open list grows the card rather than covering it.
+    min-height: 176px;
+    // Keeps the rows at their content height, which leaves the slack at the
+    // bottom of the card — the open list fills that before the card grows.
     align-content: start;
     column-gap: var(--space-6);
     row-gap: var(--space-2);
@@ -74,7 +74,8 @@
 
 .ingredient-form__name {
   grid-area: name-field;
-  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .ingredient-form__input--name {
@@ -89,18 +90,11 @@
   text-align: center;
 }
 
-// Fixed height for exactly three suggestion rows, drawn on top of the free card
-// area below the input. Overlaying instead of pushing keeps the card from
-// resizing while the user types.
+// The design's `Autocomplete` variant is a taller card, not an overlay: the
+// list sits below the input in the flow, so it never covers the input's edge
+// and leaves no coloured remainder when fewer than three names match.
 .ingredient-form__suggestions {
-  position: absolute;
-  top: 100%;
-  inset-inline: 0;
-  z-index: 1;
-  height: 84px;
   padding: var(--space-2) var(--space-4) 0;
-  overflow: hidden;
-  background: var(--color-sage);
 }
 
 .ingredient-form__size {
