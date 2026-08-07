@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import type { ChipOption } from '../preference-options';
 
 /**
@@ -31,13 +31,8 @@ export class ChipGroup<T extends string> {
   /** Emits the value of the chip the user picked. */
   readonly pick = output<T>();
 
-  /**
-   * Modifier class that selects the legend icon.
-   * @returns Class name matching the icon input.
-   */
-  protected iconClass(): string {
-    return `chip-group__icon--${this.icon()}`;
-  }
+  /** Modifier class that selects the legend icon. */
+  protected readonly iconClass = computed(() => `chip-group__icon--${this.icon()}`);
 
   /**
    * Builds the DOM id of an option so its label stays uniquely addressable.

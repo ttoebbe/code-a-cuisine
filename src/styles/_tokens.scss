@@ -73,6 +73,8 @@
   --radius-2: 2px;
   --radius-4: 4px;
   --radius-5: 5px;
+  // Spec 4.20 assigns 8 to the ingredient row, which spec 4.11 gives no fill —
+  // so the value has nothing to round yet (OF-6).
   --radius-8: 8px;
   --radius-16: 16px;
   --radius-20: 20px;
