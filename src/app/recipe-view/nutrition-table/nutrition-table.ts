@@ -21,7 +21,7 @@ interface NutritionBlock {
  * total values and for the macros in grams as well as in percent. Each scope
  * therefore gets its own block: energy on top, then one row per macro whose
  * share is both written out and drawn as a bar, so the chart stays readable
- * on a 390px screen and never carries meaning by colour alone.
+ * on a 375px screen and never carries meaning by colour alone.
  */
 @Component({
   selector: 'app-nutrition-table',

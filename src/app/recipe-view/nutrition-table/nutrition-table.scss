@@ -36,7 +36,7 @@
 }
 
 // Three columns only, so name, grams and share still fit next to each other
-// at 390px — the bar takes whatever the first two columns leave.
+// at 375px — the bar takes whatever the first two columns leave.
 .nutrition__table {
   width: 100%;
   table-layout: fixed;
@@ -63,10 +63,16 @@
   }
 }
 
+// On the 375px frame the longest macro name does not fit on one line in the
+// desktop column width, so mobile gives it more room and lets it wrap.
 .nutrition__macro {
-  width: 28%;
+  width: 34%;
   font-weight: 600;
-  white-space: nowrap;
+
+  @include desktop {
+    width: 28%;
+    white-space: nowrap;
+  }
 }
 
 .nutrition__grams {
