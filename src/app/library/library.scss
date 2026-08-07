@@ -51,7 +51,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-16);
   background: var(--color-mint);
 
   @include desktop {

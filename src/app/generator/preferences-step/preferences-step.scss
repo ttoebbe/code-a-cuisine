@@ -32,7 +32,7 @@
   flex-direction: column;
   gap: var(--space-6);
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-20);
   background: var(--color-sage);
 
   @include desktop {
@@ -58,7 +58,7 @@
   justify-content: center;
   min-height: 52px;
   padding: 0 var(--space-5);
-  border-radius: var(--radius-button);
+  border-radius: var(--radius-0);
   background: var(--color-olive-green);
   color: var(--color-cream);
   font: 600 18px/1.2 var(--font-family-body);

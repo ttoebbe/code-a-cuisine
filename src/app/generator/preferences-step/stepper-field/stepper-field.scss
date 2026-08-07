@@ -32,7 +32,7 @@
   min-width: 44px;
   min-height: 44px;
   padding: var(--space-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-4);
   cursor: pointer;
 
   &:focus-visible {
@@ -50,7 +50,7 @@
 .stepper-field__value {
   min-width: 3ch;
   padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-4);
   background: var(--color-sage);
   text-align: center;
   color: var(--color-green-dark);

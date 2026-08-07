@@ -11,7 +11,7 @@
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-16);
   background: var(--color-cream);
 
   @include desktop {
@@ -105,7 +105,7 @@
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-30);
   background: var(--color-chip);
   color: var(--color-green-dark);
   font: var(--font-body-16);

@@ -17,7 +17,7 @@
     'error';
   gap: var(--space-3);
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-20);
   background: var(--color-sage);
 
   @include desktop {
@@ -56,7 +56,7 @@
 .ingredient-form__input {
   height: 44px;
   border: 0;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-0);
   background: var(--color-cream);
   color: var(--color-green-dark);
   font: 500 18px/44px var(--font-family-body);
@@ -134,7 +134,7 @@
   height: 44px;
   padding: 0 var(--space-5) 0 var(--space-3);
   border: 0;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-16);
   background: var(--color-cream);
   color: var(--color-green-dark);
   // One step below the other fields: the control sizes itself to its longest
@@ -158,7 +158,7 @@
   min-height: 44px;
   margin-left: var(--space-2);
   padding: var(--space-1);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-5);
 
   &:focus-visible {
     outline: 2px solid var(--color-green-middle);

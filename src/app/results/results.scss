@@ -59,7 +59,7 @@
   max-width: 574px;
   height: auto;
   margin-bottom: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-16);
 
   @include desktop {
     justify-self: end;
@@ -90,7 +90,7 @@
 
 .results__filter {
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-30);
   background: var(--color-cream);
   color: var(--color-green-middle);
   font: var(--font-body-16);

@@ -9,7 +9,7 @@
 .ingredient-list {
   min-height: 132px;
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-20);
   background: var(--color-sage);
 
   @include desktop {
@@ -58,7 +58,7 @@
   min-width: 44px;
   min-height: 44px;
   padding: var(--space-1);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-5);
 
   &:focus-visible {
     outline: 2px solid var(--color-green-middle);

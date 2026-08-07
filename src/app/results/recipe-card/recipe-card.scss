@@ -10,7 +10,7 @@
   flex-direction: column;
   width: 100%;
   padding: var(--space-5);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-20);
   background: var(--color-mist);
   color: var(--color-green-dark);
 }
@@ -52,7 +52,7 @@
   min-height: 52px;
   margin-top: auto;
   padding: 0 var(--space-5);
-  border-radius: var(--radius-button);
+  border-radius: var(--radius-0);
   background: var(--color-cream);
   color: var(--color-green-accent);
   font: 600 18px/1.2 var(--font-family-body);

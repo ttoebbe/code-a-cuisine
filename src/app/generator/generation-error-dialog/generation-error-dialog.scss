@@ -7,7 +7,7 @@
   margin: auto;
   padding: var(--space-6) var(--space-5) var(--space-5);
   border: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-30);
   background: var(--color-olive-green);
   color: var(--color-cream);
 
@@ -29,7 +29,7 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-4);
   color: inherit;
   font: 500 24px/1 var(--font-family-body);
   cursor: pointer;

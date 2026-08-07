@@ -48,13 +48,21 @@
   --space-7: 48px;
   --space-8: 64px;
 
-  // Radii
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
+  // Radii — one token per value the design actually uses (spec 4.20). The
+  // design has no single button radius, so the tokens are named after their
+  // value: that keeps every component traceable back to its Figma figure
+  // instead of hiding eight distinct decisions behind three size names.
+  --radius-0: 0;
+  --radius-2: 2px;
+  --radius-4: 4px;
+  --radius-5: 5px;
+  --radius-8: 8px;
+  --radius-16: 16px;
+  --radius-20: 20px;
+  --radius-30: 30px;
+  // Not a design value: fully round shapes (step numbers, meter bars) that the
+  // component set does not cover.
   --radius-full: 999px;
-  // Shared corner radius of the primary call-to-action buttons.
-  --radius-button: 4px;
 
   // Layout
   --header-height-mobile: 80px;

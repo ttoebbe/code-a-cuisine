@@ -50,7 +50,7 @@
   flex: 0 0 auto;
   width: 52px;
   height: 52px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-5);
   transition: transform 0.2s ease;
 
   &:hover:not([aria-disabled='true']) {
