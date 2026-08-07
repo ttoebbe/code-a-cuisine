@@ -13,8 +13,12 @@
   list-style: none;
 
   @include desktop {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-7) var(--space-6);
+  }
+
+  @include wide {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

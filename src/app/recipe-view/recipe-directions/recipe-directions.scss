@@ -42,9 +42,12 @@
   list-style: none;
 
   @include desktop {
-    grid-template-columns: 1fr 1fr;
     gap: var(--space-6) var(--space-7);
     padding: 0 var(--space-6);
+  }
+
+  @include wide {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -57,7 +60,7 @@
 }
 
 .directions__item--full {
-  @include desktop {
+  @include wide {
     grid-column: 1 / -1;
   }
 }

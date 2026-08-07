@@ -28,6 +28,10 @@
   padding: var(--space-6) var(--page-gutter) var(--space-8);
 
   @include desktop {
+    padding: var(--space-7) var(--page-gutter) var(--space-8);
+  }
+
+  @include wide {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       'title media'
@@ -38,7 +42,6 @@
       'footnote footnote';
     align-items: start;
     column-gap: var(--space-7);
-    padding: var(--space-7) var(--page-gutter) var(--space-8);
   }
 }
 
@@ -118,6 +121,10 @@
   list-style: none;
 
   @include desktop {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include wide {
     grid-template-columns: repeat(3, 1fr);
   }
 }
