@@ -74,10 +74,10 @@
 .cuisine-page__title {
   position: absolute;
   color: var(--color-green-dark);
-  font: 600 18px/1.25 var(--font-family-body);
+  font: var(--font-mobile-h4);
 
   @include desktop {
-    font: 700 40px/1.04 var(--font-family-body);
+    font: var(--font-h4);
   }
 }
 
@@ -116,7 +116,7 @@
   border-radius: var(--radius-0);
   background: var(--color-olive-green);
   color: var(--color-cream);
-  font: var(--font-h6);
+  font: var(--font-mobile-button);
   transition: background 0.2s ease;
 
   @include desktop {
@@ -156,7 +156,7 @@
   border-radius: var(--radius-0);
   background: var(--color-olive-green);
   color: var(--color-cream);
-  font: var(--font-h6);
+  font: var(--font-mobile-button);
   transition: background 0.2s ease;
 
   @include desktop {

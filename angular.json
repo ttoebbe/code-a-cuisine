@@ -63,7 +63,8 @@
               "src/styles.scss",
               "node_modules/@fontsource/ubuntu/latin-700.css",
               "node_modules/@fontsource/quicksand/latin-500.css",
-              "node_modules/@fontsource/quicksand/latin-600.css"
+              "node_modules/@fontsource/quicksand/latin-600.css",
+              "node_modules/@fontsource/quicksand/latin-700.css"
             ]
           },
           "configurations": {

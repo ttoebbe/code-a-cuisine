@@ -99,11 +99,11 @@
   background: var(--color-sage);
   text-align: center;
   color: var(--color-green-dark);
-  font: var(--font-h6);
+  font: var(--font-small-label);
 }
 
 .stepper-field__unit {
   margin-right: var(--space-2);
   color: var(--color-green-dark);
-  font: 500 18px/1.2 var(--font-family-body);
+  font: var(--font-h6);
 }

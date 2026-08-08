@@ -62,8 +62,12 @@
 }
 
 .hero__eyebrow {
-  font: var(--font-h5);
+  font: var(--font-h5-semi);
   color: var(--color-cream);
+
+  @include desktop {
+    font: var(--font-h3);
+  }
 }
 
 .hero__title {
@@ -84,11 +88,12 @@
   border-radius: var(--radius-0);
   background: var(--color-cream);
   color: var(--color-green-middle);
-  font: var(--font-button);
+  font: var(--font-mobile-button);
   transition: background 0.2s ease;
 
   @include desktop {
     min-height: var(--button-height);
+    font: var(--font-button);
   }
 
   &:hover,

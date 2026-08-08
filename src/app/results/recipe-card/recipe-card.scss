@@ -23,12 +23,14 @@
   }
 }
 
+// The caption carries no text style on desktop and `Mob. H3` on mobile, and
+// both resolve to the same values as `H5 SemiBold`.
 .recipe-card__caption {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   color: var(--color-green-middle);
-  font: var(--font-h6);
+  font: var(--font-h5-semi);
 }
 
 // Spec 4.14: the cloche is 40 x 28 on the card, mobile and desktop alike. The
@@ -40,7 +42,7 @@
 }
 
 .recipe-card__title {
-  font: 600 24px/1.25 var(--font-family-body);
+  font: var(--font-h5-semi);
 
   @include desktop {
     font: var(--font-card-headline);
@@ -68,13 +70,14 @@
   border-radius: var(--radius-0);
   background: var(--color-cream);
   color: var(--color-green-middle);
-  font: var(--font-h6);
+  font: var(--font-mobile-button);
   transition:
     background 0.2s ease,
     color 0.2s ease;
 
   @include desktop {
     min-height: var(--button-height);
+    font: var(--font-button);
   }
 
   &:hover,

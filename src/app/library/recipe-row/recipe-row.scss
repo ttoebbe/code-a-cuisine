@@ -68,7 +68,7 @@
   font: 600 20px/1.3 var(--font-family-body);
 
   @include desktop {
-    font: 600 24px/1.25 var(--font-family-body);
+    font: var(--font-h5-semi);
   }
 
   &::after {

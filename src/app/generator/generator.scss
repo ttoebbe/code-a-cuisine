@@ -92,7 +92,7 @@
 
 .generator__lead {
   margin-bottom: var(--space-7);
-  font: 500 18px/1.3 var(--font-family-body);
+  font: var(--font-mobile-h4);
   color: var(--color-green-dark);
 
   @include desktop {

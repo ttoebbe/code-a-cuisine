@@ -57,21 +57,36 @@ line height.
 
 **Group `recipe generator` — the desktop scale:**
 
-| Style            | Size / line height |
-| ---------------- | ------------------ |
-| H1               | 104 / Auto         |
-| H2               | 54 / 65            |
-| H3               | 48 / Auto          |
-| H4               | 40 / 104           |
-| Card headlines   | 28 / Auto          |
-| H5 SemiBold      | 24 / Auto          |
-| H5               | 24 / Auto          |
-| Button Text      | 24 / Auto          |
-| small H + Labels | 20 / 20            |
-| H6               | 18 / Auto          |
-| p 18             | 18 / Auto          |
-| p 16             | 16 / 20            |
-| small text       | 14 / 10            |
+_Weight and resolved line height added 2026-08-08, read off every text node that
+references the style (usage count in the last column). No style has a single
+override anywhere in the file, so these values are exact, not representative._
+
+| Style            | Size / line height | Weight | Resolved LH | Uses |
+| ---------------- | ------------------ | ------ | ----------- | ---- |
+| H1               | 104 / Auto         | 700    | 119.5       | 3    |
+| H2               | 54 / 65            | 600    | 65          | 5    |
+| H3               | 48 / Auto          | 600    | 60          | 3    |
+| H4               | 40 / 104           | 700    | 41.6        | 8    |
+| Card headlines   | 28 / Auto          | 600    | 35          | 31   |
+| H5 SemiBold      | 24 / Auto          | 600    | 30          | 7    |
+| H5               | 24 / Auto          | 500    | 30          | 67   |
+| Button Text      | 24 / Auto          | 600    | 30          | 15   |
+| small H + Labels | 20 / 20            | 500    | 20          | many |
+| H6               | 18 / Auto          | 500    | 22.5        | 137  |
+| p 18             | 18 / Auto          | 500    | 22.5        | 281  |
+| p 16             | 16 / 20            | 500    | 20          | 157  |
+| small text       | 14 / 10            | 500    | 10          | many |
+
+Two things the resolved values settle:
+
+- **The `104` of H4 is a percentage, not a pixel value.** Figma stores that style
+  with `lineHeightUnit: FONT_SIZE_%`, so 40px × 104 % = 41.6px. The apparent
+  260 % line height was a misreading of the export — C7 of the Befund report is
+  void, and there is no source error here.
+- **`H6` and `p 18` are the same values** — Quicksand 500, 18 / 22.5. The two
+  styles differ in name only.
+
+Every `Auto` in the family resolves to **125 %** except H1 (114.9 %).
 
 **Group `mobile`:**
 
@@ -81,15 +96,20 @@ line height.
 | h2    | 20 / Auto          |
 | h3    | 18 / Auto          |
 
-**Ungrouped `Mob.` styles:**
+**Ungrouped `Mob.` styles** — same readout as above:
 
-| Style            | Size / line height |
-| ---------------- | ------------------ |
-| Mob. H1          | 64 / 72            |
-| Mob. H2          | 32 / Auto          |
-| Mob. H3          | 24 / Auto          |
-| Mob. H4          | 18 / Auto          |
-| Mob. Button text | 16 / Auto          |
+| Style            | Size / line height | Weight | Resolved LH | Uses |
+| ---------------- | ------------------ | ------ | ----------- | ---- |
+| Mob. H1          | 64 / 72            | 700    | 72          | 1    |
+| Mob. H2          | 32 / Auto          | 600    | 40          | 3    |
+| Mob. H3          | 24 / Auto          | 600    | 30          | 25   |
+| Mob. H4          | 18 / Auto          | 600    | 22.5        | 49   |
+| Mob. Button text | 16 / Auto          | 600    | 20          | 25   |
+
+`Mob. H3` carries exactly the values of `H5 SemiBold`, and `Mob. H4` differs from
+`H6` in weight only (600 against 500). Every mobile button label in the file —
+`Get started`, `View`, `Generate recipe`, `Cookbook` — is `Mob. Button text`;
+the 24px `Button Text` style appears on desktop only.
 
 **Group `old styles`** — H1 40, H2 24, H3 20, Body 16, button 16, Button Text 24,
 Label - Box content 14, Board Card 14, Paragraph 14/20, Answers 18/20. This group

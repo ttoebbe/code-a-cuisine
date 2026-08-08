@@ -68,13 +68,16 @@
   }
 }
 
+// The cookbook headline references no text style in Figma: it carries loose
+// values, 700 40/50 on mobile and 700 64/65 on desktop. It is not an H4 — that
+// style belongs to the cuisine banner heading (spec 4.19).
 .cookbook__title {
   margin-bottom: var(--space-4);
   color: var(--color-olive-green);
-  font: var(--font-h4);
+  font: 700 40px/1.25 var(--font-family-body);
 
   @include desktop {
-    font: var(--font-h3);
+    font: 700 64px/65px var(--font-family-body);
   }
 }
 
