@@ -381,6 +381,11 @@ guideline the project follows. Figma does not account for touch targets.
 The component set holds three variants and places two cards side by side with a
 gap of **31** (wrapper 893 × 379).
 
+The cloche in front of the recipe number is **40 × 28**, on the mobile card as
+well — all ten places that use it in the file agree. It is a raster fill, not a
+vector: a 1024 × 1024 source cropped to x 576–956, y 58–321, so it cannot be
+exported as SVG the way the other icons are.
+
 ### 4.15 Recipe card (in cook book)
 
 |         | default               | hover                    |
