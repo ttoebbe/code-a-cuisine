@@ -39,11 +39,9 @@
   align-items: center;
   gap: var(--space-2);
   color: var(--color-olive-green);
-  font: 600 24px/1.2 var(--font-family-body);
-
-  @include desktop {
-    font: var(--font-card-headline);
-  }
+  // `Card headlines` on both layouts — the design sets the tile label in 28px
+  // at 375 as well, so there is no narrow variant to switch to.
+  font: var(--font-card-headline);
 }
 
 .cuisine-filter__icon {

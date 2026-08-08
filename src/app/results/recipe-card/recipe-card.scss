@@ -41,12 +41,14 @@
   height: 28px;
 }
 
+// The wide title carries no text style in Figma, only loose values — like the
+// two cookbook titles. It is not the 28px `Card headlines` the code assumed;
+// that style belongs to the cookbook tiles. The narrow one is `Mob. H3`.
 .recipe-card__title {
   font: var(--font-h5-semi);
 
   @include desktop {
-    font: var(--font-card-headline);
-    line-height: 1.2;
+    font: 600 32px/40px var(--font-family-body);
   }
 }
 

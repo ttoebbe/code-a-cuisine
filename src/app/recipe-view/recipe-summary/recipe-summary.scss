@@ -24,16 +24,19 @@
   }
 }
 
+// Both meta lines are `small H + Labels` on the wide layout, not body copy.
+// The narrow layout sets the cooking time in `p 18`; it has no counterpart for
+// the cooking persons, so that one keeps its 16px.
 .summary__time {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-3);
   color: var(--color-green-dark);
-  font: var(--font-body-16);
+  font: var(--font-body-18);
 
   @include desktop {
-    font: var(--font-body-18);
+    font: var(--font-small-label);
   }
 }
 
@@ -59,7 +62,7 @@
   font: var(--font-body-16);
 
   @include desktop {
-    font: var(--font-body-18);
+    font: var(--font-small-label);
   }
 }
 

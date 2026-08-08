@@ -83,11 +83,13 @@
   grid-template-columns: 80px minmax(0, 1fr);
   gap: var(--space-2);
   padding: var(--space-1) 0;
-  font: 500 16px/1.4 var(--font-family-body);
+  font: var(--font-body-16);
 
   @include desktop {
     grid-template-columns: 96px minmax(0, 1fr);
-    font: var(--font-body-18);
+    // The wide list is `H5`, not the 18px the code assumed — Figma sets the
+    // whole ingredient block in 24px, the narrow one in `p 16`.
+    font: var(--font-h5);
   }
 }
 

@@ -83,12 +83,15 @@
   }
 }
 
+// The lead is `p 18` on the narrow layout and `H5` on the wide one; without the
+// second value it kept the 18px across the whole page.
 .cookbook__text {
   color: var(--color-green-dark);
   font: var(--font-body-18);
 
   @include desktop {
     max-width: 40ch;
+    font: var(--font-h5);
   }
 }
 

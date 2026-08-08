@@ -71,6 +71,8 @@
   }
 }
 
+// Same pair as the cookbook lead: `H6` narrow — the values of `p 18` — and `H5`
+// wide. The 20px it carried before is in neither scale.
 .results__lead {
   grid-area: lead;
   margin-bottom: var(--space-4);
@@ -78,7 +80,7 @@
 
   @include desktop {
     max-width: 46ch;
-    font: 500 20px/1.5 var(--font-family-body);
+    font: var(--font-h5);
   }
 }
 
