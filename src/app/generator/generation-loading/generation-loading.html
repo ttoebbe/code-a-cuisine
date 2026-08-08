@@ -6,5 +6,16 @@
     <img class="loading__animation" src="/img/loading.gif" alt="" width="171" height="240" />
   </picture>
 
-  <p class="loading__text">Generating …</p>
+  <!-- Note 03 of the design: the word stays put while the three dots disappear
+       one by one and come back in the same order. They are separate elements
+       because a single ellipsis cannot be animated per dot; screen readers get
+       the word alone. -->
+  <p class="loading__text">
+    Generating
+    <span class="loading__dots" aria-hidden="true">
+      <span class="loading__dot">.</span>
+      <span class="loading__dot">.</span>
+      <span class="loading__dot">.</span>
+    </span>
+  </p>
 </div>
