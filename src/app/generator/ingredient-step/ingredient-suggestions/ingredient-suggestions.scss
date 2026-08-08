@@ -8,11 +8,15 @@
   list-style: none;
 }
 
-// Fixed row pitch: the list is capped at three names, so the card's resting
-// slack absorbs most of the growth when it opens.
+// The design puts these rows on a 28px pitch, which is below the 44px the
+// course checklist asks of a touch target. Three stacked rows cannot each
+// carry an invisible 44px area without overlapping their neighbours, so here
+// the row itself grows and the checklist wins over the design figure.
 .suggestions__option {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
+  min-height: 44px;
   padding: 0 var(--space-2);
   border-radius: var(--radius-4);
   color: var(--color-green-dark);
