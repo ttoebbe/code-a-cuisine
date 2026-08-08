@@ -33,6 +33,26 @@
   }
 }
 
+// The `Loader` frame of the design is a panel: 253 x 309 with radius 20 on
+// `sage`, the same box on both layouts. The animation is transparent around the
+// bowl, so the panel reads through it. The narrow layout insets the picture on
+// all four sides, the wide one fills the panel width and leaves its bottom
+// 18px showing — hence the two different alignments.
+.loading__panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 253px;
+  height: 309px;
+  overflow: hidden;
+  border-radius: var(--radius-20);
+  background: var(--color-sage);
+
+  @include desktop {
+    align-items: flex-start;
+  }
+}
+
 // The design does not show the whole animation: its image fill cuts the top
 // 18.3 %, which turns the native 436 x 613 into the 253 x 291 the loader frame
 // holds. `cover` against that ratio crops by exactly that much, and anchoring
