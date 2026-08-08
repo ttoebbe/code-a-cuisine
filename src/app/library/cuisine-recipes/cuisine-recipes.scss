@@ -68,13 +68,16 @@
   height: auto;
 }
 
+// Spec 4.19: the cuisine banner heading is the one place that uses the `H4`
+// text style (700, not 600) on desktop and `Mob. H4` on mobile. It is a step
+// larger than the recipe view banners, which carry loose values instead.
 .cuisine-page__title {
   position: absolute;
   color: var(--color-green-dark);
-  font: 600 24px/1.2 var(--font-family-body);
+  font: 600 18px/1.25 var(--font-family-body);
 
   @include desktop {
-    font: 600 32px/1.2 var(--font-family-body);
+    font: 700 40px/1.04 var(--font-family-body);
   }
 }
 

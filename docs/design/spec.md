@@ -435,6 +435,20 @@ Two sub-components, `Ingredients` and `Directions`, each:
 
 Parent: 400 _hug_ × 446.25 _hug_, vertical, gap 8.
 
+The two variants are not the same height: `Ingredients` measures 1152 × 147,
+`Directions` 1152 × 133. Their background rectangles are named the other way
+round in the file (`Hero Directions` sits in the `Ingredients` variant) — the
+variant name and the heading text are the reliable signal, the layer names are
+not.
+
+**Heading typography.** The desktop headings reference **no** text style; they
+carry loose values. The mobile headings use `Mob. H3`.
+
+| Where   | Family    | Size | Weight | Line height | Letter spacing | Text style |
+| ------- | --------- | ---- | ------ | ----------- | -------------- | ---------- |
+| Desktop | Quicksand | 32   | 600    | 40 (= 1.25) | 0              | _none_     |
+| Mobile  | Quicksand | 24   | 600    | 30 (= 1.25) | 0              | `Mob. H3`  |
+
 ### 4.19 Hero for cuisine page (the six cuisine rows)
 
 Six variants: `Italian`, `German`, `Gourmet`, `Japanese`, `Fusion`, `Indian`.
@@ -445,6 +459,20 @@ Each row:
 | Size        | 1143 _fill_ × 144 |
 | Radius      | 0                 |
 | Text colour | `Green dark`      |
+
+The 144 is the `Italian` height. The variants differ: Italian 144, German 151,
+Japanese 156, Gourmet 165, Fusion 132, Indian 132. Width is 1143 throughout.
+
+**Heading typography.** Unlike the recipe view banners (4.18), these headings do
+reference a shared text style, and they are a step larger.
+
+| Where   | Family    | Size | Weight | Line height   | Letter spacing | Text style            |
+| ------- | --------- | ---- | ------ | ------------- | -------------- | --------------------- |
+| Desktop | Quicksand | 40   | 700    | 41.6 (= 1.04) | 0              | `recipe generator/H4` |
+| Mobile  | Quicksand | 18   | 600    | 22.5 (= 1.25) | 0              | `Mob. H4`             |
+
+All six desktop variants carry the same style with no overrides, as do all six
+mobile variants.
 
 ### 4.20 Radius summary
 
