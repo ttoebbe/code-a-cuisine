@@ -534,6 +534,19 @@ to build the animation are provided in the file, for those who want to customise
 it themselves. Building it from scratch is not required, and a finished,
 ready-to-use version is included in the same folder.
 
+_Clarified 2026-08-08:_ "the file" and "the same folder" are not this Figma file
+— the note carries a hyperlink to a Google Drive folder, and the parts live
+there. What Figma holds is the assembled loader on the `Design` page: frames
+`Loading` (1440 × 1024 and 375 × 812) → `Frame 1039` → `Loader` 253 × 309 →
+`Code_Cuisine_Loading_Spinner 1` (253 × 291 desktop, 243 × 280 mobile), plus a
+`Generating ...` heading in **Ubuntu** 48/700 (mobile 36/700) that references no
+text style. The spinner fill carries a `gifRef` next to its `imageRef`: the
+animation is an animated GIF, 436 × 613 at 329 frames, which is why it only
+plays in prototype mode. That GIF is byte for byte the one already in the repo
+at `docs/design/loading-original.gif`. The fill also crops it, `imageTransform`
+cutting the top 18.3 %, so the loader shows at 0.869 rather than its native
+0.711.
+
 **Note on the hero component (Components page).** The size of this component
 stays the same no matter how large the screen is. It is centred and does not
 spread out. It only changes on smaller devices.
