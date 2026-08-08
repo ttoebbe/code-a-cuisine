@@ -192,6 +192,14 @@ which uses **40**.
 Most generator screens are 1024 tall — i.e. designed to fit a 1440 × 1024
 viewport without scrolling.
 
+**The `Loading` frame holds a panel.** Its `Loader` child is **253 × 309** with
+radius **20** and fill `#C4D0C4`, and it clips its content — the same box on both
+layouts. The animation inside it is 253 × 291 on desktop, flush with the panel's
+top and side edges so the bottom 18px of the panel stay visible; on mobile it is
+243 × 280 and inset on all four sides (3 / 7 left / right, 14 / 15 top / bottom,
+i.e. centred within a pixel). The `Generating ...` line is a **sibling** of the
+panel, not a child: both sit in a vertical auto-layout with gap **32**.
+
 ### 3.2 Mobile (width 375 throughout)
 
 | Frame                         | Height                   |
@@ -405,6 +413,17 @@ The cloche in front of the recipe number is **40 × 28**, on the mobile card as
 well — all ten places that use it in the file agree. It is a raster fill, not a
 vector: a 1024 × 1024 source cropped to x 576–956, y 58–321, so it cannot be
 exported as SVG the way the other icons are.
+
+Type inside the card, read off the text nodes on 2026-08-08. Two of the four
+lines carry **no** text style, only loose values — the card title in particular
+is _not_ `Card headlines`:
+
+| Line                  | Desktop                      | Mobile                     |
+| --------------------- | ---------------------------- | -------------------------- |
+| `Recipe 1` (number)   | 600 24 / 30 — no style       | `Mob. H3` (600 24 / 30)    |
+| Title                 | **600 32 / 40 — no style**   | `Mob. H3` (600 24 / 30)    |
+| `Cooking time: 20min` | `small H + Labels` (20 / 20) | `p 18` (500 18 / 22.5)     |
+| `View`                | `Button Text` (600 24 / 30)  | `Mob. Button text` (16/20) |
 
 ### 4.15 Recipe card (in cook book)
 
