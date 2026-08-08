@@ -39,17 +39,20 @@
   // read off the text nodes, not guessed. The one deviation is `small text`,
   // where Figma's line height of 10 is smaller than the glyph and almost
   // certainly a source error — it keeps 1.
-  --font-h1: 700 104px/1 var(--font-family-brand);
+  --font-h1: 700 104px/119.5px var(--font-family-brand);
   --font-h2: 600 54px/65px var(--font-family-body);
-  --font-h3: 600 48px/1 var(--font-family-body);
+  --font-h3: 600 48px/60px var(--font-family-body);
   --font-h4: 700 40px/1.04 var(--font-family-body);
-  --font-card-headline: 600 28px/1 var(--font-family-body);
+  --font-card-headline: 600 28px/35px var(--font-family-body);
   --font-h5: 500 24px/30px var(--font-family-body);
   --font-h5-semi: 600 24px/30px var(--font-family-body);
-  --font-button: 600 24px/1 var(--font-family-body);
+  --font-button: 600 24px/30px var(--font-family-body);
   --font-small-label: 500 20px/20px var(--font-family-body);
   --font-h6: 500 18px/22.5px var(--font-family-body);
-  --font-body-18: 500 18px/1.4 var(--font-family-body);
+  // Same values as `--font-h6`: Figma keeps `H6` and `p 18` as two styles that
+  // differ in name only, and the two tokens keep that split so a heading and a
+  // paragraph stay distinguishable in the code.
+  --font-body-18: 500 18px/22.5px var(--font-family-body);
   --font-body-16: 500 16px/20px var(--font-family-body);
   --font-small-text: 500 14px/1 var(--font-family-body);
 
