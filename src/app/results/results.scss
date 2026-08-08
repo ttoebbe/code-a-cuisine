@@ -62,7 +62,8 @@
   max-width: 574px;
   height: auto;
   margin-bottom: var(--space-5);
-  border-radius: var(--radius-16);
+  // The frame that clips the photo in the design is rounded by 20, not 16.
+  border-radius: var(--radius-20);
 
   @include desktop {
     justify-self: end;

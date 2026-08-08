@@ -52,13 +52,15 @@
 }
 
 // Header panel of the design: claim on the left, favourites on the right.
+// The frame `Upper part` carries olive green at 4 % over the white page and a
+// 20px radius — a barely tinted panel, not the mint fill of the icon buttons.
 .cookbook__intro {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   padding: var(--space-5);
-  border-radius: var(--radius-16);
-  background: var(--color-mint);
+  border-radius: var(--radius-20);
+  background: color-mix(in srgb, var(--color-olive-green) 4%, var(--color-surface));
 
   @include desktop {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
