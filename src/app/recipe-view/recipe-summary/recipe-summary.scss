@@ -40,13 +40,15 @@
   }
 }
 
+// `Mob. H3` on the narrow layout, `H2` on the wide one. `Mob. H3` carries the
+// values of `H5 SemiBold` and therefore has no token of its own.
 .summary__title {
   margin-bottom: var(--space-4);
   color: var(--color-green-middle);
-  font: 600 28px/1.15 var(--font-family-body);
+  font: var(--font-h5-semi);
 
   @include desktop {
-    font: 600 48px/1.1 var(--font-family-body);
+    font: var(--font-h2);
   }
 }
 

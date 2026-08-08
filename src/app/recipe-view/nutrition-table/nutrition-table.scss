@@ -9,14 +9,12 @@
   text-align: left;
 }
 
+// `p 18` on the narrow layout, `H6` on the wide one — two Figma styles that
+// resolve to the same 18 / 22.5, so one declaration covers both.
 .nutrition__title {
   margin-bottom: var(--space-2);
   color: var(--color-green-dark);
-  font: var(--font-body-16);
-
-  @include desktop {
-    font: var(--font-body-18);
-  }
+  font: var(--font-body-18);
 }
 
 .nutrition__block + .nutrition__block {
