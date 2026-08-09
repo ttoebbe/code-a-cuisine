@@ -63,10 +63,17 @@
   background: color-mix(in srgb, var(--color-olive-green) 4%, var(--color-surface));
 
   @include desktop {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    align-items: start;
     gap: var(--space-7);
     padding: var(--space-7);
+  }
+
+  // Two columns only from the wide step, like the other multi-column grids.
+  // `Cookbook` is one unbreakable word and needs 313px of ink at its 64px size;
+  // the 5fr column stays below that until roughly 960px, so between 768 and 960
+  // the headline ran across the favourites next to it.
+  @include wide {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
   }
 }
 
