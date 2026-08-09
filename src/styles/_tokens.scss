@@ -101,6 +101,13 @@
   --button-height: 60px;
   --button-padding-inline: 26px;
 
+  // Forward arrow of the cross-sell links, Figma `Arrow 18`: a line of 20 on the
+  // mobile frames and of 24 on the desktop ones, 2px stroke on both. It is the
+  // only icon of the set whose size steps, so it lives here instead of in the
+  // five components that draw it. The back arrow `Arrow 11` measures 20 on both
+  // tiers and keeps its literal value.
+  --arrow-forward-size: 20px;
+
   // Layout
   --header-height-mobile: 80px;
   // Menu bar of spec 4.1; the mobile height has no Figma counterpart (OF-7).
@@ -126,5 +133,6 @@
   :root {
     --section-gap: var(--space-8);
     --page-gutter: max(var(--space-6), (100% - var(--content-max-width)) / 2);
+    --arrow-forward-size: 24px;
   }
 }

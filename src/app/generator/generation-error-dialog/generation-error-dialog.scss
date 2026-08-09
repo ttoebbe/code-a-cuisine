@@ -89,6 +89,9 @@
 
 // Nudges only the arrow on hover, so the label itself does not move.
 .error-dialog__arrow {
+  --icon-size: var(--arrow-forward-size);
+
+  mask-image: url('/img/arrow-forward.svg');
   transition: transform 0.2s ease;
 
   .error-dialog__action:hover & {

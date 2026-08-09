@@ -134,6 +134,12 @@
   }
 }
 
+.hero__cross-sell-arrow {
+  --icon-size: var(--arrow-forward-size);
+
+  mask-image: url('/img/arrow-forward.svg');
+}
+
 // The stack ignores the hero padding and reaches past its top edge, so the
 // first plate starts flush with the top of the page and paints in front of the
 // header band — as in the design, where the plates are the frontmost element.

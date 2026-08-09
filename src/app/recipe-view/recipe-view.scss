@@ -158,6 +158,12 @@
   }
 }
 
+.recipe-view__regenerate-arrow {
+  --icon-size: var(--arrow-forward-size);
+
+  mask-image: url('/img/arrow-forward.svg');
+}
+
 .recipe-view__missing {
   display: flex;
   flex-direction: column;

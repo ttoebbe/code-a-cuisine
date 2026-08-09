@@ -135,3 +135,9 @@ app-cuisine-filter {
     outline-offset: 2px;
   }
 }
+
+.cookbook__generate-arrow {
+  --icon-size: var(--arrow-forward-size);
+
+  mask-image: url('/img/arrow-forward.svg');
+}

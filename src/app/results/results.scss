@@ -165,3 +165,9 @@
     outline-offset: 2px;
   }
 }
+
+.results__regenerate-arrow {
+  --icon-size: var(--arrow-forward-size);
+
+  mask-image: url('/img/arrow-forward.svg');
+}
