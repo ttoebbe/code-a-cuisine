@@ -815,3 +815,309 @@ Aufgeschlüsselt nach Ursache:
 | falscher Literalwert     | 18 von 33 Literalstellen |
 | falscher Token-Verwender | 24 von 97 Verwendern     |
 | falscher Tokenwert       | **0 von 16 Tokens**      |
+---
+
+# Ergebnis des Fixlaufs — 2026-08-11
+
+Nachtrag zum Bericht oben. Grundlage sind die vier Entscheidungen E1–E4 vom
+11.08.; der Messbericht war die Arbeitsliste, es wurde nicht nachgesucht und
+nicht erweitert.
+
+**Stand vorher:** `d580c26`. **Elf Commits**, danach dieser `docs`-Eintrag.
+
+| Commit    | Message                                              |
+| --------- | ---------------------------------------------------- |
+| `e1799d3` | fix: size the generator step 2 heading               |
+| `0ad97e9` | fix: size the generator form like Figma              |
+| `649a954` | fix: size the cookbook list like Figma               |
+| `c5579a9` | fix: size the recipe view like Figma                 |
+| `bf945a1` | fix: size the results screen like Figma              |
+| `6b288a7` | fix: set the hero cross-sell in Ubuntu 500           |
+| `3cae67d` | fix: size the error dialog like Figma                |
+| `03cecc2` | fix: take the four back links down to 14px           |
+| `c6aa2ee` | fix: put the input fields back on their Figma radius |
+| `56ae9b6` | fix: swap the two green links to olive               |
+| `8f9ee9a` | fix: correct the dark green token                    |
+
+23 Dateien, +218/−54. Reihenfolge nach E4: erst die mechanischen Typo-Fixes
+nach Bereich gruppiert, dann Radius, Linkfarbe, Farbtoken, zuletzt docs.
+
+---
+
+## Nachmessung — 44 Deklarationen, beide Viewports
+
+Frisch gebaut, im Browser gemessen, gegen den Sollwert aus dem Bericht
+gestellt. **106 von 106 Prüfungen stimmen, keine einzige Abweichung** — die
+Spalten nennen deshalb Soll und Ist in einem.
+
+| Selektor                          | Ansicht | 1440         | 375         |
+| --------------------------------- | ------- | ------------ | ----------- |
+| `.hero__cross-sell-title`         | home    | 500 32/33.28 | 500 24/28.8 |
+| `.hero__cross-sell-link`          | home    | 500 20/20    | 500 18/22.5 |
+| `.most-liked__name`               | library | 500 24/30    | 500 18/22.5 |
+| `.cookbook__generate`             | library | 500 20/20    | 500 18/22.5 |
+| `.cookbook__back`                 | library | 500 14/17.5  | 500 14/17.5 |
+| `.recipe-row__position`           | cuisine | 500 18/22.5  | 500 18/22.5 |
+| `.recipe-row__time`               | cuisine | 500 16/20    | 500 16/20   |
+| `.recipe-row__title`              | cuisine | 500 24/30    | 600 18/22.5 |
+| `.recipe-row__chip`               | cuisine | 500 18/22.5  | 500 18/22.5 |
+| `.pagination__button`             | cuisine | 500 18/22.5  | 500 18/22.5 |
+| `.pagination__button--current`    | cuisine | 500 18/22.5  | 500 18/22.5 |
+| `.cuisine-page__back`             | cuisine | 500 14/17.5  | 500 14/17.5 |
+| `.ingredient-form__label--name`   | step 1  | 500 20/20    | 500 18/22.5 |
+| `.ingredient-form__label--size`   | step 1  | 500 20/20    | 500 16/20   |
+| `.ingredient-form__input--name`   | step 1  | 500 16/44    | 500 16/44   |
+| `.ingredient-form__input--amount` | step 1  | 500 18/44    | 500 18/44   |
+| `.ingredient-form__unit-select`   | step 1  | 500 16/44    | 500 16/44   |
+| `.ingredient-list__title`         | step 1  | 500 20/20    | 500 18/22.5 |
+| `.suggestions__option`            | step 1  | 500 16/20    | 500 16/20   |
+| `.generator__title--solo`         | step 2  | 600 28/35    | 600 24/30   |
+| `.chip-group__legend`             | step 2  | 500 24/30    | 600 24/30   |
+| `.chip-group__label`              | step 2  | 500 20/20    | 500 20/20   |
+| `.stepper-field__legend`          | step 2  | 500 20/20    | 500 16/20   |
+| `.stepper-field__unit`            | step 2  | 500 20/20    | 500 18/22.5 |
+| `.generator__back`                | step 2  | 500 14/17.5  | 500 14/17.5 |
+| `.results__filter`                | results | 500 18/22.5  | 500 18/22.5 |
+| `.results__regenerate`            | results | 500 20/20    | 500 18/22.5 |
+| `.recipe-card__time`              | results | 500 20/20    | 500 18/22.5 |
+| `.step__title`                    | recipe  | 500 24/30    | 600 18/22.5 |
+| `.step__order`                    | recipe  | 500 18/22.5  | 600 18/22.5 |
+| `.step__description`              | recipe  | 500 18/22.5  | 500 16/24   |
+| `.chef-badge`                     | recipe  | 500 18/22.5  | 500 18/22.5 |
+| `.summary__chip`                  | recipe  | 500 18/22.5  | 500 18/22.5 |
+| `.summary__cooks-label`           | recipe  | 500 20/20    | 500 20/20   |
+| `.like__question`                 | recipe  | 700 20/25    | 600 18/22.5 |
+| `.like__hint`                     | recipe  | 500 16/20    | 500 16/20   |
+| `.nutrition__energy`              | recipe  | 500 20/20    | 600 18/22.5 |
+| `.nutrition__macro`               | recipe  | 600 20/20    | 600 18/22.5 |
+| `.nutrition__grams`               | recipe  | 500 20/20    | 600 18/22.5 |
+| `.recipe-view__regenerate-link`   | recipe  | 500 20/20    | 500 18/22.5 |
+| `.recipe-view__back`              | recipe  | 500 14/17.5  | 500 14/17.5 |
+| `.error-dialog__title`            | dialog  | 600 28/35    | 600 28/35   |
+| `.error-dialog__message`          | dialog  | 600 18/26    | 500 16/20   |
+| `.error-dialog__action`           | dialog  | 500 20/20    | 500 18/22.5 |
+
+Die Schriftfamilie wurde mitgemessen: überall Quicksand außer
+`.hero__cross-sell-title`, das jetzt Ubuntu trägt.
+
+Zwei Zeilen sind Kontrollen, keine Änderungen:
+`.ingredient-form__input--amount` und `.ingredient-form__unit-select` sollten
+sich nicht bewegen und haben es nicht getan.
+
+### Radius und Farbe
+
+| Stelle                            | Eigenschaft     | Gemessen        | Soll           |
+| --------------------------------- | --------------- | --------------- | -------------- |
+| `.ingredient-form__input--name`   | `border-radius` | 20px            | 20 (Frame 730) |
+| `.ingredient-form__input--amount` | `border-radius` | 999px           | 48 → Pille     |
+| `.ingredient-form__unit-select`   | `border-radius` | 999px           | 48 → Pille     |
+| `.recipe-row`                     | `border-radius` | 16px            | 16             |
+| `.cookbook__generate`             | `color`         | rgb(57, 96, 57) | #396039        |
+| `.recipe-view__regenerate-link`   | `color`         | rgb(57, 96, 57) | #396039        |
+| `.cookbook__text` (Stichprobe)    | `color`         | rgb(16, 49, 11) | #10310B        |
+
+`--radius-full` statt eines neunten Tokens: bei 44px Feldhöhe klemmt der
+Browser jeden Radius ab 22 auf dieselbe Pille, 48 und 999 rendern identisch.
+Screenshots vorher/nachher bei 1440 und 375 wurden für alle sechs Stellen
+aufgenommen — die Pille am Mengenfeld und am Einheitenwähler, die 16er-Rundung
+der Rezeptzeilen, und Label plus Pfeil der beiden Links, die gemeinsam auf Oliv
+wechseln.
+
+---
+
+## Breitensweep
+
+Chromium, **360 bis 1600 in 20px-Schritten** bei Höhe 802, über neun Ansichten
+(Startseite, Kochbuch, Küchenliste, Generator Schritt 1 mit und ohne Liste,
+Schritt 2, Ergebnisse, Rezeptansicht, Fehlerdialog).
+
+| Größe                               | Wert       |
+| ----------------------------------- | ---------- |
+| Läufe (9 Ansichten × 63 Breiten)    | **567**    |
+| gemessene Elemente mit eigenem Text | **22 544** |
+| `scrollWidth > innerWidth`          | **0**      |
+| gerenderte Schrift unter 14px       | **0**      |
+| Überlappungen von Textkanten        | 63         |
+| davon echte Defekte                 | **0**      |
+
+Die 63 Treffer liegen ausnahmslos in der Fehlerdialog-Ansicht und sind der
+Modal über der Seite darunter — genau das, was ein Dialog tun soll. Nachgeprüft
+wurde das nicht per Augenmaß, sondern mit einem zweiten Durchgang, der statt
+der Elementkästen die **gemalten Glyphenkästen** vergleicht
+(`Range.getClientRects`) und dabei trennt, ob beide Textläufe in derselben
+Ebene liegen: 233 Überschneidungen zwischen Modal und verdeckter Seite,
+**0 innerhalb einer Ebene**. Der Rest war ohnehin nur Kastengeometrie — die
+Titelzeile des Dialogs ist ein Block über die volle Breite und liegt damit
+unter dem absolut gesetzten Schließen-Kreuz, ohne dass sich Buchstaben treffen.
+
+Firestore blieb in zwei Durchgängen getrennt: Durchgang A (Startseite,
+Kochbuch, Küchenliste, Generator) liest echte Daten und schickt das Formular
+nie ab, Durchgang B (Ergebnisse, Rezeptansicht, Fehlerdialog) hat Firestore per
+Route-Abort dicht. Zusätzlich hängt in **beiden** Durchgängen ein Riegel auf
+dem Write-Kanal: die Läufe haben Schreibversuche aus `applyResponse()`
+abgefangen und abgebrochen — kein Write hat die Box verlassen. Der Webhook
+antwortete aus einer Fixture in der Shape aus `src/app/models/`, jeder fremde
+Host lief in einen Abort (getroffen wurde genau einer: `www.google.com`).
+
+`npm run lint` und `npm run build` laufen fehlerfrei, der Arbeitsbaum ist
+sauber.
+
+---
+
+## Was bewusst stehen geblieben ist
+
+| Punkt                                                 | Warum                                                                                             |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| die 73 **[OK]**-Deklarationen                         | stimmen bereits, nicht angefasst                                                                  |
+| die neun korrekt eckigen Radius-Stellen aus `905a419` | Primärbuttons und Küchenkacheln sind in Figma wirklich eckig                                      |
+| Figmas Zeilenhöhe **10** an den Back-Links            | kleiner als die Glyphe, derselbe Quellfehler, den `--font-small-text` schon ablehnt (E1)          |
+| die Schriftfamilie **Mulish** an den vier Altstilen   | die App lädt Mulish nicht; auf den Mobil-Frames tragen dieselben Elemente reguläre Stile (E2)     |
+| der **22px-Ausreißer „24g"** in der Nährwerttabelle   | Figma widerspricht sich dort selbst, die Mehrheit (20px) gewinnt (E3)                             |
+| **kein neues Token** für die Nährwert-Beschriftungen  | E3; der Satz bleibt bei 16 Typo-Tokens, und `_tokens.scss` ändert sich nur an der einen Farbzeile |
+
+Zu den Back-Links: Figmas 14px ist übernommen, die Zeilenhöhe kommt aus
+`spec.md` Foundations (jedes `Auto` der Familie löst auf 125 % auf) und ergibt
+14 × 1,25 = **17,5px**. Die Messung der Knoten selbst gab keinen belastbaren
+Alternativwert her — alle 35 Knoten des Stils `small text` tragen dieselbe
+kaputte 10 als expliziten Pixelwert.
+
+Das bringt die vier Back-Links auf eine andere Zeilenhöhe als
+`--font-small-text` (14/1), das denselben Figma-Stil abbildet. Das Token
+anzufassen war keine Option: es bedient `.footer`, `.chip-group__hint`,
+`.pagination__gap` und `.nutrition__table thead th`, und der Bericht führt
+alle vier als **[OK]**.
+
+Die **10 [ENTSCHEIDUNG]-Punkte sind vollständig durch E1 und E2 abgedeckt** —
+acht Back-Link-Zeilen, `.error-dialog__message` (mobil) und
+`.most-liked__likes`. Es bleibt keiner offen, der eine eigene Entscheidung
+bräuchte.
+
+`.most-liked__likes` war dabei der einzige Fund, der sich zu **null Änderung**
+auflöst: die Spalte „Delta" nennt allein die Familie, und die bleibt nach E2
+Quicksand. Größe, Gewicht und Zeilenhöhe stimmten schon.
+
+---
+
+## Gemeldet, nicht gefixt
+
+### G1 — Quicksand 400 ist nicht im Bundle
+
+E2 verlangt neben Größe und Zeilenhöhe auch das **Gewicht** aus Figma. An zwei
+der vier Altstil-Stellen ist das **400**:
+
+- `.like__hint` (Desktop) — `old styles/Body` Mulish 400 16/20,08
+- `.error-dialog__message` (Mobil) — derselbe Stil
+
+`angular.json` lädt Quicksand in **500, 600 und 700**. Eine Anforderung von 400
+matcht nach der CSS-Font-Matching-Regel auf die 500 — die Deklaration würde
+also nichts ändern außer selbst unwahr zu werden. Beide Stellen behalten
+deshalb **500**; übernommen sind Größe und Zeilenhöhe. Im Browser
+gegengeprüft: geladen sind `Quicksand 500/600/700` und `Ubuntu 500/700`, eine
+400er-Datei gibt es nicht.
+
+Aus demselben Grund ist auch Mulishs Zeilenhöhe nicht wörtlich übernommen: die
+25,1px an `.like__question` und die 20,08px an `.like__hint` sind Mulishs
+`Auto` (125,5 %). Mit der Familie, die bleibt, sind das Quicksands 125 % —
+also 25px und 20px. Dieselbe Rechnung wie bei E1.
+
+Wenn das Gewicht buchstäblich gewollt ist, kostet es eine Zeile:
+`node_modules/@fontsource/quicksand/latin-400.css` in `angular.json`. Für zwei
+Deklarationen aus einer verwaisten Stilgruppe schien das nicht verhältnismäßig.
+
+Zur Frage aus E2, ob die Mulish-Stile in Figma noch aktiv verwendet werden:
+sie sind es — die vier Fundstellen liegen auf gezeichneten Desktop-Frames, nicht
+in einem toten Komponentenordner. Verwaist ist die Gruppe nur im Verhältnis zum
+Rest der Datei: dieselben Elemente tragen auf den Mobil-Frames `Mob. H4` und
+`p 16`, und die App lädt Mulish nicht. Die Einstufung als Altlast bleibt damit
+richtig, die Formulierung „verwaist" wäre zu stark.
+
+### G2 — Nährwert-Beschriftungen: Figma sagt 700, im Code stehen 600
+
+Genau der Konfliktfall, für den E3 „melden statt Token umschreiben" vorgibt.
+
+| Zelle                 | Figma (Desktop) | jetzt im Code |
+| --------------------- | --------------- | ------------- |
+| Protein / Fat / Carbs | **700** 22/27,5 | 600 20/20     |
+| Energie               | **700** 22/27,5 | 500 20/20     |
+| Werte 18g / 58g       | 500 20/20       | 500 20/20 ✓   |
+| Wert 24g (Ausreißer)  | 500 **22**/20   | 500 20/20     |
+
+Die Größe kommt nach E3 aus `--font-small-label` (20px). Das Gewicht 700 würde
+entweder ein neues Token verlangen (durch E3 ausgeschlossen) oder
+`--font-small-label` umschreiben — das hat **7 Verwender**, von denen der
+Bericht 3 als richtig ausweist. Also unangetastet. Die Beschriftungen tragen
+weiter die 600 aus `.nutrition__macro`.
+
+### G3 — die Prozentspalte wächst mit
+
+`.nutrition__percent` und `.nutrition__grams` erben ihre Größe von
+`.nutrition__table` und sind damit von 16px auf 18px (mobil) bzw. 20px
+(Desktop) mitgewachsen. Die Prozentspalte ist **app-only** — Figma zeichnet sie
+nicht, sie kommt aus Lastenheft US10. Eine eigene Größe hätte sie von der
+Tabelle abgekoppelt, ohne dass es dafür ein Soll gäbe. Im Sweep ist die Tabelle
+bei allen 63 Breiten überlauffrei.
+
+### G4 — Ubuntu 500 musste ins Bundle
+
+Kein Messbefund, sondern eine Nebenwirkung: `.hero__cross-sell-title` ist in
+Figma **Ubuntu 500**, `angular.json` lud Ubuntu aber nur in **700**. Ohne die
+zusätzliche Datei hätte die Umstellung auf die Markenschrift den Text in 700
+gerendert — sichtbar falscher als der Zustand vorher. Deshalb liegt
+`node_modules/@fontsource/ubuntu/latin-500.css` mit in `6b288a7`. Das ist die
+einzige Änderung dieser Runde außerhalb von SCSS. Nachgeprüft:
+`document.fonts.check('500 32px Ubuntu')` ist `true`, und die Faceliste meldet
+`Ubuntu 500 loaded`.
+
+### G5 — die Pagination verliert ihre fette Ziffer
+
+`.pagination__button--current` trug ein `font-weight: 600`, das Figma nicht
+kennt: dort sind alle Ziffern `H6` 500, die aktuelle Seite ist allein durch die
+Salbei-Füllung markiert. Der Bericht führt das als **[KLAR]** (`+100w`), also
+ist es weg. Die Seite bleibt visuell durch die Füllung und für Hilfstechnik
+durch `aria-current="page"` erkennbar — aber es ist eine Affordanz weniger als
+vorher.
+
+### G6 — `spec.md` 1.1 steht jetzt gegen den Token
+
+`docs/design/spec.md` führt `Green dark` weiter als `#103108`. Der Token hält
+ab `8f9ee9a` das gemessene `#10310B`. Dass ausgerechnet dieselbe Datei den
+richtigen Wert eine Tabelle tiefer unter den losen Farben führt, macht den
+Tippfehler dort sichtbar — korrigiert wurde er nicht, `spec.md` ist ein
+Messprotokoll vom 2026-08-07 und stand nicht im Auftrag.
+
+Historisch gehört dazu: **A13.2 der Runde vom 07.08. hat den Fehler erst
+eingebaut.** Der Code hatte `#10310b`, der Befund nannte das falsch und
+korrigierte auf `#103108` — auf Basis genau dieser `spec.md`-Zeile. `8f9ee9a`
+dreht das zurück. Belegt ist der Wert über die 880 Knoten, die den Stil
+`Rezepten/Green dark` referenzieren: alle 880 tragen `#10310B`, keiner
+`#103108`. Der Backdrop des Fehlerdialogs hatte die richtige Farbe die ganze
+Zeit hartcodiert (`rgb(16 49 11 / 60%)`) und stimmt jetzt wieder mit dem Token
+überein.
+
+---
+
+## Drei Messfallen für künftige Runden
+
+Damit sie nicht ein zweites Mal Zeit kosten:
+
+**(a) Die Figma-REST-API schreibt `cornerRadius` nie als `0`.** In der ganzen
+Datei tragen 712 Knoten ein `cornerRadius > 0` und **kein einziger** ein
+`cornerRadius: 0`; bei den übrigen 4067 fehlt die Eigenschaft. **Fehlt sie, ist
+der Radius 0 — nicht „unbekannt".** Wer das Feld als Pflichtfeld liest, hält
+jede eckige Ecke für ungemessen.
+
+**(b) 46 von 47 `COMPONENT_SET`-Rahmen tragen `cornerRadius: 5`.** Das ist der
+gestrichelte Container um die Variantenmatrix, kein Designwert. Wer ihn statt
+der Variante darin liest, misst an fast jeder Komponente der Bibliothek 5px —
+auch an denen, die in Wahrheit eckig sind. Immer die `COMPONENT`-Variante
+messen, nie das Set.
+
+**(c) Nachtrag aus diesem Lauf: `<option>` hat eigenen Textinhalt.** Der
+Messbericht führt `.ingredient-form__unit-select` mit Gewicht **400**, obwohl
+die Regel seit jeher `500` setzt. Aufgelöst: das `<select>` rechnet auf
+`500 16px/44px`, sein `<option>` auf `400 16px/44px` — Chromiums
+UA-Stylesheet setzt das Gewicht am `option` zurück. Ein Sammler, der „jedes
+Element mit eigenem Textinhalt" greift, erwischt das `option` und meldet dessen
+Wert. **Es gab an dieser Stelle nie einen Gewichtsfehler**, entsprechend wurde
+nichts geändert. Formularfelder deshalb künftig über das Steuerelement messen,
+nicht über seine Kinder.
