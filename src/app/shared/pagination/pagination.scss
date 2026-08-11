@@ -62,11 +62,15 @@
   }
 }
 
-// The design marks the current page with the fill alone and keeps every number
-// at 500, so the bolder weight the code added is gone. `aria-current` carries
-// the state for assistive tech.
+// A deliberate step away from the design: it marks the current page with the
+// sage fill alone and keeps every number at 500, which leaves colour as the
+// only thing a sighted user can go by (WCAG 1.4.1). The heavier weight is a
+// second, non-colour cue — the same reason the touch target grew past the
+// design's 28x28 box. `aria-current` carries the state for assistive tech.
 .pagination__button--current {
   --pagination-fill: var(--color-sage);
+
+  font-weight: 600;
 }
 
 // Meta character, therefore 14px per the project's type scale.
