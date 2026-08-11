@@ -19,6 +19,8 @@
 }
 
 // Mobile shows the arrow alone, so the link needs a minimum width of its own.
+// `small text`, with Figma's broken line height of 10 replaced by the 125 % of
+// the family — same reasoning as the other three back links.
 .recipe-view__back {
   display: inline-flex;
   align-items: center;
@@ -26,7 +28,7 @@
   min-width: 44px;
   min-height: 44px;
   color: var(--color-green-middle);
-  font: 500 16px/1.2 var(--font-family-body);
+  font: 500 14px/1.25 var(--font-family-body);
 
   &:hover .recipe-view__back-text,
   &:focus-visible .recipe-view__back-text {

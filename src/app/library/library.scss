@@ -18,13 +18,17 @@
   }
 }
 
+// `small text` — 14px, which the project allows for a control like this one and
+// not for running text. Figma's line height of 10 is smaller than the glyph and
+// is the same source error the `small text` token already refuses; the 125 %
+// that every `Auto` in the family resolves to takes its place.
 .cookbook__back {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
   color: var(--color-green-middle);
-  font: 500 16px/1.2 var(--font-family-body);
+  font: 500 14px/1.25 var(--font-family-body);
 
   &:hover .cookbook__back-text,
   &:focus-visible .cookbook__back-text {
