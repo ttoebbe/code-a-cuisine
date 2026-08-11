@@ -77,12 +77,19 @@
 
 // On the 375px frame the longest macro name does not fit on one line in the
 // desktop column width, so mobile gives it more room and lets it wrap.
+//
+// The weight parts with the viewport. The narrow frame draws the labels with
+// `Mob. H4` and its 600, same as the cells under them. The wide frame binds
+// them to no style at all and sets a loose 700, while the cells beside them
+// stay on `small H + Labels` at 500 — so the bolder weight belongs here, not
+// on the token.
 .nutrition__macro {
   width: 34%;
   font-weight: 600;
 
   @include desktop {
     width: 28%;
+    font-weight: 700;
     white-space: nowrap;
   }
 }
