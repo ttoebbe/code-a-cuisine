@@ -27,21 +27,35 @@
   font: var(--font-body-16);
 }
 
+// `Mob. H4` on the narrow frame, `small H + Labels` on the wide one — the same
+// pair the table below it uses.
 .nutrition__energy {
   margin-bottom: var(--space-2);
   color: var(--color-green-dark);
-  font: var(--font-body-16);
+  font: var(--font-mobile-h4);
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 }
 
 // Three columns only, so name, grams and share still fit next to each other
 // at 375px — the bar takes whatever the first two columns leave.
+//
+// The wide frame contradicts itself on the value cells: three of them carry
+// `small H + Labels` and the fourth ("24g") a loose 22px. The majority wins and
+// all four sit on the token, so the column stays one size.
 .nutrition__table {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
   color: var(--color-green-dark);
-  font: var(--font-body-16);
+  font: var(--font-mobile-h4);
   text-align: left;
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 
   th,
   td {

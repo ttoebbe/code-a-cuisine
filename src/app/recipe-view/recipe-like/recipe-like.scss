@@ -34,13 +34,23 @@
   }
 }
 
+// The wide frame draws this block with the file's `old styles` group, which is
+// set in Mulish — a family this project does not load and does not want (the
+// same frame's mobile twin uses the regular styles). Size and weight come from
+// the design, the family stays Quicksand, and Mulish's line height is resolved
+// with Quicksand's own `Auto` of 125 % instead of its 125.5 %.
 .like__question {
-  font: 600 16px/1.4 var(--font-family-body);
+  font: var(--font-mobile-h4);
+
+  @include desktop {
+    font: 700 20px/1.25 var(--font-family-body);
+  }
 }
 
+// Running text, so 16px is both the design value and the project's floor — the
+// 14px it carried before was below it.
 .like__hint {
-  font: var(--font-small-text);
-  line-height: 1.4;
+  font: var(--font-body-16);
 }
 
 .like__button {

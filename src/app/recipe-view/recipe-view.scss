@@ -144,7 +144,12 @@
   gap: var(--space-2);
   min-height: 44px;
   color: var(--color-green-dark);
-  font: var(--font-body-16);
+  // `H6` on the narrow frame, `small H + Labels` on the wide one.
+  font: var(--font-h6);
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 
   &:hover,
   &:focus-visible {
