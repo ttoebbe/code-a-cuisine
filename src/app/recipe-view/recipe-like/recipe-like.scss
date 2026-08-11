@@ -48,9 +48,9 @@
 }
 
 // Running text, so 16px is both the design value and the project's floor — the
-// 14px it carried before was below it. The wide frame draws it with the same
-// `old styles` group as the question above, whose regular 400 the bundle now
-// carries; the narrow frame keeps `p 16` and its 500.
+// 14px it carried before was below it. The wide frame draws it with `old
+// styles/Body` and its regular 400, a weight the bundle now carries; the
+// narrow frame keeps `p 16` and its 500.
 .like__hint {
   font: var(--font-body-16);
 
