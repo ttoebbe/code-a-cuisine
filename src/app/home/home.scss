@@ -115,9 +115,16 @@
   }
 }
 
+// The one place outside the page titles where the design reaches for the brand
+// family, and the only one that sets it at 500 — hence the extra Ubuntu weight
+// in the bundle. It carries no text style, only loose values.
 .hero__cross-sell-title {
-  font: var(--font-h5-semi);
+  font: 500 24px/1.2 var(--font-family-brand);
   color: var(--color-cream);
+
+  @include desktop {
+    font: 500 32px/1.04 var(--font-family-brand);
+  }
 }
 
 .hero__cross-sell-link {
@@ -125,8 +132,13 @@
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
-  font: var(--font-body-16);
+  // `H6` on the narrow frame, `small H + Labels` on the wide one.
+  font: var(--font-h6);
   color: var(--color-cream);
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 
   &:hover,
   &:focus-visible {
