@@ -47,15 +47,22 @@
   display: flex;
   flex-direction: column;
   margin-bottom: var(--space-4);
-  font: 500 28px/1.2 var(--font-family-body);
+  font: var(--font-card-headline);
 }
 
 .error-dialog__title-line {
   display: block;
 }
 
+// The wide frame sets the message a step larger and bolder than the hint under
+// it, on loose values rather than a style. The narrow frame draws it with the
+// file's abandoned Mulish `old styles`, so it keeps `p 16` here.
 .error-dialog__message {
   font: var(--font-body-16);
+
+  @include desktop {
+    font: 600 18px/26px var(--font-family-body);
+  }
 }
 
 .error-dialog__hint {
@@ -72,8 +79,13 @@
   margin-top: var(--space-6);
   padding: 0 var(--space-2);
   color: inherit;
-  font: var(--font-body-16);
+  // `H6` on the narrow frame, `small H + Labels` on the wide one.
+  font: var(--font-h6);
   cursor: pointer;
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 
   &:hover,
   &:focus-visible {
