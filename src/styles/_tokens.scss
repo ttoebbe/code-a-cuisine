@@ -8,8 +8,12 @@
   // Colors — palette "Rezepten". Note the naming trap in the source: the style
   // *named* `#1E5515` holds `#008000`, while `Middle green` is the style that
   // actually carries `1E5515`. Dark green is always `--color-green-middle`.
+  //
+  // `Green dark` is `10310b`, read off the 880 nodes that reference the style.
+  // The `103108` in spec.md 1.1 has the last two digits swapped — the same file
+  // lists the correct value one table further down, among the loose colours.
   --color-olive-green: #396039;
-  --color-green-dark: #103108;
+  --color-green-dark: #10310b;
   --color-green-middle: #1e5515;
   --color-cream: #faf0e6;
   --color-surface: #ffffff;
