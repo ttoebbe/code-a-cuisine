@@ -81,12 +81,16 @@
   }
 }
 
-// Step 2 has no lead paragraph, so the title carries the whole gap itself.
+// Step 2 has no lead paragraph, so the title carries the whole gap itself. It
+// is also a step smaller than step 1 in the design: `Card headlines` on the
+// wide frame instead of `H2`, `Mob. H3` on the narrow one instead of `Mob. H2`.
 .generator__title--solo {
   margin-bottom: var(--space-6);
+  font: var(--font-h5-semi);
 
   @include desktop {
     margin-bottom: var(--space-7);
+    font: var(--font-card-headline);
   }
 }
 
