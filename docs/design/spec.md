@@ -20,10 +20,20 @@ holds `1E5515`.
 | Style name     | Actual value |
 | -------------- | ------------ |
 | `#1E5515`      | `#008000`    |
-| `Green dark`   | `#103108`    |
+| `Green dark`   | `#10310B`    |
 | `cremy`        | `#FAF0E6`    |
 | `Middle green` | `#1E5515`    |
 | `olive green`  | `#396039`    |
+
+**Correction — `Green dark` is `#10310B`, not `#103108`.** The last two digits
+were swapped when this table was written on 2026-08-07. Re-measured on
+2026-08-11 against every node that references the style: all **880** carry
+`#10310B`, not one carries `#103108`. The table of loose colours right below
+already listed the correct value, which is what made the swap visible at all.
+The wrong digit did not stay on paper — finding A13.2 of
+[befunde-2026-08-07.md](befunde-2026-08-07.md) read this row, called the token
+wrong and changed it from `#10310b` to `#103108` (`ae96aac`), and `8f9ee9a` had
+to turn it back. Where this row and the token disagree, the 880 nodes decide.
 
 Additional literal colours observed on frames and components, not bound to a
 style:
