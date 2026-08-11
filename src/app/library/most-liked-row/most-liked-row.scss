@@ -110,7 +110,13 @@
   line-clamp: 2;
   overflow: hidden;
   color: var(--color-olive-green);
-  font: 600 20px/1.3 var(--font-family-body);
+  // `H6` on the narrow frame, `H5` on the wide one — 500 on both, unlike the
+  // panel heading above the rail.
+  font: var(--font-h6);
+
+  @include desktop {
+    font: var(--font-h5);
+  }
 }
 
 .most-liked__note {

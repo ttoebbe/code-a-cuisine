@@ -29,7 +29,7 @@
   min-height: 44px;
   padding: 0 var(--space-2);
   color: var(--color-green-dark);
-  font: var(--font-body-16);
+  font: var(--font-h6);
 
   // The design's item is 33x27 (spec 4.17), below the project's 44px touch
   // target. Spec 6.7 asks the hit area to grow without the visual following, so
@@ -62,10 +62,11 @@
   }
 }
 
+// The design marks the current page with the fill alone and keeps every number
+// at 500, so the bolder weight the code added is gone. `aria-current` carries
+// the state for assistive tech.
 .pagination__button--current {
   --pagination-fill: var(--color-sage);
-
-  font-weight: 600;
 }
 
 // Meta character, therefore 14px per the project's type scale.
