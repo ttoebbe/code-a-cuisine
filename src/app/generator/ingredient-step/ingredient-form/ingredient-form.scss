@@ -43,17 +43,29 @@
 }
 
 .ingredient-form__label {
-  font: var(--font-small-label);
   color: var(--color-green-dark);
 }
 
+// Both labels are `small H + Labels` on the wide frame. The narrow one splits
+// them: the ingredient label stays a heading (`H6`), the serving-size label
+// drops to body copy (`p 16`).
 .ingredient-form__label--name {
   grid-area: name-label;
+  font: var(--font-h6);
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 }
 
 .ingredient-form__label--size {
   grid-area: size-label;
   align-self: end;
+  font: var(--font-body-16);
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 }
 
 // 44px instead of the design's 36px: the field doubles as a touch target.
@@ -83,9 +95,13 @@
   flex-direction: column;
 }
 
+// The design gives the two fields different sizes: the name is `p 16`, the
+// amount `p 18`. The line height stays at the field height on both — it centres
+// the text in the 44px box and is not a design figure.
 .ingredient-form__input--name {
   width: 100%;
   padding: 0 var(--space-4);
+  font-size: 16px;
 }
 
 .ingredient-form__input--amount {

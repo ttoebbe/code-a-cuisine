@@ -18,10 +18,15 @@
   }
 }
 
+// `H6` on the narrow frame, `small H + Labels` on the wide one.
 .ingredient-list__title {
   margin-bottom: var(--space-4);
-  font: var(--font-small-label);
+  font: var(--font-h6);
   color: var(--color-green-dark);
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 }
 
 .ingredient-list__items {
