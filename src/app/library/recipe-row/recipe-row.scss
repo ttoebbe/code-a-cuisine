@@ -13,7 +13,9 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-2);
-  border-radius: var(--radius-0);
+  // `Recipe in cook book` is rounded by 16 on both tiers; the square corners
+  // were read off the row's auto-layout wrapper.
+  border-radius: var(--radius-16);
 
   // Whether a row is highlighted is a property of its place in the list, so
   // the list sets the surface and the row only paints it.

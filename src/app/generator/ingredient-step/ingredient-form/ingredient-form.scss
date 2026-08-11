@@ -69,10 +69,12 @@
 }
 
 // 44px instead of the design's 36px: the field doubles as a touch target.
+// The radius belongs to the two modifiers: spec 4.6 read it off the wrapper
+// frame, which has none, while the filled box below it is rounded — the same
+// mistake spec 4.9 makes.
 .ingredient-form__input {
   height: 44px;
   border: 0;
-  border-radius: var(--radius-0);
   // Spec 4.6: `cremy` at 80%, so the card's green shows through.
   background: color-mix(in srgb, var(--color-cream) 80%, transparent);
   color: var(--color-green-dark);
@@ -101,13 +103,18 @@
 .ingredient-form__input--name {
   width: 100%;
   padding: 0 var(--space-4);
+  border-radius: var(--radius-20);
   font-size: 16px;
 }
 
+// The design rounds this one by 48, more than the box is tall — a pill. At the
+// 44px height every radius from 22 up renders identically, so the existing
+// `--radius-full` covers it and the token set stays at eight radii.
 .ingredient-form__input--amount {
   flex: 0 0 auto;
   width: 64px;
   padding: 0 var(--space-3);
+  border-radius: var(--radius-full);
   text-align: center;
 }
 
@@ -151,7 +158,8 @@
   // the design draws instead of the native arrow.
   padding: 0 var(--space-6) 0 var(--space-4);
   border: 0;
-  border-radius: var(--radius-16);
+  // A pill in the design too (48 over a 36px box), like the amount field.
+  border-radius: var(--radius-full);
   background: var(--color-surface);
   color: var(--color-green-dark);
   // One step below the other fields: the control sizes itself to its longest
