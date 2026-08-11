@@ -56,9 +56,10 @@
 
 // The wide frame sets the message a step larger and bolder than the hint under
 // it, on loose values rather than a style. The narrow frame draws it with the
-// file's abandoned Mulish `old styles`, so it keeps `p 16` here.
+// file's `old styles` group: size and line height are `p 16`, the weight is its
+// regular 400, which the bundle carries since Quicksand 400 was added.
 .error-dialog__message {
-  font: var(--font-body-16);
+  font: 400 16px/1.25 var(--font-family-body);
 
   @include desktop {
     font: 600 18px/26px var(--font-family-body);
