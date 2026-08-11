@@ -99,7 +99,7 @@
   border-radius: var(--radius-30);
   background: var(--color-cream);
   color: var(--color-green-middle);
-  font: var(--font-body-16);
+  font: var(--font-body-18);
 }
 
 // Discreet note: the cookbook write failed, the results themselves are fine.
@@ -152,7 +152,12 @@
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
-  font: var(--font-body-16);
+  // `H6` on the narrow frame, `small H + Labels` on the wide one.
+  font: var(--font-h6);
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 
   &:hover,
   &:focus-visible {

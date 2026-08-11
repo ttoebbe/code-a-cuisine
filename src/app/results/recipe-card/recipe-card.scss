@@ -52,11 +52,16 @@
   }
 }
 
+// `p 18` on the narrow frame, `small H + Labels` on the wide one.
 .recipe-card__time {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font: var(--font-body-16);
+  font: var(--font-body-18);
+
+  @include desktop {
+    font: var(--font-small-label);
+  }
 }
 
 // Cream button on the light card, mirroring the design's inverted call to
