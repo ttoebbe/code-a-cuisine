@@ -815,6 +815,7 @@ Aufgeschlüsselt nach Ursache:
 | falscher Literalwert     | 18 von 33 Literalstellen |
 | falscher Token-Verwender | 24 von 97 Verwendern     |
 | falscher Tokenwert       | **0 von 16 Tokens**      |
+
 ---
 
 # Ergebnis des Fixlaufs — 2026-08-11
@@ -862,7 +863,7 @@ Spalten nennen deshalb Soll und Ist in einem.
 | `.recipe-row__title`              | cuisine | 500 24/30    | 600 18/22.5 |
 | `.recipe-row__chip`               | cuisine | 500 18/22.5  | 500 18/22.5 |
 | `.pagination__button`             | cuisine | 500 18/22.5  | 500 18/22.5 |
-| `.pagination__button--current`    | cuisine | 500 18/22.5  | 500 18/22.5 |
+| `.pagination__button--current`    | cuisine | 600 18/22.5  | 600 18/22.5 |
 | `.cuisine-page__back`             | cuisine | 500 14/17.5  | 500 14/17.5 |
 | `.ingredient-form__label--name`   | step 1  | 500 20/20    | 500 18/22.5 |
 | `.ingredient-form__label--size`   | step 1  | 500 20/20    | 500 16/20   |
@@ -887,18 +888,26 @@ Spalten nennen deshalb Soll und Ist in einem.
 | `.summary__chip`                  | recipe  | 500 18/22.5  | 500 18/22.5 |
 | `.summary__cooks-label`           | recipe  | 500 20/20    | 500 20/20   |
 | `.like__question`                 | recipe  | 700 20/25    | 600 18/22.5 |
-| `.like__hint`                     | recipe  | 500 16/20    | 500 16/20   |
+| `.like__hint`                     | recipe  | 400 16/20    | 500 16/20   |
 | `.nutrition__energy`              | recipe  | 500 20/20    | 600 18/22.5 |
-| `.nutrition__macro`               | recipe  | 600 20/20    | 600 18/22.5 |
+| `.nutrition__macro`               | recipe  | 700 20/20    | 600 18/22.5 |
 | `.nutrition__grams`               | recipe  | 500 20/20    | 600 18/22.5 |
 | `.recipe-view__regenerate-link`   | recipe  | 500 20/20    | 500 18/22.5 |
 | `.recipe-view__back`              | recipe  | 500 14/17.5  | 500 14/17.5 |
 | `.error-dialog__title`            | dialog  | 600 28/35    | 600 28/35   |
-| `.error-dialog__message`          | dialog  | 600 18/26    | 500 16/20   |
+| `.error-dialog__message`          | dialog  | 600 18/26    | 400 16/20   |
 | `.error-dialog__action`           | dialog  | 500 20/20    | 500 18/22.5 |
 
 Die Schriftfamilie wurde mitgemessen: überall Quicksand außer
 `.hero__cross-sell-title`, das jetzt Ubuntu trägt.
+
+> **Nachgeführt am 11.08. durch den Nachtrag unten.** Vier Zeilen dieser Tabelle
+> hielten das Ergebnis des Fixlaufs und sind durch G1, G2 und G5 überholt; sie
+> tragen oben bereits den neuen, nachgemessenen Wert:
+> `.pagination__button--current` (500 → **600** auf beiden Stufen, bewusste
+> Abweichung), `.like__hint` (Desktop 500 → **400**), `.nutrition__macro`
+> (Desktop 600 → **700**) und `.error-dialog__message` (mobil 500 → **400**).
+> Die übrigen 40 Deklarationen sind unberührt.
 
 Zwei Zeilen sind Kontrollen, keine Änderungen:
 `.ingredient-form__input--amount` und `.ingredient-form__unit-select` sollten
@@ -1002,6 +1011,10 @@ Quicksand. Größe, Gewicht und Zeilenhöhe stimmten schon.
 
 ### G1 — Quicksand 400 ist nicht im Bundle
 
+> **Erledigt am 11.08.** — 400 ist nachgeladen, beide Stellen tragen es, der
+> Ladenachweis steht im Nachtrag unten. Der Absatz hier beschreibt den Stand
+> davor.
+
 E2 verlangt neben Größe und Zeilenhöhe auch das **Gewicht** aus Figma. An zwei
 der vier Altstil-Stellen ist das **400**:
 
@@ -1032,6 +1045,11 @@ Rest der Datei: dieselben Elemente tragen auf den Mobil-Frames `Mob. H4` und
 richtig, die Formulierung „verwaist" wäre zu stark.
 
 ### G2 — Nährwert-Beschriftungen: Figma sagt 700, im Code stehen 600
+
+> **Erledigt am 11.08.** — nachgemessen wurde zuerst, das Token bleibt
+> unangetastet, die 700 sitzt jetzt auf `.nutrition__macro`. Zwei Zahlen dieses
+> Abschnitts sind dabei als falsch aufgefallen: die Zeile „Energie" und die
+> Verwenderzahl. Beides im Nachtrag unten.
 
 Genau der Konfliktfall, für den E3 „melden statt Token umschreiben" vorgibt.
 
@@ -1070,6 +1088,9 @@ einzige Änderung dieser Runde außerhalb von SCSS. Nachgeprüft:
 
 ### G5 — die Pagination verliert ihre fette Ziffer
 
+> **Zurückgeholt am 11.08.** als **bewusste Abweichung von Figma** — Begründung
+> und Nachmessung im Nachtrag unten.
+
 `.pagination__button--current` trug ein `font-weight: 600`, das Figma nicht
 kennt: dort sind alle Ziffern `H6` 500, die aktuelle Seite ist allein durch die
 Salbei-Füllung markiert. Der Bericht führt das als **[KLAR]** (`+100w`), also
@@ -1078,6 +1099,10 @@ durch `aria-current="page"` erkennbar — aber es ist eine Affordanz weniger als
 vorher.
 
 ### G6 — `spec.md` 1.1 steht jetzt gegen den Token
+
+> **Korrigiert am 11.08.** — `spec.md` 1.1 führt `#10310B` und trägt eine
+> Korrekturnotiz; `befunde-2026-08-07.md` und `fixes-2026-08-07.md` behalten
+> ihren Wortlaut und bekommen einen Verweis darauf.
 
 `docs/design/spec.md` führt `Green dark` weiter als `#103108`. Der Token hält
 ab `8f9ee9a` das gemessene `#10310B`. Dass ausgerechnet dieselbe Datei den
@@ -1121,3 +1146,261 @@ Element mit eigenem Textinhalt" greift, erwischt das `option` und meldet dessen
 Wert. **Es gab an dieser Stelle nie einen Gewichtsfehler**, entsprechend wurde
 nichts geändert. Formularfelder deshalb künftig über das Steuerelement messen,
 nicht über seine Kinder.
+
+**(d) Eine frisch deklarierte Schriftstärke misst sich erst, wenn ihre Datei da
+ist.** Der erste Messversuch des Nachtrags unten stellte 400 und 500 direkt
+nach `document.fonts.ready` gegeneinander und bekam **identische Breiten** —
+scheinbar der Beleg, dass 400 auf 500 matcht. Falsch: `fonts.ready` sagt nichts
+über eine Face, die bis dahin niemand angefordert hat. Nach `fonts.load()` und
+einer Wartezeit standen vier verschiedene Breiten da. Die Falle ist das
+Spiegelbild der synthetischen 700 vor `58df7ae` — einmal meldet die Messung ein
+Gewicht, das es nicht gibt, einmal verschweigt sie eines, das es gibt.
+
+---
+
+## Nachtrag vom 11.08. — G1, G2, G5 und G6
+
+Vier der sechs gemeldeten Punkte sind nachgearbeitet. Grundlage sind die
+Entscheidungen von Thomas: 400 wird nachgeladen, das Nährwert-Gewicht wird erst
+gemessen und dann entschieden, die fette Pagination-Ziffer kommt als bewusste
+Abweichung zurück, `spec.md` 1.1 wird korrigiert. G3 und G4 sind reine
+Erklärungen und brauchten nichts.
+
+Reihenfolge war verbindlich: erst lädt die Schrift, dann darf eine Regel ihr
+Gewicht deklarieren. Entsprechend liegt `build:` vor dem zugehörigen `fix:`.
+
+### G1 — Quicksand 400 lädt, und zwar nachweislich
+
+`angular.json` bindet `@fontsource/quicksand/latin-400.css` genauso ein wie
+500/600/700, an derselben Stelle der `styles`-Liste. Danach:
+
+- `.like__hint` bekommt auf Desktop `400 16px/1.25` — Figma `old styles/Body`,
+  Mulish 400 16/20,08, aufgelöst mit Quicksands 125 % zu 20px. Mobil bleibt es
+  bei `p 16` und 500.
+- `.error-dialog__message` bekommt mobil `400 16px/1.25` — derselbe Stil.
+  Desktop bleibt bei den losen `600 18/26`.
+
+Die Ersetzung 125,5 % → 125 % aus dem Fixlauf ist **nicht** zurückgedreht.
+
+**Bundle-Zuwachs**
+
+| Größe                          | vorher      | nachher     | Zuwachs                 |
+| ------------------------------ | ----------- | ----------- | ----------------------- |
+| `dist/browser` gesamt          | 8 459 431 B | 8 495 713 B | **+36 282 B (35,4 kB)** |
+| Dateien                        | 79          | 81          | +2                      |
+| `styles-*.css`                 | 4 374 B     | 4 607 B     | +233 B                  |
+| `index.html` (inliniertes CSS) | 4 377 B     | 4 610 B     | +233 B                  |
+| „Initial total" laut Build     | 801,17 kB   | 801,40 kB   | +0,23 kB                |
+| davon Transfer                 | 207,53 kB   | 207,55 kB   | +0,02 kB                |
+
+Die zwei neuen Dateien sind `quicksand-latin-400-normal-*.woff2` (15 776 B) und
+der `.woff`-Fallback (20 040 B). **Was ein aktueller Browser wirklich zieht,
+sind die 15,4 kB der woff2** — und auch die erst, wenn eine 400er-Stelle
+gebraucht wird; die `.woff` holt nur, wer kein woff2 kann.
+
+**Ladenachweis.** `document.fonts.check('400 16px Quicksand')` ist `true` —
+allein wertlos, denn `check('300 16px Quicksand')` ist es auch: `check` meldet
+schon dann `true`, wenn _irgendeine_ Face den Text rendern könnte. Belastbar
+sind zwei andere Dinge:
+
+1. **Die Datei wird geholt.** Auf der Rezeptansicht und im Fehlerdialog geht
+   `quicksand-latin-400-normal-P7M756RB.woff2` mit **200** über die Leitung,
+   ohne dass im Test etwas erzwungen wurde.
+2. **Die gerenderte Breite steht gegen 500.** Gleicher Text, gleiche Größe,
+   jeweils das Element selbst gegen Klone mit festem Gewicht:
+
+| Stelle                         | wie gerendert | Klon @400     | Klon @500 | Klon @600 |
+| ------------------------------ | ------------- | ------------- | --------- | --------- |
+| `.like__hint` (1440)           | 400,97 px     | **400,97 px** | 409,33 px | 417,77 px |
+| `.error-dialog__message` (375) | 374,42 px     | **374,42 px** | 381,58 px | 388,73 px |
+
+Beide rendern exakt wie ihr 400er-Klon und **8,36 px bzw. 7,16 px schmaler als
+bei 500**. Ein Match auf die 500 ist damit ausgeschlossen. Zur Kontrolle
+derselbe Satz in einer Größe über alle vier Gewichte: 400 → 489,48 px,
+500 → 498,97 px, 600 → 508,53 px, 700 → 517,73 px — vier verschiedene Werte,
+monoton steigend, also vier echte Dateien und keine synthetische Stufe.
+
+### G2 — gemessen, dann entschieden: das Token bleibt
+
+**Zuerst eine Korrektur an G2 selbst: `--font-small-label` hat nicht 7, sondern
+17 Verwender.** Die Zahl 7 stammt aus dem Zustand vor dem Fixlauf; dessen
+Commit 4 („put the 20px labels back on their token") hat weitere Deklarationen
+auf das Token gezogen. Gemessen wurden deshalb alle 17.
+
+Jeder Verwender einzeln gegen seinen Figma-Knoten aus `.figma-cache/file.json`
+(Desktop = Artboard-Breite 1440, mobil = 375):
+
+| #   | Verwender                       | Regel gilt | Figma-Knoten (Text, Artboard)                    | Figma     | Stil             |
+| --- | ------------------------------- | ---------- | ------------------------------------------------ | --------- | ---------------- |
+| 1   | `.hero__cross-sell-link`        | Desktop    | „Go to cookbook", hero `4009:399`                | 500 20/20 | small H + Labels |
+| 2   | `.cookbook__generate`           | Desktop    | „Generate new recipie", Cookbook `4157:743`      | 500 20/20 | small H + Labels |
+| 3   | `.recipe-card__time`            | Desktop    | „Cooking time: 20min", Rresults `4146:1373`      | 500 20/20 | small H + Labels |
+| 4   | `.results__regenerate`          | Desktop    | „Generate new recipie", Rresults `4146:1373`     | 500 20/20 | small H + Labels |
+| 5   | `.recipe-view__regenerate-link` | Desktop    | „Generate new recipie", Rezeptansicht `4150:803` | 500 20/20 | small H + Labels |
+| 6   | `.error-dialog__action`         | Desktop    | „Go back to ingredients", Pop-up `4305:3150`     | 500 20/20 | small H + Labels |
+| 7   | `.stepper-field__legend`        | Desktop    | „How many portions you need?", Step 2 `4059:395` | 500 20/20 | small H + Labels |
+| 8   | `.stepper-field__unit`          | Desktop    | „Portions", Step 2 `4059:395`                    | 500 20/20 | small H + Labels |
+| 9   | `.stepper-field__value`         | beide      | „2" / „1", Step 2 und Preferences `4198:2583`    | 500 20/20 | small H + Labels |
+| 10  | `.chip-group__label`            | beide      | „Quick"/„Medium"/…, Step 2 und Preferences       | 500 20/20 | small H + Labels |
+| 11  | `.ingredient-form__label--name` | Desktop    | „Ingredient", Step 1 `4068:710`                  | 500 20/20 | small H + Labels |
+| 12  | `.ingredient-form__label--size` | Desktop    | „Serving size", Step 1 `4068:710`                | 500 20/20 | small H + Labels |
+| 13  | `.ingredient-list__title`       | Desktop    | „List of your Ingredients", Step 1 `4068:710`    | 500 20/20 | small H + Labels |
+| 14  | `.summary__time`                | Desktop    | „Coocking time: 20min", Rezeptansicht `4150:803` | 500 20/20 | small H + Labels |
+| 15  | `.summary__cooks-label`         | beide      | „Coocking person: 2", Rezeptansicht `4150:803`   | 500 20/20 | small H + Labels |
+| 16  | `.nutrition__energy`            | Desktop    | „630 kcal", Rezeptansicht `4150:803`             | 500 20/20 | small H + Labels |
+| 17  | `.nutrition__table`             | Desktop    | „18g" / „58g", Rezeptansicht `4150:803`          | 500 20/20 | small H + Labels |
+
+**17 von 17 sagen 500 20/20. Keiner sagt 700.** Zusätzlich der Stil selbst
+statt nur seiner Verwender: **alle 76 Knoten** der Datei, die
+`recipe generator/small H + Labels` referenzieren, tragen 500 20/20 — kein
+einziger Ausreißer.
+
+Damit greift der Fall „nicht alle sagen 700": **das Token bleibt unangetastet.**
+Die 700 gehört nicht dem Token, sondern vier Knoten, die in Figma **an gar
+keinem Stil hängen**:
+
+| Figma-Knoten (Rezeptansicht `4150:803`, y = 1046) | Wert                        |
+| ------------------------------------------------- | --------------------------- |
+| „Energie", „Protein", „Fat", „Carbs"              | **700 22/27,5**, kein Stil  |
+| darunter „630 kcal", „18g", „58g" (y = 1082)      | 500 20/20, small H + Labels |
+| darunter „24g" (der bekannte Ausreißer)           | 500 **22**/20, kein Stil    |
+
+Auf dem 375er-Frame (`Recipe 4202:2429`) tragen **alle acht** Zellen `Mob. H4`
+600 18/22,5 — mobil war der Code also schon richtig.
+
+Umgesetzt ist deshalb genau eine Zeile: `.nutrition__macro` bekommt auf Desktop
+`font-weight: 700`, mobil bleiben die 600. **Kein neues Token** — geprüft, ob
+eines der 16 vorhandenen passt: 700 tragen nur `--font-h1` (104px) und
+`--font-h4` (40px), keines davon bei 20px. Und da `.nutrition__macro` ohnehin
+schon eine eigene Regel hat, braucht es auch keine neue Klasse.
+
+### G5 — die fette Ziffer ist zurück, als bewusste Abweichung
+
+`.pagination__button--current` trägt wieder `font-weight: 600`, also **+100
+gegenüber Figma**, das alle Ziffern auf `H6` 500 hält. `aria-current="page"`
+und die Salbei-Füllung sind unverändert.
+
+**Das ist eine bewusste Abweichung vom Design, keine Korrektur.** Projektregel
+ist „Figma ist Referenz, außer wo die DA-Checkliste strenger ist". Ohne die
+Schriftstärke bleibt für Sehende allein die Füllung — die aktive Seite wäre nur
+noch über Farbe erkennbar (WCAG 1.4.1). Dieselbe Logik hat schon die
+Touch-Targets gegen Figmas 28 × 28 entschieden.
+
+Die Rückstellung macht eine Zeile der 106 Nachmessungen ungültig; sie ist oben
+neu gemessen eingetragen (`.pagination__button--current`, 600 18/22,5 auf
+beiden Stufen), zusammen mit den drei Zeilen, die G1 und G2 verschoben haben.
+
+### G6 — `spec.md` 1.1 sagt jetzt `#10310B`
+
+Zeile 23 ist korrigiert und trägt direkt darunter eine Korrekturnotiz im Stil
+der übrigen: die 880 Knoten als Beleg, das Datum, beide Commits (`ae96aac` für
+A13.2 und `8f9ee9a` für die Rückdrehung) und der Hinweis, dass die Tabelle der
+losen Farben eine Zeile weiter denselben Wert schon führte.
+
+`#103108` steht in den beiden anderen genannten Dateien noch je einmal:
+`befunde-2026-08-07.md` (Zeile A13.2) und `fixes-2026-08-07.md` (Abschnitt zur
+Linkfarbe). Beide behalten ihren Wortlaut — sie halten fest, was damals
+angenommen wurde — und bekommen darunter einen Verweis auf die Notiz in
+`spec.md`. In `spec.md` selbst gab es keine weitere Fundstelle.
+
+### Nachmessung des Nachtrags
+
+Frisch gebaut, im Browser gemessen, beide Viewports. Kontrollzeilen sind
+Deklarationen, die sich **nicht** bewegen durften.
+
+| Stelle                             | Ansicht | 1440            | 375             |
+| ---------------------------------- | ------- | --------------- | --------------- |
+| `.like__hint`                      | recipe  | **400** 16/20   | 500 16/20       |
+| `.error-dialog__message`           | dialog  | 600 18/26       | **400** 16/20   |
+| `.nutrition__macro`                | recipe  | **700** 20/20   | 600 18/22,5     |
+| `.pagination__button--current`     | cuisine | **600** 18/22,5 | **600** 18/22,5 |
+| `.pagination__button` (Kontrolle)  | cuisine | 500 18/22,5     | 500 18/22,5     |
+| `.like__question` (Kontrolle)      | recipe  | 700 20/25       | 600 18/22,5     |
+| `.nutrition__grams` (Kontrolle)    | recipe  | 500 20/20       | 600 18/22,5     |
+| `.nutrition__energy` (Kontrolle)   | recipe  | 500 20/20       | 600 18/22,5     |
+| `.summary__cooks-label` (Token)    | recipe  | 500 20/20       | 500 20/20       |
+| `.summary__time` (Token)           | recipe  | 500 20/20       | 500 18/22,5     |
+| `.error-dialog__action` (Token)    | dialog  | 500 20/20       | 500 18/22,5     |
+| `.error-dialog__title` (Kontrolle) | dialog  | 600 28/35       | 600 28/35       |
+
+Die drei Token-Kontrollen belegen, dass `--font-small-label` unverändert
+500 20/20 liefert. Familie überall Quicksand.
+
+**Screenshots vorher/nachher** liegen für die Pagination, die zwei 400er-Stellen
+und die Nährwerttabelle vor, je bei 1440 und 375. Aussagekräftig ist dabei auch,
+welche Paare **identisch** sind: `.like__hint` bei 375, `.error-dialog__message`
+bei 1440 und die Nährwerttabelle bei 375 sind byte-gleich — genau die Viewports,
+die sich nicht ändern durften. Die Bilder wurden erst nach vollständig geladenen
+Faces aufgenommen; ein erster Satz war byte-gleich, weil die 400er-Datei zum
+Auslösezeitpunkt noch unterwegs war (siehe Messfalle (d)).
+
+### Breitensweep
+
+Chromium, **360 bis 1600 in 20px-Schritten** bei Höhe 802, über die drei
+betroffenen Ansichten (Rezeptansicht aus dem Kochbuch, Küchenliste mit
+Pagination, Fehlerdialog).
+
+| Größe                               | Wert       |
+| ----------------------------------- | ---------- |
+| Läufe (3 Ansichten × 63 Breiten)    | **189**    |
+| gemessene Elemente mit eigenem Text | **17 262** |
+| `scrollWidth > innerWidth`          | **0**      |
+| gerenderte Schrift unter 14px       | **0**      |
+| kleinste gemessene Schriftgröße     | genau 14px |
+
+Der Webhook antwortete aus einer Fixture in der Shape aus `src/app/models/`,
+jeder fremde Host lief in einen Abort. Firestore wieder in zwei Durchgängen:
+Durchgang A (Küchenliste, Rezeptansicht) liest echte Daten und schickt nichts
+ab, Durchgang B (Generator, Fehlerdialog) hat Firestore komplett dicht.
+
+**Der Riegel auf dem Write-Kanal ist diesmal ausgelöst worden**, nicht nur
+gesetzt: ein zusätzlicher Lauf mit _erfolgreicher_ Fixture fing **5** Anfragen
+an Firestore ab, darunter das
+`POST …/google.firestore.v1.Firestore/Write/channel` aus `applyResponse()`. Die
+drei Ergebniskarten wurden trotzdem gerendert — kein Write hat die Box
+verlassen. Einziger getroffener Fremd-Host war wie beim Hauptlauf
+`www.google.com/images/cleardot.gif`, die Erreichbarkeitsprobe des Firestore-SDK.
+
+### Gemeldet, nicht gefixt — neu aus diesem Nachtrag
+
+**N1 — `.nutrition__energy` ist in Figma zwei Knoten, im Code einer.** Figma
+trennt das Label „Energie" (700 22/27,5, ohne Stil) vom Wert „630 kcal"
+(500 20/20, `small H + Labels`). Das Template rendert beides in einem einzigen
+`<p>` („Energy: 540 kcal"). Ein Gewicht von 700 würde deshalb auch den Wert
+fetten, den Figma bei 500 lässt. Die Zeile bleibt bei 500 — ein Fix hieße, das
+Template in Label und Wert zu zerlegen, und das war nicht beauftragt.
+
+**N2 — die Größe der Nährwert-Labels bleibt offen.** Figma zeichnet die vier
+Labels bei **22px**, der Code hält sie über `--font-small-label` bei 20px. Das
+ist die Entscheidung aus E3 („der Satz bleibt bei 16 Typo-Tokens") und war
+nicht Teil von G2, das ausdrücklich nur das Gewicht betraf. Anders als beim
+„24g"-Ausreißer widerspricht sich Figma hier **nicht**: alle vier Labels sagen
+übereinstimmend 22.
+
+**N3 — die G2-Tabelle oben führt die Energie-Zeile falsch.** Sie nennt
+„Energie 700 22/27,5" so, als wäre die ganze Zeile fett. Die 700 gehört allein
+dem Label-Wort; der Wert daneben ist 500 20/20. Die Diff-Tabelle weiter oben
+hatte es richtig — `.nutrition__energy` steht dort als 500 20/20 mit Stil
+`small H + Labels`. Der Code war an dieser Stelle also nie falsch.
+
+**N4 — der Kommentar an `.summary__cooks-label` stimmt nicht.**
+`recipe-summary.scss` schreibt „`small H + Labels` on both frames". Der 375er
+Frame `Recipe 4202:2429` zeichnet aber gar keine Zeile für die Anzahl der
+Köche — er springt von den Chips direkt zu „Ingredients". Der gerenderte Wert
+ist davon unberührt (das Token liefert auf beiden Stufen 500 20/20), es ist
+allein der Kommentar, der mehr behauptet als gemessen wurde.
+
+### Commits des Nachtrags
+
+| Commit    | Message                                   | Punkt |
+| --------- | ----------------------------------------- | ----- |
+| `98a032a` | build: add Quicksand 400 to the bundle    | G1    |
+| `5e132a2` | fix: set the two old-style texts to 400   | G1    |
+| `6772c1a` | fix: bolden the desktop macro labels      | G2    |
+| `7ef370e` | a11y: mark the current page by weight too | G5    |
+| `e162e06` | docs: correct Green dark in spec 1.1      | G6    |
+
+`98a032a` liegt vor `5e132a2`, damit keine Regel ein Gewicht deklariert, dessen
+Datei noch nicht im Bundle ist. Am Code hängen fünf Dateien: `angular.json` und
+je eine SCSS-Datei für Like-Block, Fehlerdialog, Nährwerttabelle und Pagination.
+Dieser Nachtrag selbst folgt als eigener `docs:`-Commit.
