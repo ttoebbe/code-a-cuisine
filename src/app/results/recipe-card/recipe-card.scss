@@ -65,7 +65,8 @@
 }
 
 // Cream button on the light card, mirroring the design's inverted call to
-// action; pushed to the bottom so all three cards align.
+// action; pushed to the bottom so all three cards align. Its label is the one
+// place in the app that carries the pure green rather than the middle one.
 .recipe-card__link {
   display: inline-flex;
   align-items: center;
@@ -76,7 +77,7 @@
   padding-inline: var(--button-padding-inline);
   border-radius: var(--radius-0);
   background: var(--color-cream);
-  color: var(--color-green-middle);
+  color: var(--color-green-pure);
   font: var(--font-mobile-button);
   transition:
     background 0.2s ease,

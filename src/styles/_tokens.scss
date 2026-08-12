@@ -22,6 +22,9 @@
   // Literal colours the design puts on components without binding them to a
   // style (spec 1.1). Names describe the hue; the comment names the component.
   --color-green-bright: #055e05; // primary button green, hover fill
+  // The value behind the mis-named `#1E5515` style of the note above. It reads
+  // as a label colour, not a fill: the `View` button of the result card.
+  --color-green-pure: #008000;
   --color-peach: #fae0c6; // primary + secondary button creme, hover fill
   --color-sage: #c4d0c4; // edit / delete / plus buttons, pagination
   --color-fog: #dbe0db; // result card, default fill
