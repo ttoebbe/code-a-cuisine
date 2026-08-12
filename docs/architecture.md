@@ -104,6 +104,13 @@ away. If a write fails, the result stays visible and only the like heart is disa
 that decision: the library also holds recipes nobody ever cooked. It sorts by `createdAt` and
 `likeCount` respectively, so the unused ones drift to the back.
 
+## The design references are not in here
+
+The Figma spec, the measurement reports, the fix protocols and the typography comparison are kept
+outside the repository and maintained locally. They are working material for the layout, not part of
+the running app, so a fresh clone is complete without them — nothing in the code or the other
+documents depends on them.
+
 ## Read on
 
 - [docs/n8n-webhook.md](n8n-webhook.md) — webhook interface, error codes, quota
