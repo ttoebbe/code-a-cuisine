@@ -32,8 +32,9 @@
   --color-mint: #e7ece7; // heart and minus button fills
 
   // Recipe view palette (sampled from "One recipe view - one cook"), no Figma
-  // style behind it.
-  --color-card: #fefaf7;
+  // style behind it. The card was read off the frame a second time for #18 and
+  // came back one step lighter than the value the token started with.
+  --color-card: #fefbf8;
   --color-chip: #d2d3c3;
 
   // Font families
