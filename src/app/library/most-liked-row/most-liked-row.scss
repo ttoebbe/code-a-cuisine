@@ -4,9 +4,6 @@
   display: block;
   min-width: 0;
 
-  // Space for the rail, reserved before the favourites arrive: a card with a
-  // two-line meta row and a two-line name, plus the rail's own padding and
-  // scrollbar. Without it the panel grows on load and pushes the page down.
   --rail-height: 168px;
 
   @include desktop {
@@ -27,7 +24,6 @@
   }
 }
 
-// Horizontal rail: the design deliberately cuts the last card off.
 .most-liked__list {
   display: flex;
   gap: var(--space-4);
@@ -49,9 +45,6 @@
   }
 }
 
-// Positioned on purpose: the card holds a .visually-hidden label, and an
-// absolutely positioned box without a positioned ancestor escapes the rail's
-// overflow and stretches the whole page sideways.
 .most-liked__card {
   position: relative;
   display: flex;
@@ -60,8 +53,6 @@
   height: 100%;
   padding: var(--space-4) var(--space-3);
   border-radius: var(--radius-16);
-  // Spec 4.16: the same fill throughout, at 70% by default and solid on hover —
-  // the card gains weight instead of changing colour.
   background: color-mix(in srgb, var(--color-fog) 70%, transparent);
   color: var(--color-green-dark);
   transition: background 0.2s ease;
@@ -101,8 +92,6 @@
   font: var(--font-body-16);
 }
 
-// Capped at two lines so a long recipe title cannot grow the rail beyond the
-// height reserved above.
 .most-liked__name {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -110,8 +99,6 @@
   line-clamp: 2;
   overflow: hidden;
   color: var(--color-olive-green);
-  // `H6` on the narrow frame, `H5` on the wide one — 500 on both, unlike the
-  // panel heading above the rail.
   font: var(--font-h6);
 
   @include desktop {
@@ -124,8 +111,6 @@
   font: var(--font-body-16);
 }
 
-// The failure block carries the reserved rail height instead of the note, so
-// note plus button together take the same room a loaded row would.
 .most-liked__failure {
   display: flex;
   flex-direction: column;

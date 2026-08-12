@@ -2,7 +2,6 @@
   display: inline-flex;
 }
 
-// Chef 1 keeps the muted green of the design, chef 2 the warm peach.
 .chef-badge {
   display: inline-flex;
   align-items: center;
@@ -15,8 +14,6 @@
   white-space: nowrap;
 }
 
-// Decorative: the badge text already names the chef, so the icon stays silent
-// for assistive tech and only inherits the badge colour.
 .chef-badge__icon {
   flex: none;
   width: 1.25em;
@@ -32,7 +29,6 @@
   background: var(--color-peach);
 }
 
-// Third chef: the design stops at two, sage keeps the row readable.
 .chef-badge--3 {
   background: var(--color-sage);
 }

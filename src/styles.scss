@@ -14,8 +14,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-// First tab stop of every page: hidden until focused, then it drops in above
-// the header so the keyboard can jump past the navigation.
 .skip-link {
   position: absolute;
   top: -100px;
@@ -35,12 +33,6 @@ body {
   }
 }
 
-// Decorative single-colour icon. The Material symbols ship without a fill, and
-// an `<img>` cannot inherit one, so the shape is painted through a mask and the
-// colour comes from `currentcolor` — the same way the header logo works. That
-// keeps one file per symbol on buttons that switch between a cream and a green
-// state, and the fixed box reserves the space before the mask loads.
-// The component sets `--icon-size` and `mask-image`.
 .icon {
   display: inline-block;
   flex: none;
@@ -52,8 +44,6 @@ body {
   mask-size: contain;
 }
 
-// Removed from the visual layout but kept for screen readers, e.g. table
-// headers that the design leaves blank.
 .visually-hidden {
   position: absolute;
   width: 1px;

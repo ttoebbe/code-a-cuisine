@@ -18,10 +18,6 @@
   }
 }
 
-// `small text` — 14px, which the project allows for a control like this one and
-// not for running text. Figma's line height of 10 is smaller than the glyph and
-// is the same source error the `small text` token already refuses; the 125 %
-// that every `Auto` in the family resolves to takes its place.
 .cookbook__back {
   display: inline-flex;
   align-items: center;
@@ -55,9 +51,6 @@
   }
 }
 
-// Header panel of the design: claim on the left, favourites on the right.
-// The frame `Upper part` carries olive green at 4 % over the white page and a
-// 20px radius — a barely tinted panel, not the mint fill of the icon buttons.
 .cookbook__intro {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -71,19 +64,12 @@
     padding: var(--space-7);
   }
 
-  // Two columns only from the wide step, like the other multi-column grids.
-  // `Cookbook` is one unbreakable word and needs 313px of ink at its 64px size;
-  // the 5fr column stays below that until roughly 960px, so between 768 and 960
-  // the headline ran across the favourites next to it.
   @include wide {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     align-items: start;
   }
 }
 
-// The cookbook headline references no text style in Figma: it carries loose
-// values, 700 40/50 on mobile and 700 64/65 on desktop. It is not an H4 — that
-// style belongs to the cuisine banner heading (spec 4.19).
 .cookbook__title {
   margin-bottom: var(--space-4);
   color: var(--color-olive-green);
@@ -94,8 +80,6 @@
   }
 }
 
-// The lead is `p 18` on the narrow layout and `H5` on the wide one; without the
-// second value it kept the 18px across the whole page.
 .cookbook__text {
   color: var(--color-green-dark);
   font: var(--font-body-18);
@@ -125,10 +109,7 @@ app-cuisine-filter {
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
-  // Olive, not the page's text colour: the design gives the green variant of
-  // the secondary button its own hue. The arrow follows through `currentcolor`.
   color: var(--color-olive-green);
-  // `H6` on the narrow frame, `small H + Labels` on the wide one.
   font: var(--font-h6);
 
   @include desktop {

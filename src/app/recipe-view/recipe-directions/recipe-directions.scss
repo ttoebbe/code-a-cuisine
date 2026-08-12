@@ -21,7 +21,6 @@
   height: auto;
 }
 
-// Spec 4.18: same pair of values as the ingredients banner heading.
 .directions__title {
   position: absolute;
   color: var(--color-green-middle);
@@ -32,8 +31,6 @@
   }
 }
 
-// Two columns on desktop: steps of the same parallel group end up next to each
-// other, serial steps span the full width and close the row.
 .directions__list {
   display: grid;
   grid-template-columns: 1fr;

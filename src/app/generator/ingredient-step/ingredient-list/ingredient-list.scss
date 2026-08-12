@@ -4,11 +4,8 @@
   display: block;
 }
 
-// Min-height keeps the empty card at its design size instead of collapsing
-// onto the heading.
 .ingredient-list {
   min-height: 132px;
-  // Spec 4.10: 24 on all four sides at both sizes, same fill as the form card.
   padding: var(--space-5);
   border-radius: var(--radius-20);
   background: color-mix(in srgb, var(--color-olive-green) 30%, transparent);
@@ -18,7 +15,6 @@
   }
 }
 
-// `H6` on the narrow frame, `small H + Labels` on the wide one.
 .ingredient-list__title {
   margin-bottom: var(--space-4);
   font: var(--font-h6);
@@ -35,9 +31,6 @@
   list-style: none;
 }
 
-// Fixed amount column so the ingredient names line up, as in the design. On the
-// 375px frame the two 44px actions and the amount leave the name very little
-// room, so mobile narrows the amount column and the gaps.
 .ingredient-list__item {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) auto auto;

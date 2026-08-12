@@ -24,9 +24,6 @@
   }
 }
 
-// Cream disc around the step number, as in the design. The number carries the
-// same style as the text around it — `Mob. H4` narrow, `p 18` wide — not the
-// 14px of the small scale.
 .step__order {
   display: inline-flex;
   align-items: center;
@@ -43,8 +40,6 @@
   }
 }
 
-// The narrow frame sets the step body in `p 16`; the looser 1.5 it keeps there
-// is deliberate. The wide frame steps it up to `p 18`.
 .step__description {
   color: var(--color-green-dark);
   font: 500 16px/1.5 var(--font-family-body);

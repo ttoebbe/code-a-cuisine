@@ -11,8 +11,6 @@
   border: 0;
 }
 
-// The group heading is a step above the labels inside it: `Mob. H3` on the
-// narrow frame — the values of `H5 SemiBold` — and `H5` on the wide one.
 .chip-group__legend {
   display: flex;
   align-items: center;
@@ -45,15 +43,11 @@
   gap: var(--space-3);
 }
 
-// Anchors the hidden radio to its own chip, so focusing it never scrolls the
-// page away from the group.
 .chip-group__option {
   position: relative;
   display: flex;
 }
 
-// Taken out of the flow instead of hidden, so the radio keeps its focus and
-// arrow-key behaviour while the label carries the whole visual chip.
 .chip-group__input {
   position: absolute;
   top: 50%;
@@ -65,7 +59,6 @@
   pointer-events: none;
 }
 
-// The border is always present so selecting a chip cannot change its size.
 .chip-group__chip {
   display: flex;
   flex-direction: column;
@@ -92,7 +85,6 @@
   font: var(--font-small-text);
 }
 
-// Spec 4.8's `active` variant: the olive fill at 20%, not inverted.
 .chip-group__input:checked + .chip-group__chip {
   background: color-mix(in srgb, var(--color-olive-green) 20%, transparent);
   color: var(--color-green-dark);
@@ -103,7 +95,6 @@
   outline-offset: 2px;
 }
 
-// Spec 4.8 gives the hover variant its own fill and keeps the text dark green.
 .chip-group__input:not(:checked) + .chip-group__chip:hover {
   background: var(--color-peach);
   color: var(--color-green-middle);

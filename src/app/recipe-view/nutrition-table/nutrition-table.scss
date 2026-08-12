@@ -1,7 +1,5 @@
 @use '../../../styles/mixins' as *;
 
-// The desktop meta column is right-aligned as a whole; inside the nutrition
-// block heading, captions and columns line up on the left, as in the design.
 :host {
   display: block;
   min-width: 0;
@@ -9,8 +7,6 @@
   text-align: left;
 }
 
-// `p 18` on the narrow layout, `H6` on the wide one — two Figma styles that
-// resolve to the same 18 / 22.5, so one declaration covers both.
 .nutrition__title {
   margin-bottom: var(--space-2);
   color: var(--color-green-dark);
@@ -21,14 +17,11 @@
   margin-top: var(--space-5);
 }
 
-// Caption of one scope, e.g. "Per portion" or "All 4 portions".
 .nutrition__scope {
   color: var(--color-green-dark);
   font: var(--font-body-16);
 }
 
-// `Mob. H4` on the narrow frame, `small H + Labels` on the wide one — the same
-// pair the table below it uses.
 .nutrition__energy {
   margin-bottom: var(--space-2);
   color: var(--color-green-dark);
@@ -39,12 +32,6 @@
   }
 }
 
-// Three columns only, so name, grams and share still fit next to each other
-// at 375px — the bar takes whatever the first two columns leave.
-//
-// The wide frame contradicts itself on the value cells: three of them carry
-// `small H + Labels` and the fourth ("24g") a loose 22px. The majority wins and
-// all four sit on the token, so the column stays one size.
 .nutrition__table {
   width: 100%;
   table-layout: fixed;
@@ -63,7 +50,6 @@
     vertical-align: middle;
   }
 
-  // Meta row, therefore 14px per the project's type scale.
   thead th {
     font: var(--font-small-text);
     font-weight: 600;
@@ -75,14 +61,6 @@
   }
 }
 
-// On the 375px frame the longest macro name does not fit on one line in the
-// desktop column width, so mobile gives it more room and lets it wrap.
-//
-// The weight parts with the viewport. The narrow frame draws the labels with
-// `Mob. H4` and its 600, same as the cells under them. The wide frame binds
-// them to no style at all and sets a loose 700, while the cells beside them
-// stay on `small H + Labels` at 500 — so the bolder weight belongs here, not
-// on the token.
 .nutrition__macro {
   width: 34%;
   font-weight: 600;
@@ -99,10 +77,6 @@
   white-space: nowrap;
 }
 
-// Value and bar share one cell: the number carries the meaning, the bar only
-// makes the three shares comparable at a glance. On a phone the bar sits under
-// its value and uses the full cell — side by side it would be too short for
-// the small shares to tell apart.
 .nutrition__share {
   display: flex;
   flex-direction: column;

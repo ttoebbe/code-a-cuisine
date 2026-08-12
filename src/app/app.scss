@@ -1,7 +1,5 @@
 @use '../styles/mixins' as *;
 
-// Header and footer never carry a colour of their own: they read the two shell
-// properties below, which the routed page switches between its two palettes.
 :host {
   --shell-bg: var(--color-surface);
   --shell-fg: var(--color-green-dark);
@@ -22,12 +20,6 @@
   display: block;
 }
 
-// Every route is loaded lazily, so the shell paints one frame before the page
-// content exists. Without a reserved minimum the footer paints inside the
-// viewport and jumps down as soon as the route renders. The reserved height
-// matches the `min-height` every route host uses, so nothing moves afterwards.
-// The selector only bites while the outlet is still empty — short pages keep
-// their footer at the bottom edge of the viewport.
 .app-main:not(:has(router-outlet ~ *)) {
   min-height: calc(100vh - var(--header-height-mobile) - var(--footer-height));
 

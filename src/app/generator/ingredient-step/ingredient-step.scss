@@ -4,9 +4,6 @@
   display: block;
 }
 
-// Column split mirrors the design: input card 576px next to a 477px list card.
-// Below 1024px both cards stay stacked — side by side the ingredient input and
-// the serving-size row no longer fit next to each other.
 .ingredient-step__columns {
   display: grid;
   grid-template-columns: 1fr;
@@ -28,7 +25,6 @@
   }
 }
 
-// Sized to the design's 105x52 (mobile) and 161x62 (desktop) button.
 .ingredient-step__next {
   display: inline-flex;
   align-items: center;
@@ -63,9 +59,6 @@
     outline-offset: 2px;
   }
 
-  // The design shows no button while the list is empty. Hiding instead of
-  // removing keeps the row's height, so the cards above never shift. The
-  // button is disabled in exactly this state, so there is no greyed-out look.
   &--hidden {
     visibility: hidden;
     opacity: 0;

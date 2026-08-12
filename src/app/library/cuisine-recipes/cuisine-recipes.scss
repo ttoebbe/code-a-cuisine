@@ -1,7 +1,6 @@
 @use '../../../styles/mixins' as *;
 
 :host {
-  // Spec 3.1: the cuisine list page is the one desktop frame that stays at 40.
   --section-gap: 40px;
 
   display: block;
@@ -21,8 +20,6 @@
   }
 }
 
-// `small text`, with Figma's broken line height of 10 replaced by the 125 % of
-// the family — same reasoning as the other three back links.
 .cuisine-page__back {
   display: inline-flex;
   align-items: center;
@@ -56,7 +53,6 @@
   }
 }
 
-// The heading sits centred on the decorative band, as in the design.
 .cuisine-page__banner {
   position: relative;
   display: flex;
@@ -70,9 +66,6 @@
   height: auto;
 }
 
-// Spec 4.19: the cuisine banner heading is the one place that uses the `H4`
-// text style (700, not 600) on desktop and `Mob. H4` on mobile. It is a step
-// larger than the recipe view banners, which carry loose values instead.
 .cuisine-page__title {
   position: absolute;
   color: var(--color-green-dark);
@@ -83,7 +76,6 @@
   }
 }
 
-// One recipe per row, as in the design — never two side by side.
 .cuisine-page__list {
   display: flex;
   flex-direction: column;
@@ -97,8 +89,6 @@
   }
 }
 
-// Every other entry sits on the cream surface of the design, so the eye keeps
-// its line across a full page of recipes.
 .cuisine-page__item:nth-child(even) {
   --recipe-row-surface: var(--color-cream);
 }

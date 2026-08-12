@@ -39,8 +39,6 @@
   align-items: center;
   gap: var(--space-2);
   color: var(--color-olive-green);
-  // `Card headlines` on both layouts — the design sets the tile label in 28px
-  // at 375 as well, so there is no narrow variant to switch to.
   font: var(--font-card-headline);
 }
 
@@ -49,7 +47,6 @@
   height: 28px;
 }
 
-// The photo keeps a fixed ratio so the grid never jumps while images arrive.
 .cuisine-filter__image {
   width: 100%;
   height: auto;

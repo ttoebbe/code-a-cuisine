@@ -1,7 +1,5 @@
 @use '../../../styles/mixins' as *;
 
-// Sits above the app shell: the design shows the loading screen with its own
-// logo and without header, footer or the wizard behind it.
 .loading {
   position: fixed;
   inset: 0;
@@ -15,9 +13,6 @@
   background: var(--color-olive-green);
 }
 
-// Anchored to the top-left corner like the header logo it replaces, and masked
-// the same way — the loading screen is always the olive one, so the silhouette
-// is always cream.
 .loading__logo {
   position: absolute;
   top: var(--space-4);
@@ -33,11 +28,6 @@
   }
 }
 
-// The `Loader` frame of the design is a panel: 253 x 309 with radius 20 on
-// `sage`, the same box on both layouts. The animation is transparent around the
-// bowl, so the panel reads through it. The narrow layout insets the picture on
-// all four sides, the wide one fills the panel width and leaves its bottom
-// 18px showing — hence the two different alignments.
 .loading__panel {
   display: flex;
   align-items: center;
@@ -53,11 +43,6 @@
   }
 }
 
-// The design does not show the whole animation: its image fill cuts the top
-// 18.3 %, which turns the native 436 x 613 into the 253 x 291 the loader frame
-// holds. `cover` against that ratio crops by exactly that much, and anchoring
-// the picture at its bottom edge takes the slice off the top. The fixed ratio
-// doubles as the reserved box, so nothing moves while the file loads.
 .loading__animation {
   width: 243px;
   height: auto;
@@ -80,16 +65,10 @@
   }
 }
 
-// Inline-flex swallows the whitespace between the three dots, so they sit as
-// tight as the `Generating ...` of the design.
 .loading__dots {
   display: inline-flex;
 }
 
-// Note 03: the dots leave one after the other and return in the same order.
-// Six beats of 0.3s — three to empty the row, three to fill it again — so each
-// dot runs the same half-on/half-off cycle, one beat behind the one before it.
-// Only the opacity moves; the row keeps its width and nothing shifts.
 .loading__dot {
   animation: loading-dot 1.8s infinite;
 
@@ -114,7 +93,6 @@
   }
 }
 
-// Reduced motion keeps the three dots, it only stops them from blinking.
 @media (prefers-reduced-motion: reduce) {
   .loading__dot {
     animation: none;

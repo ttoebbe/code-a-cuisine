@@ -4,7 +4,6 @@
   display: block;
 }
 
-// Text left, heart right on one row — as in the design on both screen sizes.
 .like {
   display: flex;
   flex-wrap: wrap;
@@ -34,11 +33,6 @@
   }
 }
 
-// The wide frame draws this block with the file's `old styles` group, which is
-// set in Mulish — a family this project does not load and does not want (the
-// same frame's mobile twin uses the regular styles). Size and weight come from
-// the design, the family stays Quicksand, and Mulish's line height is resolved
-// with Quicksand's own `Auto` of 125 % instead of its 125.5 %.
 .like__question {
   font: var(--font-mobile-h4);
 
@@ -47,10 +41,6 @@
   }
 }
 
-// Running text, so 16px is both the design value and the project's floor — the
-// 14px it carried before was below it. The wide frame draws it with `old
-// styles/Body` and its regular 400, a weight the bundle now carries; the
-// narrow frame keeps `p 16` and its 500.
 .like__hint {
   font: var(--font-body-16);
 
@@ -67,8 +57,6 @@
   width: 52px;
   height: 48px;
   border-radius: var(--radius-5);
-  // Spec 4.13 lists one fill for all three heart variants, so hover darkens the
-  // button's own fill by the same step the stepper buttons use.
   background: var(--color-mint);
   transition:
     background 0.2s ease,
@@ -84,8 +72,6 @@
     outline-offset: 2px;
   }
 
-  // The button stays focusable and only looks unavailable; the click handler
-  // is what actually refuses a second like.
   &[aria-disabled='true'] {
     opacity: 0.55;
     cursor: not-allowed;

@@ -5,8 +5,6 @@
   width: 100%;
 }
 
-// Fill and hover fill were the wrong way round: `#D7DFD7` is the hover value of
-// spec 4.14, the card itself carries `#DBE0DB` at full opacity.
 .recipe-card {
   display: flex;
   flex-direction: column;
@@ -23,8 +21,6 @@
   }
 }
 
-// The caption carries no text style on desktop and `Mob. H3` on mobile, and
-// both resolve to the same values as `H5 SemiBold`.
 .recipe-card__caption {
   display: flex;
   align-items: center;
@@ -33,17 +29,11 @@
   font: var(--font-h5-semi);
 }
 
-// Spec 4.14: the cloche is 40 x 28 on the card, mobile and desktop alike. The
-// file ships at twice that, so the attributes state its intrinsic size and the
-// display size lives here.
 .recipe-card__caption-icon {
   width: 40px;
   height: 28px;
 }
 
-// The wide title carries no text style in Figma, only loose values — like the
-// two cookbook titles. It is not the 28px `Card headlines` the code assumed;
-// that style belongs to the cookbook tiles. The narrow one is `Mob. H3`.
 .recipe-card__title {
   font: var(--font-h5-semi);
 
@@ -52,7 +42,6 @@
   }
 }
 
-// `p 18` on the narrow frame, `small H + Labels` on the wide one.
 .recipe-card__time {
   display: flex;
   align-items: center;
@@ -64,9 +53,6 @@
   }
 }
 
-// Cream button on the light card, mirroring the design's inverted call to
-// action; pushed to the bottom so all three cards align. Its label is the one
-// place in the app that carries the pure green rather than the middle one.
 .recipe-card__link {
   display: inline-flex;
   align-items: center;

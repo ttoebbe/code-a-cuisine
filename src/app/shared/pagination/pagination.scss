@@ -6,13 +6,11 @@
   margin-top: var(--space-6);
 }
 
-// Wraps rather than scrolls, so a long bar stays reachable on a 375px screen.
 .pagination__list {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  // Wrapper of spec 4.17: 12px between the items, 20/16 around the bar.
   gap: var(--space-3);
   margin: 0;
   padding: var(--space-4) var(--space-5);
@@ -31,10 +29,6 @@
   color: var(--color-green-dark);
   font: var(--font-h6);
 
-  // The design's item is 33x27 (spec 4.17), below the project's 44px touch
-  // target. Spec 6.7 asks the hit area to grow without the visual following, so
-  // the button spans 44px and the fill sits on a pseudo-element inset to the
-  // design's box: 44 - 2 x 5.5 = 33 wide, 44 - 2 x 8.5 = 27 tall.
   &::before {
     content: '';
     position: absolute;
@@ -45,8 +39,6 @@
     transition: background 0.2s ease;
   }
 
-  // Spec 4.17: only hover and active carry a fill, and it is the same one; the
-  // text stays `Green dark` in all three states.
   &:hover:not(:disabled) {
     --pagination-fill: var(--color-sage);
   }
@@ -62,18 +54,12 @@
   }
 }
 
-// A deliberate step away from the design: it marks the current page with the
-// sage fill alone and keeps every number at 500, which leaves colour as the
-// only thing a sighted user can go by (WCAG 1.4.1). The heavier weight is a
-// second, non-colour cue — the same reason the touch target grew past the
-// design's 28x28 box. `aria-current` carries the state for assistive tech.
 .pagination__button--current {
   --pagination-fill: var(--color-sage);
 
   font-weight: 600;
 }
 
-// Meta character, therefore 14px per the project's type scale.
 .pagination__gap {
   display: inline-flex;
   align-items: center;

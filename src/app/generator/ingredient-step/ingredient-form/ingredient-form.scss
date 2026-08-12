@@ -4,8 +4,6 @@
   display: block;
 }
 
-// Mobile stacks label, field, suggestions, then the serving-size row.
-// Desktop lifts the serving-size group into a second column next to the name.
 .ingredient-form {
   display: grid;
   grid-template-columns: 1fr;
@@ -18,7 +16,6 @@
   gap: var(--space-3);
   padding: 25px var(--space-5);
   border-radius: var(--radius-20);
-  // Spec 4.9 fills the card with olive green at 30% rather than a flat grey.
   background: color-mix(in srgb, var(--color-olive-green) 30%, transparent);
 
   @include desktop {
@@ -27,17 +24,10 @@
       'name-label size-label'
       'name-field size-field'
       'error      error';
-    // Resting height of the design's card (spec 4.9). The autocomplete variant
-    // is 33px taller, so the open list grows the card rather than covering it.
     min-height: 176px;
-    // Keeps the rows at their content height, which leaves the slack at the
-    // bottom of the card — the open list fills that before the card grows.
     align-content: start;
     column-gap: var(--space-6);
     row-gap: var(--space-2);
-    // Spec 4.9 reads `0 horizontal` off the outermost auto-layout frame of the
-    // Figma component, where the side spacing comes from the children. Those
-    // were never measured, so the card keeps the padding it had before.
     padding: 25px var(--space-6);
   }
 }
@@ -46,9 +36,6 @@
   color: var(--color-green-dark);
 }
 
-// Both labels are `small H + Labels` on the wide frame. The narrow one splits
-// them: the ingredient label stays a heading (`H6`), the serving-size label
-// drops to body copy (`p 16`).
 .ingredient-form__label--name {
   grid-area: name-label;
   font: var(--font-h6);
@@ -68,14 +55,9 @@
   }
 }
 
-// 44px instead of the design's 36px: the field doubles as a touch target.
-// The radius belongs to the two modifiers: spec 4.6 read it off the wrapper
-// frame, which has none, while the filled box below it is rounded — the same
-// mistake spec 4.9 makes.
 .ingredient-form__input {
   height: 44px;
   border: 0;
-  // Spec 4.6: `cremy` at 80%, so the card's green shows through.
   background: color-mix(in srgb, var(--color-cream) 80%, transparent);
   color: var(--color-green-dark);
   font: 500 18px/44px var(--font-family-body);
@@ -98,9 +80,6 @@
   flex-direction: column;
 }
 
-// The design gives the two fields different sizes: the name is `p 16`, the
-// amount `p 18`. The line height stays at the field height on both — it centres
-// the text in the 44px box and is not a design figure.
 .ingredient-form__input--name {
   width: 100%;
   padding: 0 var(--space-4);
@@ -108,9 +87,6 @@
   font-size: 16px;
 }
 
-// The design rounds this one by 48, more than the box is tall — a pill. At the
-// 44px height every radius from 22 up renders identically, so the existing
-// `--radius-full` covers it and the token set stays at eight radii.
 .ingredient-form__input--amount {
   flex: 0 0 auto;
   width: 64px;
@@ -119,15 +95,6 @@
   text-align: center;
 }
 
-// The design's `Autocomplete` variant is a taller card, not an overlay: the
-// list sits below the input in the flow, so it never covers the input's edge
-// and leaves no coloured remainder when fewer than three names match. That is
-// what the wide card does — it has the slack of its 176px resting height.
-//
-// The narrow card has no such slack: an inline list pushed the serving-size row
-// 140px down the page (#15), and the design asks for no movement at any width.
-// So the narrow layout overlays instead, on the card's own fill made opaque —
-// 30 % olive over the white page, the same colour the card mixes on top of it.
 .ingredient-form__suggestions {
   position: absolute;
   top: 100%;
@@ -150,10 +117,6 @@
   gap: var(--space-2);
 
   @include desktop {
-    // Shares its row with the name field. An open suggestion list makes that
-    // row taller, and a stretched box would re-centre these controls in it —
-    // the 70px drop reported in #15. Anchored to the top they stay level with
-    // the input, whatever the list does below it.
     align-self: start;
   }
 }
@@ -163,7 +126,6 @@
   display: inline-flex;
   flex: 0 0 auto;
 
-  // Design shows a small solid triangle instead of the native select arrow.
   &::after {
     content: '';
     position: absolute;
@@ -180,16 +142,11 @@
 
 .ingredient-form__unit-select {
   height: 44px;
-  // Spec 4.7 pads 16 on both sides; the right side keeps room for the triangle
-  // the design draws instead of the native arrow.
   padding: 0 var(--space-6) 0 var(--space-4);
   border: 0;
-  // A pill in the design too (48 over a 36px box), like the amount field.
   border-radius: var(--radius-full);
   background: var(--color-surface);
   color: var(--color-green-dark);
-  // One step below the other fields: the control sizes itself to its longest
-  // option ("milliliter"), which the design's "gram"-only width cannot hold.
   font: 500 16px/44px var(--font-family-body);
   appearance: none;
   cursor: pointer;
@@ -197,8 +154,6 @@
     background 0.2s ease,
     box-shadow 0.2s ease;
 
-  // Spec 4.7 draws the two states as an inside stroke, so `box-shadow: inset`
-  // rather than a border: the control keeps its size when the stroke appears.
   &:hover {
     box-shadow: inset 0 0 0 1px var(--color-olive-green);
   }
@@ -231,7 +186,6 @@
   }
 }
 
-// The button adds an ingredient and turns into a save button while editing.
 .ingredient-form__submit-icon {
   mask-image: url('/img/plus.svg');
 }
@@ -240,7 +194,6 @@
   mask-image: url('/img/preferences/check.svg');
 }
 
-// Always rendered so a validation message cannot shift the card.
 .ingredient-form__error {
   grid-area: error;
   min-height: 20px;

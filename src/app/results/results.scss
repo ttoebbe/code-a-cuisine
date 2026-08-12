@@ -1,7 +1,5 @@
 @use '../../styles/mixins' as *;
 
-// The result screen is the dark stage of the design, like the loading screen
-// it follows, and it carries the whole viewport height.
 :host {
   display: block;
   min-height: calc(100vh - var(--header-height-mobile) - var(--footer-height));
@@ -13,8 +11,6 @@
   }
 }
 
-// Mobile stacks title, image, lead and chips; desktop puts the image next to
-// the text block.
 .results {
   display: grid;
   grid-template-areas:
@@ -62,7 +58,6 @@
   max-width: 574px;
   height: auto;
   margin-bottom: var(--space-5);
-  // The frame that clips the photo in the design is rounded by 20, not 16.
   border-radius: var(--radius-20);
 
   @include desktop {
@@ -71,8 +66,6 @@
   }
 }
 
-// Same pair as the cookbook lead: `H6` narrow — the values of `p 18` — and `H5`
-// wide. The 20px it carried before is in neither scale.
 .results__lead {
   grid-area: lead;
   margin-bottom: var(--space-4);
@@ -102,7 +95,6 @@
   font: var(--font-body-18);
 }
 
-// Discreet note: the cookbook write failed, the results themselves are fine.
 .results__save-note {
   grid-area: save-note;
   margin-top: var(--space-4);
@@ -117,7 +109,6 @@
   display: grid;
   grid-area: list;
   grid-template-columns: 1fr;
-  // Spec 4.14 puts 31px between two result cards.
   gap: 31px;
   margin: var(--section-gap) 0 0;
   padding: 0;
@@ -132,7 +123,6 @@
   }
 }
 
-// Stretches every card to the tallest one, so the buttons line up.
 .results__item {
   display: flex;
 }
@@ -152,7 +142,6 @@
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
-  // `H6` on the narrow frame, `small H + Labels` on the wide one.
   font: var(--font-h6);
 
   @include desktop {

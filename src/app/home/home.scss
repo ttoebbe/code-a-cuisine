@@ -13,9 +13,6 @@
   background: var(--color-olive-green);
   color: var(--color-cream);
 
-  // The plate stack bleeds upwards over the header band, so the hero must not
-  // clip vertically. `hidden` on one axis forces the other one to clip as well,
-  // `clip` does not — the horizontal bleed of the mobile stack stays contained.
   overflow-x: clip;
   overflow-y: visible;
 
@@ -23,14 +20,7 @@
     --hero-height: calc(100vh - var(--header-height-desktop) - var(--footer-height));
 
     display: grid;
-    // The right 30 % belong to the plate stack, everything left of it to the
-    // text — the split of the desktop frame, where the plates start 906 of 1292
-    // band pixels in. An even split starved the text column: at 1280 it left
-    // 585px for an eyebrow that measures 660 at its 48px, so both headings
-    // wrapped at every width. `.hero__plates` caps itself at the same share.
     grid-template-columns: 1fr 30%;
-    // The content column stretches over the full row so its cross-sell can sit
-    // on the bottom edge of the hero, as in the design.
     align-items: stretch;
     gap: var(--space-6);
     padding-block: var(--space-8);
@@ -59,8 +49,6 @@
   align-items: flex-start;
   gap: var(--space-5);
 
-  // The auto margins absorb the free space above and below the intro, so the
-  // title stays vertically centred while the cross-sell keeps its bottom edge.
   @include desktop {
     margin-block: auto;
   }
@@ -120,9 +108,6 @@
   }
 }
 
-// The one place outside the page titles where the design reaches for the brand
-// family, and the only one that sets it at 500 — hence the extra Ubuntu weight
-// in the bundle. It carries no text style, only loose values.
 .hero__cross-sell-title {
   font: 500 24px/1.2 var(--font-family-brand);
   color: var(--color-cream);
@@ -137,7 +122,6 @@
   align-items: center;
   gap: var(--space-2);
   min-height: 44px;
-  // `H6` on the narrow frame, `small H + Labels` on the wide one.
   font: var(--font-h6);
   color: var(--color-cream);
 
@@ -157,35 +141,13 @@
   mask-image: url('/img/arrow-forward.svg');
 }
 
-// The stack ignores the hero padding and reaches past its top edge, so the
-// first plate starts flush with the top of the page and paints in front of the
-// header band — as in the design, where the plates are the frontmost element.
-//
-// Both of its dimensions have to stay inside the box, and they used to be
-// measured against different axes: the plate size came from the viewport
-// height, the column it sits in from the viewport width. Whenever the height
-// won, the surplus left the box on the left, because the plates are anchored to
-// the right — the reported clipping.
-//
-// The width now takes the smaller of the two limits, so neither axis can push
-// the stack out:
-//   * the column it may occupy, and
-//   * the width at which the stack is exactly as tall as the band it may fill.
-// `--plate-stack-ratio` is that height, measured in stack widths: the three
-// plates overlap so that the last one ends 2.192 widths below the first one's
-// top edge. `aspect-ratio` gives the stack that height, which lets every plate
-// place itself in percentages of it — no clipping left to hide.
 .hero__plates {
-  // Hero height plus the header band above it — the footer is all that is left.
   --plate-span: calc(100vh - var(--footer-height));
   --plate-stack-ratio: 2.192;
 
   position: absolute;
   top: calc(-1 * var(--header-height-mobile));
   left: 63%;
-  // On mobile the stack bleeds off the right edge by design; the hero clips that
-  // one axis. The cap keeps the bleed at the width of the content column plus
-  // the gutter, so a tall viewport cannot push the plates further out of sight.
   width: min(calc(100% + var(--page-gutter)), calc(var(--plate-span) / var(--plate-stack-ratio)));
   aspect-ratio: 1 / var(--plate-stack-ratio);
   pointer-events: none;
@@ -194,14 +156,9 @@
     top: calc(-1 * var(--header-height-desktop));
     right: var(--page-gutter);
     left: auto;
-    // 30 % is the grid column above; the stack may fill it but never leave it.
     width: min(30%, calc(var(--plate-span) / var(--plate-stack-ratio)));
   }
 
-  // The widescreen set has five plates instead of three, and they are whole
-  // circles rather than the cropped exports, so the stack is 3.161 widths tall
-  // instead of 2.192. Everything else — the two caps and the aspect ratio —
-  // reads the variable and follows.
   @include widescreen {
     --plate-stack-ratio: 3.161;
   }
@@ -214,10 +171,6 @@
   max-width: none;
 }
 
-// Widths keep the ratio of the native exports against the widest of the three
-// (480, 494 and 493 of 494), so the photos scale as one stack; the top offsets
-// are the overlap measured in the design, expressed as a share of the stack
-// height (0.58 and 1.275 of a stack width).
 .hero__plate--1 {
   top: 0;
   width: 97.166%;
@@ -233,18 +186,6 @@
   width: 99.798%;
 }
 
-// Widescreen set. Widths are shares of the widest plate, tops shares of the
-// stack height, both taken from the native exports and the overlap of the
-// three-plate stack. The drop shadow is part of every file, so the plates carry
-// no CSS shadow of their own.
-//
-// Centred instead of flush right: the five exports frame their plate with
-// different amounts of empty pixels, so a shared right edge put the discs on
-// five different axes and left plate 4 sitting 17px out of line. The discs
-// themselves are all but the same size, so a shared centre stacks them straight.
-//
-// Every box carries the aspect ratio of its own file, which lets `contain` fill
-// it exactly — a background position would have nothing left to move.
 .hero__plate-wide {
   display: none;
   position: absolute;

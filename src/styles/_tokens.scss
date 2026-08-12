@@ -1,17 +1,7 @@
-// Design tokens derived from Figma design page 1:16 (file INBMbCpFbNuEhqzkAxmBhu).
-// Colors + typography come from Figma variables; spacing/radius are pragmatic
-// scales until the design system exposes them explicitly.
-
 @use 'mixins' as *;
 
 :root {
-  // Colors — palette "Rezepten". Note the naming trap in the source: the style
-  // *named* `#1E5515` holds `#008000`, while `Middle green` is the style that
-  // actually carries `1E5515`. Dark green is always `--color-green-middle`.
-  //
-  // `Green dark` is `10310b`, read off the 880 nodes that reference the style.
-  // The `103108` in spec.md 1.1 has the last two digits swapped — the same file
-  // lists the correct value one table further down, among the loose colours.
+  // Colors
   --color-olive-green: #396039;
   --color-green-dark: #10310b;
   --color-green-middle: #1e5515;
@@ -19,21 +9,14 @@
   --color-surface: #ffffff;
   --color-error: #8f2d1b;
 
-  // Literal colours the design puts on components without binding them to a
-  // style (spec 1.1). Names describe the hue; the comment names the component.
-  --color-green-bright: #055e05; // primary button green, hover fill
-  // The value behind the mis-named `#1E5515` style of the note above. It reads
-  // as a label colour, not a fill: the `View` button of the result card.
+  --color-green-bright: #055e05;
   --color-green-pure: #008000;
-  --color-peach: #fae0c6; // primary + secondary button creme, hover fill
-  --color-sage: #c4d0c4; // edit / delete / plus buttons, pagination
-  --color-fog: #dbe0db; // result card, default fill
-  --color-mist: #d7dfd7; // result card hover fill, check button
-  --color-mint: #e7ece7; // heart and minus button fills
+  --color-peach: #fae0c6;
+  --color-sage: #c4d0c4;
+  --color-fog: #dbe0db;
+  --color-mist: #d7dfd7;
+  --color-mint: #e7ece7;
 
-  // Recipe view palette (sampled from "One recipe view - one cook"), no Figma
-  // style behind it. The card was read off the frame a second time for #18 and
-  // came back one step lighter than the value the token started with.
   --color-card: #fefbf8;
   --color-chip: #d2d3c3;
 
@@ -41,12 +24,7 @@
   --font-family-brand: 'Ubuntu', system-ui, sans-serif;
   --font-family-body: 'Quicksand', system-ui, sans-serif;
 
-  // Font shortcuts: font-weight / font-size / line-height family.
-  // Sizes and line heights follow the desktop scale of spec 1.3. Where spec 1.3
-  // writes `Auto`, the value here is the one Figma actually resolves it to —
-  // read off the text nodes, not guessed. The one deviation is `small text`,
-  // where Figma's line height of 10 is smaller than the glyph and almost
-  // certainly a source error — it keeps 1.
+  // Font shortcuts
   --font-h1: 700 104px/119.5px var(--font-family-brand);
   --font-h2: 600 54px/65px var(--font-family-body);
   --font-h3: 600 48px/60px var(--font-family-body);
@@ -57,15 +35,11 @@
   --font-button: 600 24px/30px var(--font-family-body);
   --font-small-label: 500 20px/20px var(--font-family-body);
   --font-h6: 500 18px/22.5px var(--font-family-body);
-  // Same values as `--font-h6`: Figma keeps `H6` and `p 18` as two styles that
-  // differ in name only, and the two tokens keep that split so a heading and a
-  // paragraph stay distinguishable in the code.
   --font-body-18: 500 18px/22.5px var(--font-family-body);
   --font-body-16: 500 16px/20px var(--font-family-body);
   --font-small-text: 500 14px/1 var(--font-family-body);
 
-  // Mobile scale (groups `mobile` and `Mob.` of spec 1.3). `Mob. H3` carries the
-  // same values as `H5 SemiBold`, so it has no token of its own.
+  // Mobile scale
   --font-mobile-h1: 700 64px/72px var(--font-family-brand);
   --font-mobile-h4: 600 18px/22.5px var(--font-family-body);
   --font-mobile-button: 600 16px/20px var(--font-family-body);
@@ -80,63 +54,33 @@
   --space-7: 48px;
   --space-8: 64px;
 
-  // Radii — one token per value the design actually uses (spec 4.20). The
-  // design has no single button radius, so the tokens are named after their
-  // value: that keeps every component traceable back to its Figma figure
-  // instead of hiding eight distinct decisions behind three size names.
+  // Radii
   --radius-0: 0;
   --radius-2: 2px;
   --radius-4: 4px;
   --radius-5: 5px;
-  // Spec 4.20 assigns 8 to the ingredient row, which spec 4.11 gives no fill —
-  // so the value has nothing to round yet (OF-6).
   --radius-8: 8px;
   --radius-16: 16px;
   --radius-20: 20px;
   --radius-30: 30px;
-  // Not a design value: fully round shapes (step numbers, meter bars) that the
-  // component set does not cover.
   --radius-full: 999px;
 
-  // Distance between the sections of a page: every mobile frame uses 40, the
-  // desktop frames 64 — except the cuisine list page, which sets 40 itself
-  // (spec 3.1 / 3.2).
+  // Layout
   --section-gap: 40px;
 
-  // Box of the primary button, green and creme alike (spec 4.2 / 4.3). Kept
-  // here because seven screens draw that button and none of them shares a
-  // component with the others.
   --button-height: 60px;
   --button-padding-inline: 26px;
 
-  // Forward arrow of the cross-sell links, Figma `Arrow 18`: a line of 20 on the
-  // mobile frames and of 24 on the desktop ones, 2px stroke on both. It is the
-  // only icon of the set whose size steps, so it lives here instead of in the
-  // five components that draw it. The back arrow `Arrow 11` measures 20 on both
-  // tiers and keeps its literal value.
   --arrow-forward-size: 20px;
 
-  // Layout
   --header-height-mobile: 80px;
-  // Menu bar of spec 4.1; the mobile height has no Figma counterpart (OF-7).
   --header-height-desktop: 136px;
-  // Footer padding (2 × --space-4) plus the 44px touch target of its link.
-  // Route hosts subtract it so a full-height page fits without a scrollbar.
   --footer-height: 76px;
-  // Layout guide `Grid 1400px+`: 12 columns of 80 plus 11 gutters of 32.
   --content-max-width: 1312px;
   --content-max-width-narrow: 720px;
-  // Horizontal edge shared by every full-bleed band (header, footer, hero, back
-  // links) and every route container, so the two never drift apart.
   --page-gutter: var(--space-5);
 }
 
-// From the desktop breakpoint the gutter is the larger of the fixed edge and the
-// inset that centres the content column. Below the design width that is the
-// fixed edge, above it the column stops growing and only the background spans
-// the screen — the widescreen rule of the design, without a second breakpoint.
-// `100%` resolves against the band itself; unlike `100vw` it ignores the
-// scrollbar and therefore matches the centred containers exactly.
 @include desktop {
   :root {
     --section-gap: var(--space-8);

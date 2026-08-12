@@ -1,22 +1,15 @@
-// Mobile-first breakpoint mixin. Base styles apply to mobile (< 768px);
-// `@include desktop` overrides on wider viewports.
-
 @mixin desktop {
   @media (min-width: 768px) {
     @content;
   }
 }
 
-// Second step for layouts that need more room than a portrait tablet offers,
-// e.g. the two-column ingredient step.
 @mixin wide {
   @media (min-width: 1024px) {
     @content;
   }
 }
 
-// Widescreen breakpoint of the design: the content column stops growing here and
-// only the background keeps spanning the screen. Matches `--page-gutter`.
 @mixin widescreen {
   @media (min-width: 1440px) {
     @content;

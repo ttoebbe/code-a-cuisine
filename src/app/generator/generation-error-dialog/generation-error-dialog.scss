@@ -1,6 +1,5 @@
 @use '../../../styles/mixins' as *;
 
-// Native dialog keeps focus trapping and Esc for free; only its chrome is reset.
 .error-dialog {
   position: relative;
   width: min(340px, calc(100vw - 2 * var(--space-5)));
@@ -54,10 +53,6 @@
   display: block;
 }
 
-// The wide frame sets the message a step larger and bolder than the hint under
-// it, on loose values rather than a style. The narrow frame draws it with the
-// file's `old styles` group: size and line height are `p 16`, the weight is its
-// regular 400, which the bundle carries since Quicksand 400 was added.
 .error-dialog__message {
   font: 400 16px/1.25 var(--font-family-body);
 
@@ -80,7 +75,6 @@
   margin-top: var(--space-6);
   padding: 0 var(--space-2);
   color: inherit;
-  // `H6` on the narrow frame, `small H + Labels` on the wide one.
   font: var(--font-h6);
   cursor: pointer;
 
@@ -100,7 +94,6 @@
   }
 }
 
-// Nudges only the arrow on hover, so the label itself does not move.
 .error-dialog__arrow {
   --icon-size: var(--arrow-forward-size);
 

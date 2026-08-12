@@ -1,7 +1,5 @@
 @use '../../../styles/mixins' as *;
 
-// The design centres step 2 on a 720px column, narrower than the two-column
-// ingredient step it replaces.
 :host {
   display: block;
   max-width: var(--content-max-width-narrow);
@@ -12,8 +10,6 @@
   display: block;
 }
 
-// Both counters stay outside the card: stacked on mobile, side by side on
-// desktop, indented to line up with the card content.
 .preferences-step__counters {
   display: grid;
   grid-template-columns: 1fr;
@@ -47,7 +43,6 @@
   margin-top: var(--section-gap);
 }
 
-// Matches the "Next step" button of step 1: 52px on mobile, 62px on desktop.
 .preferences-step__submit {
   display: inline-flex;
   align-items: center;

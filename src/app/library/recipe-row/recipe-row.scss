@@ -4,8 +4,6 @@
   display: block;
 }
 
-// Ordinal and text on the first row, chips underneath; from desktop up the
-// three parts sit next to each other as in the design.
 .recipe-row {
   position: relative;
   display: grid;
@@ -13,12 +11,8 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-2);
-  // `Recipe in cook book` is rounded by 16 on both tiers; the square corners
-  // were read off the row's auto-layout wrapper.
   border-radius: var(--radius-16);
 
-  // Whether a row is highlighted is a property of its place in the list, so
-  // the list sets the surface and the row only paints it.
   background: var(--recipe-row-surface, transparent);
   transition: background 0.2s ease;
 
@@ -28,8 +22,6 @@
     padding: var(--space-3);
   }
 
-  // Mint reads as a hover on both surfaces; the cream of a highlighted row
-  // would be invisible against its own background.
   &:hover {
     background: var(--color-mint);
   }
@@ -54,7 +46,6 @@
   min-width: 0;
 }
 
-// The design sets this meta line in `p 16`, not in the 14px of the small scale.
 .recipe-row__time {
   display: flex;
   align-items: center;
@@ -63,14 +54,10 @@
   font: var(--font-body-16);
 }
 
-// The pseudo-element stretches the link across the row, so the whole entry is
-// clickable while the accessible name stays the recipe title.
 .recipe-row__title {
   color: var(--color-green-middle);
   font: var(--font-mobile-h4);
 
-  // `H5`, not `H5 SemiBold`: the row title is the one cookbook heading the
-  // design leaves at 500.
   @include desktop {
     font: var(--font-h5);
   }

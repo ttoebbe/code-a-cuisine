@@ -1,7 +1,5 @@
 @use '../../styles/mixins' as *;
 
-// The band spans the screen and takes the colour of the page below it;
-// `--page-gutter` keeps the logo on the same edge as the centred content column.
 .header {
   display: flex;
   align-items: center;
@@ -10,10 +8,6 @@
   background: var(--shell-bg);
   color: var(--shell-fg);
 
-  // Spec 4.1 pads the menu bar asymmetrically — 68 left, 40 right, 40 top and
-  // nothing at the bottom — and puts the logo at the top of the band, not in
-  // its middle. The shared gutter wins wherever it is the larger value, so the
-  // band edge never ends up inside the centred content column.
   @include desktop {
     align-items: flex-start;
     min-height: var(--header-height-desktop);
@@ -27,10 +21,6 @@
   min-height: 44px;
 }
 
-// The logo vector carries its own palette, but masking it with the shell
-// foreground uses only its silhouette — which keeps it cream on the green pages
-// and dark green on the white ones from one file. `aspect-ratio` reserves the
-// space up front.
 .header__logo-mark {
   display: block;
   width: 100px;
