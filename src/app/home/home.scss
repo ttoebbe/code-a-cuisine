@@ -214,12 +214,13 @@
   max-width: none;
 }
 
-// Widths keep the ratio of the native exports, so the three photos scale as one
-// stack; the top offsets are the overlap measured in the design, expressed as a
-// share of the stack height (0.58 and 1.275 of a stack width).
+// Widths keep the ratio of the native exports against the widest of the three
+// (480, 494 and 493 of 494), so the photos scale as one stack; the top offsets
+// are the overlap measured in the design, expressed as a share of the stack
+// height (0.58 and 1.275 of a stack width).
 .hero__plate--1 {
   top: 0;
-  width: calc(100% * 480 / 494);
+  width: 97.166%;
 }
 
 .hero__plate--2 {
@@ -229,19 +230,27 @@
 
 .hero__plate--3 {
   top: 58.17%;
-  width: calc(100% * 493 / 494);
+  width: 99.798%;
 }
 
 // Widescreen set. Widths are shares of the widest plate, tops shares of the
 // stack height, both taken from the native exports and the overlap of the
 // three-plate stack. The drop shadow is part of every file, so the plates carry
 // no CSS shadow of their own.
+//
+// Centred instead of flush right: the five exports frame their plate with
+// different amounts of empty pixels, so a shared right edge put the discs on
+// five different axes and left plate 4 sitting 17px out of line. The discs
+// themselves are all but the same size, so a shared centre stacks them straight.
+//
+// Every box carries the aspect ratio of its own file, which lets `contain` fill
+// it exactly — a background position would have nothing left to move.
 .hero__plate-wide {
   display: none;
   position: absolute;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
   background-repeat: no-repeat;
-  background-position: center;
   background-size: contain;
 }
 
