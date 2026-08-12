@@ -12,19 +12,19 @@
   justify-content: center;
   gap: var(--space-6);
   padding: var(--space-6) var(--space-5);
-  background: var(--color-cream);
+  background: var(--color-olive-green);
 }
 
 // Anchored to the top-left corner like the header logo it replaces, and masked
-// the same way — the loading screen is always the cream one, so the silhouette
-// is always dark green.
+// the same way — the loading screen is always the olive one, so the silhouette
+// is always cream.
 .loading__logo {
   position: absolute;
   top: var(--space-4);
   left: var(--space-5);
   width: 100px;
   aspect-ratio: 142 / 48;
-  background: var(--color-green-middle);
+  background: var(--color-cream);
   mask: url('/logo-broccoli-cream.svg') no-repeat center / contain;
 
   @include desktop {
@@ -71,7 +71,7 @@
 }
 
 .loading__text {
-  color: var(--color-green-middle);
+  color: var(--color-cream);
   font: 700 36px/1.149 var(--font-family-brand);
   text-align: center;
 
