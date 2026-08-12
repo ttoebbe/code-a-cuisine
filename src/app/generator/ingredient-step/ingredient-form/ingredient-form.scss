@@ -93,6 +93,7 @@
 
 .ingredient-form__name {
   grid-area: name-field;
+  position: relative;
   display: flex;
   flex-direction: column;
 }
@@ -120,9 +121,26 @@
 
 // The design's `Autocomplete` variant is a taller card, not an overlay: the
 // list sits below the input in the flow, so it never covers the input's edge
-// and leaves no coloured remainder when fewer than three names match.
+// and leaves no coloured remainder when fewer than three names match. That is
+// what the wide card does — it has the slack of its 176px resting height.
+//
+// The narrow card has no such slack: an inline list pushed the serving-size row
+// 140px down the page (#15), and the design asks for no movement at any width.
+// So the narrow layout overlays instead, on the card's own fill made opaque —
+// 30 % olive over the white page, the same colour the card mixes on top of it.
 .ingredient-form__suggestions {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 1;
   padding: var(--space-2) var(--space-4) 0;
+  background: color-mix(in srgb, var(--color-olive-green) 30%, var(--color-surface));
+
+  @include desktop {
+    position: static;
+    background: none;
+  }
 }
 
 .ingredient-form__size {
@@ -130,6 +148,14 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+
+  @include desktop {
+    // Shares its row with the name field. An open suggestion list makes that
+    // row taller, and a stretched box would re-centre these controls in it —
+    // the 70px drop reported in #15. Anchored to the top they stay level with
+    // the input, whatever the list does below it.
+    align-self: start;
+  }
 }
 
 .ingredient-form__unit {
