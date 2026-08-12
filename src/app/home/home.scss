@@ -23,7 +23,12 @@
     --hero-height: calc(100vh - var(--header-height-desktop) - var(--footer-height));
 
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    // The right 30 % belong to the plate stack, everything left of it to the
+    // text — the split of the desktop frame, where the plates start 906 of 1292
+    // band pixels in. An even split starved the text column: at 1280 it left
+    // 585px for an eyebrow that measures 660 at its 48px, so both headings
+    // wrapped at every width. `.hero__plates` caps itself at the same share.
+    grid-template-columns: 1fr 30%;
     // The content column stretches over the full row so its cross-sell can sit
     // on the bottom edge of the hero, as in the design.
     align-items: stretch;
@@ -189,7 +194,8 @@
     top: calc(-1 * var(--header-height-desktop));
     right: var(--page-gutter);
     left: auto;
-    width: min(50%, calc(var(--plate-span) / var(--plate-stack-ratio)));
+    // 30 % is the grid column above; the stack may fill it but never leave it.
+    width: min(30%, calc(var(--plate-span) / var(--plate-stack-ratio)));
   }
 
   // The widescreen set has five plates instead of three, and they are whole
