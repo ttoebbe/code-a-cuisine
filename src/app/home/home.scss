@@ -144,23 +144,34 @@
 .hero__plates {
   --plate-span: calc(100vh - var(--footer-height));
   --plate-stack-ratio: 2.192;
+  --plate-spread-ratio: 2.6922;
+  --plate-width: calc(var(--plate-span) / var(--plate-stack-ratio));
 
   position: absolute;
   top: calc(-1 * var(--header-height-mobile));
   left: 63%;
-  width: min(calc(100% + var(--page-gutter)), calc(var(--plate-span) / var(--plate-stack-ratio)));
+  width: min(calc(100% + var(--page-gutter)), var(--plate-width));
   aspect-ratio: 1 / var(--plate-stack-ratio);
   pointer-events: none;
 
   @include desktop {
+    --plate-width: clamp(
+      calc(var(--plate-span) / var(--plate-spread-ratio)),
+      30%,
+      calc(var(--plate-span) / var(--plate-stack-ratio))
+    );
+
     top: calc(-1 * var(--header-height-desktop));
-    right: var(--page-gutter);
+    right: calc(var(--page-gutter) + min(0px, 30% - var(--plate-width)));
     left: auto;
-    width: min(30%, calc(var(--plate-span) / var(--plate-stack-ratio)));
+    width: var(--plate-width);
+    height: var(--plate-span);
+    aspect-ratio: auto;
   }
 
   @include widescreen {
     --plate-stack-ratio: 3.161;
+    --plate-spread-ratio: 4.5572;
   }
 }
 
@@ -177,12 +188,13 @@
 }
 
 .hero__plate--2 {
-  top: 26.46%;
+  top: 50%;
   width: 100%;
+  transform: translateY(-48.778%);
 }
 
 .hero__plate--3 {
-  top: 58.17%;
+  bottom: 0;
   width: 99.798%;
 }
 
