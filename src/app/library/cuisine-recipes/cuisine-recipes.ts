@@ -98,6 +98,7 @@ export class CuisineRecipes {
   /** Index of the first recipe on the current page. */
   private readonly firstIndex = computed(() => (this.currentPage() - 1) * RECIPES_PER_PAGE);
 
+  /** Reports a failed read of the cuisine instead of leaving an empty list. */
   constructor() {
     logResourceFailure('the recipes of a cuisine', this.allRecipes.error);
   }

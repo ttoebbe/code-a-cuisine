@@ -97,6 +97,7 @@ export class IngredientForm {
     return amount.touched && amount.invalid;
   }
 
+  /** Keeps the form in step with the entry the parent selected for editing. */
   constructor() {
     effect(() => this.applyEditing(this.editing()));
   }

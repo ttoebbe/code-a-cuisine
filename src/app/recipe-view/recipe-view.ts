@@ -109,6 +109,7 @@ export class RecipeView {
   /** Explanation of an empty view, depending on where the user came from. */
   protected readonly missingText = computed(() => MISSING_TEXTS[this.backTo()]);
 
+  /** Reports a failed read of the recipe instead of leaving an empty view. */
   constructor() {
     logResourceFailure('a cookbook recipe', this.stored.error);
   }

@@ -41,6 +41,7 @@ export class Library {
   /** True when the favourites could not be read at all. */
   protected readonly hasFailed = computed(() => this.mostLiked.error() !== undefined);
 
+  /** Reports a failed read of the favourites instead of leaving an empty row. */
   constructor() {
     logResourceFailure('the cookbook favourites', this.mostLiked.error);
   }
