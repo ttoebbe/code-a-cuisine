@@ -41,7 +41,9 @@
   }
 
   @include widescreen {
+    --plate-fit-ratio: 3.161;
     --plate-ratio: 3.161;
+    --plate-clearance: var(--plate-diameter);
   }
 }
 
@@ -177,12 +179,13 @@
 }
 
 .hero__stack {
+  --stack-height: calc(var(--plate-diameter) * var(--plate-ratio));
+
   position: absolute;
   left: 0;
-  top: 50%;
+  top: max(0px, calc((var(--plate-track) - var(--stack-height)) / 2));
   width: var(--plate-diameter);
-  height: calc(var(--plate-diameter) * var(--plate-ratio));
-  transform: translateY(-50%);
+  height: var(--stack-height);
 }
 
 .hero__plate,
