@@ -16,14 +16,15 @@
 .loading__logo {
   position: absolute;
   top: var(--space-4);
-  left: var(--space-5);
+  left: var(--page-gutter);
   width: 100px;
   aspect-ratio: 142 / 48;
   background: var(--color-cream);
   mask: url('/logo-broccoli-cream.svg') no-repeat center / contain;
 
   @include desktop {
-    left: var(--space-6);
+    top: 40px;
+    left: max(68px, var(--page-gutter));
     width: 142px;
   }
 }
