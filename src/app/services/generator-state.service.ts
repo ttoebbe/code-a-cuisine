@@ -126,16 +126,6 @@ export class GeneratorStateService {
   }
 
   /**
-   * Puts servings and cooks back to their defaults. Called once a run has
-   * delivered its suggestions, so the next request does not silently inherit
-   * the numbers of the previous one.
-   */
-  resetCounts(): void {
-    this.portionCount.set(PORTIONS_DEFAULT);
-    this.cookCount.set(COOKS_DEFAULT);
-  }
-
-  /**
    * Selects the cooking time category.
    * @param value Category picked in the preferences step.
    */
@@ -157,6 +147,20 @@ export class GeneratorStateService {
    */
   setDiet(value: Diet): void {
     this.dietChoice.set(value);
+  }
+
+  /**
+   * Empties the whole preferences step: both counters go back to their
+   * defaults, the three single-select choices back to "nothing picked". Called
+   * once a run has delivered its suggestions, so the next request does not
+   * silently inherit the settings of the previous one.
+   */
+  resetPreferences(): void {
+    this.portionCount.set(PORTIONS_DEFAULT);
+    this.cookCount.set(COOKS_DEFAULT);
+    this.timeCategoryChoice.set(null);
+    this.cuisineChoice.set(null);
+    this.dietChoice.set(null);
   }
 
   /**
