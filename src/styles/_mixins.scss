@@ -15,3 +15,9 @@
     @content;
   }
 }
+
+@mixin below-widescreen {
+  @media (max-width: 1439.98px) {
+    @content;
+  }
+}

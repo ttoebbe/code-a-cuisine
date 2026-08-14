@@ -13,35 +13,21 @@
     </div>
   </div>
   <div class="hero__plates" aria-hidden="true">
-    <img
-      class="hero__plate hero__plate--1"
-      src="/hero/plate-1.png"
-      alt=""
-      width="480"
-      height="430"
-    />
-    <img
-      class="hero__plate hero__plate--2"
-      src="/hero/plate-2.png"
-      alt=""
-      width="494"
-      height="492"
-    />
-    <img
-      class="hero__plate hero__plate--3"
-      src="/hero/plate-3.png"
-      alt=""
-      width="493"
-      height="453"
-    />
+    <!-- Up to 1439px the design stacks three plates (Figma aspect ratio 2.192),
+         from 1440px its own set of five (3.161). Each set is painted as CSS
+         backgrounds inside its media query, so neither viewport downloads the
+         other one. The per-plate percentages are the Figma offsets, expressed
+         against the stack rather than the viewport. -->
+    <div class="hero__stack">
+      <span class="hero__plate hero__plate--1"></span>
+      <span class="hero__plate hero__plate--2"></span>
+      <span class="hero__plate hero__plate--3"></span>
 
-    <!-- From 1440px the design shows its own set of five plates instead of
-         these three. They are painted as CSS backgrounds inside the widescreen
-         media query, so a narrower viewport never downloads them. -->
-    <span class="hero__plate-wide hero__plate-wide--1"></span>
-    <span class="hero__plate-wide hero__plate-wide--2"></span>
-    <span class="hero__plate-wide hero__plate-wide--3"></span>
-    <span class="hero__plate-wide hero__plate-wide--4"></span>
-    <span class="hero__plate-wide hero__plate-wide--5"></span>
+      <span class="hero__plate-wide hero__plate-wide--1"></span>
+      <span class="hero__plate-wide hero__plate-wide--2"></span>
+      <span class="hero__plate-wide hero__plate-wide--3"></span>
+      <span class="hero__plate-wide hero__plate-wide--4"></span>
+      <span class="hero__plate-wide hero__plate-wide--5"></span>
+    </div>
   </div>
 </section>

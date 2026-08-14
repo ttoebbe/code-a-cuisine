@@ -5,7 +5,19 @@
 }
 
 .hero {
-  --hero-height: calc(100vh - var(--header-height-mobile) - var(--footer-height));
+  --hero-height: calc(100svh - var(--header-height-mobile) - var(--footer-height));
+
+  --plate-track: calc(100svh - var(--footer-height));
+  --plate-fit-ratio: 2.192;
+  --plate-ratio: 2.192;
+  --plate-diameter: clamp(260px, calc(var(--plate-track) / var(--plate-fit-ratio)), 520px);
+  --plate-visible: 0.62;
+  --plate-visible-max: 34vw;
+  --plate-clearance: min(
+    calc(var(--plate-diameter) * var(--plate-visible)),
+    var(--plate-visible-max)
+  );
+  --plate-inset: max(0px, calc(var(--plate-clearance) - var(--page-gutter)));
 
   position: relative;
   padding: var(--space-7) var(--page-gutter);
@@ -17,25 +29,30 @@
   overflow-y: visible;
 
   @include desktop {
-    --hero-height: calc(100vh - var(--header-height-desktop) - var(--footer-height));
+    --hero-height: calc(100svh - var(--header-height-desktop) - var(--footer-height));
 
     display: grid;
-    grid-template-columns: 1fr 30%;
+    grid-template-columns: 1fr var(--plate-inset);
     align-items: stretch;
     gap: var(--space-6);
     padding-block: var(--space-8);
+  }
+
+  @include widescreen {
+    --plate-ratio: 3.161;
   }
 }
 
 .hero__content {
   position: relative;
   z-index: 1;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: var(--space-8);
   min-height: calc(var(--hero-height) - 2 * var(--space-7));
-  padding-right: 42%;
+  padding-right: calc(var(--plate-inset) + var(--space-3));
 
   @include desktop {
     min-height: 0;
@@ -65,6 +82,8 @@
 
 .hero__title {
   font: var(--font-mobile-h1);
+  font-size: min(64px, 28.5cqw);
+  line-height: 1.125;
   color: var(--color-cream);
 
   @include desktop {
@@ -142,78 +161,75 @@
 }
 
 .hero__plates {
-  --plate-span: calc(100vh - var(--footer-height));
-  --plate-stack-ratio: 2.192;
-  --plate-spread-ratio: 2.6922;
-  --plate-width: calc(var(--plate-span) / var(--plate-stack-ratio));
-
   position: absolute;
   top: calc(-1 * var(--header-height-mobile));
-  left: 63%;
-  width: min(calc(100% + var(--page-gutter)), var(--plate-width));
-  aspect-ratio: 1 / var(--plate-stack-ratio);
+  right: calc(var(--plate-clearance) - var(--plate-diameter));
+  width: var(--plate-diameter);
+  height: var(--plate-track);
+  overflow-x: visible;
+  overflow-y: clip;
   pointer-events: none;
 
   @include desktop {
-    --plate-width: clamp(
-      calc(var(--plate-span) / var(--plate-spread-ratio)),
-      30%,
-      calc(var(--plate-span) / var(--plate-stack-ratio))
-    );
-
     top: calc(-1 * var(--header-height-desktop));
-    right: calc(var(--page-gutter) + min(0px, 30% - var(--plate-width)));
-    left: auto;
-    width: var(--plate-width);
-    height: var(--plate-span);
-    aspect-ratio: auto;
   }
+}
 
-  @include widescreen {
-    --plate-stack-ratio: 3.161;
-    --plate-spread-ratio: 4.5572;
-  }
+.hero__stack {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: calc(var(--plate-diameter) * var(--plate-ratio));
+  transform: translateY(-50%);
+}
+
+.hero__plate,
+.hero__plate-wide {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 .hero__plate {
-  position: absolute;
   right: 0;
-  height: auto;
-  max-width: none;
-}
-
-.hero__plate--1 {
-  top: 0;
-  width: 97.166%;
-}
-
-.hero__plate--2 {
-  top: 50%;
-  width: 100%;
-  transform: translateY(-48.778%);
-}
-
-.hero__plate--3 {
-  bottom: 0;
-  width: 99.798%;
 }
 
 .hero__plate-wide {
-  display: none;
-  position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  background-repeat: no-repeat;
-  background-size: contain;
+}
+
+@include below-widescreen {
+  .hero__plate-wide {
+    display: none;
+  }
+
+  .hero__plate--1 {
+    top: 0;
+    width: 97.166%;
+    aspect-ratio: 480 / 430;
+    background-image: url('/hero/plate-1.webp');
+  }
+
+  .hero__plate--2 {
+    top: 50%;
+    width: 100%;
+    aspect-ratio: 494 / 492;
+    transform: translateY(-48.778%);
+    background-image: url('/hero/plate-2.webp');
+  }
+
+  .hero__plate--3 {
+    bottom: 0;
+    width: 99.798%;
+    aspect-ratio: 493 / 453;
+    background-image: url('/hero/plate-3.webp');
+  }
 }
 
 @include widescreen {
   .hero__plate {
     display: none;
-  }
-
-  .hero__plate-wide {
-    display: block;
   }
 
   .hero__plate-wide--1 {
