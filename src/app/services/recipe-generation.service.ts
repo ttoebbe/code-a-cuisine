@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import type { RecipeRequest } from '../models/recipe-request.interface';
 import type { RecipeErrorResponse, RecipeResponse } from '../models/recipe-response.interface';
 import type { GeneratedRecipe } from '../models/recipe.interface';
-import { describeBody, logError } from '../shared/diagnostics';
 import { GeneratorStateService } from './generator-state.service';
 import { RecipeApiService } from './recipe-api.service';
 import { RecipeLibraryService } from './recipe-library.service';
@@ -122,12 +121,11 @@ export class RecipeGenerationService {
   }
 
   /**
-   * Puts the run into the error state and names the reason in the console,
-   * where the UI only offers a retry.
+   * Puts the run into the error state. The envelope is kept so the dialog can
+   * word the failure for the user; nothing is written to the console.
    * @param response Error envelope the workflow returned.
    */
   private applyFailure(response: RecipeErrorResponse): void {
-    logError(`generation failed with code "${response.code}"`, describeBody(response));
     this.errorState.set(response);
     this.statusState.set('error');
   }
@@ -151,8 +149,7 @@ export class RecipeGenerationService {
   private async storeRecipe(recipe: GeneratedRecipe): Promise<string | null> {
     try {
       return await this.library.saveRecipe(recipe);
-    } catch (error) {
-      logError('a generated recipe could not be saved', error);
+    } catch {
       return null;
     }
   }

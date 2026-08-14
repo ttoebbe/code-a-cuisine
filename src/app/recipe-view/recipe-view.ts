@@ -10,7 +10,6 @@ import { RouterLink } from '@angular/router';
 import type { GeneratedRecipe } from '../models/recipe.interface';
 import { RecipeGenerationService } from '../services/recipe-generation.service';
 import { RecipeLibraryService } from '../services/recipe-library.service';
-import { logResourceFailure } from '../shared/diagnostics';
 import { RecipeDirections } from './recipe-directions/recipe-directions';
 import { RecipeIngredients } from './recipe-ingredients/recipe-ingredients';
 import { RecipeLike } from './recipe-like/recipe-like';
@@ -108,11 +107,6 @@ export class RecipeView {
 
   /** Explanation of an empty view, depending on where the user came from. */
   protected readonly missingText = computed(() => MISSING_TEXTS[this.backTo()]);
-
-  /** Reports a failed read of the recipe instead of leaving an empty view. */
-  constructor() {
-    logResourceFailure('a cookbook recipe', this.stored.error);
-  }
 
   /**
    * Library id of the displayed recipe. It follows the same source as the

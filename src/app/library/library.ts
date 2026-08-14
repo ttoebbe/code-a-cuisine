@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, inject, resource } from '
 import { RouterLink } from '@angular/router';
 import type { Recipe } from '../models/recipe.interface';
 import { RecipeLibraryService } from '../services/recipe-library.service';
-import { logResourceFailure } from '../shared/diagnostics';
 import { CuisineFilter } from './cuisine-filter/cuisine-filter';
 import { MostLikedRow } from './most-liked-row/most-liked-row';
 
@@ -40,11 +39,6 @@ export class Library {
 
   /** True when the favourites could not be read at all. */
   protected readonly hasFailed = computed(() => this.mostLiked.error() !== undefined);
-
-  /** Reports a failed read of the favourites instead of leaving an empty row. */
-  constructor() {
-    logResourceFailure('the cookbook favourites', this.mostLiked.error);
-  }
 
   /** Reads the favourites again after a failed attempt. */
   protected reload(): void {

@@ -10,7 +10,6 @@ import {
 import { RouterLink } from '@angular/router';
 import type { Recipe } from '../../models/recipe.interface';
 import { RECIPES_PER_PAGE, RecipeLibraryService } from '../../services/recipe-library.service';
-import { logResourceFailure } from '../../shared/diagnostics';
 import { Pagination } from '../../shared/pagination/pagination';
 import { findCuisineCategory, isCuisineStyle } from '../cuisine-categories';
 import { RecipeRow } from '../recipe-row/recipe-row';
@@ -97,11 +96,6 @@ export class CuisineRecipes {
 
   /** Index of the first recipe on the current page. */
   private readonly firstIndex = computed(() => (this.currentPage() - 1) * RECIPES_PER_PAGE);
-
-  /** Reports a failed read of the cuisine instead of leaving an empty list. */
-  constructor() {
-    logResourceFailure('the recipes of a cuisine', this.allRecipes.error);
-  }
 
   /**
    * Shows another page and returns to the top, so the new page starts in view.
