@@ -101,7 +101,9 @@ export class RecipeGenerationService {
   /**
    * Stores the workflow answer and navigates on success. This is the only
    * place the library write is triggered from, so it happens exactly once per
-   * run and not again when the user navigates back to the results.
+   * run and not again when the user navigates back to the results. The wizard
+   * counters go back to their defaults here, the request itself is kept as a
+   * snapshot for the result screens.
    * @param response Envelope returned by the webhook.
    * @param payload Request the answer belongs to.
    */
@@ -114,6 +116,7 @@ export class RecipeGenerationService {
     this.lastRequest.set(payload);
     this.savedIdList.set([]);
     this.statusState.set('success');
+    this.wizard.resetCounts();
     void this.router.navigate(['/results']);
     void this.storeRecipes(response.recipes);
   }

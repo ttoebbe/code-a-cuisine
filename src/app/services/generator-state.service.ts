@@ -8,6 +8,12 @@ export const PORTIONS_RANGE = { min: 1, max: 12 } as const;
 /** Inclusive range of people cooking together (Lastenheft). */
 export const COOKS_RANGE = { min: 1, max: 3 } as const;
 
+/** Servings a fresh request starts with. */
+export const PORTIONS_DEFAULT = 2;
+
+/** People cooking a fresh request starts with. */
+export const COOKS_DEFAULT = 1;
+
 /**
  * Most ingredients one request may carry. Mirrors MAX_INGREDIENTS in the guard
  * node of n8n/generate-recipe.workflow.json, which rejects longer lists — the
@@ -33,8 +39,8 @@ function clamp(value: number, range: { min: number; max: number }): number {
 @Injectable({ providedIn: 'root' })
 export class GeneratorStateService {
   private readonly ingredientList = signal<RequestIngredient[]>([]);
-  private readonly portionCount = signal(2);
-  private readonly cookCount = signal(1);
+  private readonly portionCount = signal(PORTIONS_DEFAULT);
+  private readonly cookCount = signal(COOKS_DEFAULT);
   private readonly timeCategoryChoice = signal<TimeCategory | null>(null);
   private readonly cuisineChoice = signal<CuisineStyle | null>(null);
   private readonly dietChoice = signal<Diet | null>(null);
@@ -117,6 +123,16 @@ export class GeneratorStateService {
    */
   setCooks(value: number): void {
     this.cookCount.set(clamp(value, COOKS_RANGE));
+  }
+
+  /**
+   * Puts servings and cooks back to their defaults. Called once a run has
+   * delivered its suggestions, so the next request does not silently inherit
+   * the numbers of the previous one.
+   */
+  resetCounts(): void {
+    this.portionCount.set(PORTIONS_DEFAULT);
+    this.cookCount.set(COOKS_DEFAULT);
   }
 
   /**
