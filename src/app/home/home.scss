@@ -17,7 +17,9 @@
     calc(var(--plate-diameter) * var(--plate-visible)),
     var(--plate-visible-max)
   );
-  --plate-inset: max(0px, calc(var(--plate-clearance) - var(--page-gutter)));
+  --hero-band: calc((var(--page-max-width) - var(--content-max-width)) / 2);
+  --hero-edge: max(0px, calc(var(--page-gutter) - var(--hero-band)));
+  --plate-inset: max(0px, calc(var(--plate-clearance) + var(--hero-edge) - var(--page-gutter)));
 
   position: relative;
   padding: var(--space-7) var(--page-gutter);
@@ -163,11 +165,10 @@
 .hero__plates {
   position: absolute;
   top: calc(-1 * var(--header-height-mobile));
-  right: calc(var(--plate-clearance) - var(--plate-diameter));
-  width: var(--plate-diameter);
+  right: var(--hero-edge);
+  width: var(--plate-clearance);
   height: var(--plate-track);
-  overflow-x: visible;
-  overflow-y: clip;
+  overflow: clip;
   pointer-events: none;
 
   @include desktop {
@@ -177,8 +178,9 @@
 
 .hero__stack {
   position: absolute;
-  inset-inline: 0;
+  left: 0;
   top: 50%;
+  width: var(--plate-diameter);
   height: calc(var(--plate-diameter) * var(--plate-ratio));
   transform: translateY(-50%);
 }
