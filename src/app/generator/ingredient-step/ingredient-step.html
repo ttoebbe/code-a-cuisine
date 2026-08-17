@@ -1,5 +1,9 @@
 <div class="ingredient-step__columns">
-  <app-ingredient-form [isFull]="state.isFull()" (save)="onAdd($event)" />
+  <app-ingredient-form
+    [isFull]="state.isFull()"
+    [takenNames]="state.ingredientNames()"
+    (save)="onAdd($event)"
+  />
   <app-ingredient-list
     [ingredients]="state.ingredients()"
     (update)="onUpdate($event)"

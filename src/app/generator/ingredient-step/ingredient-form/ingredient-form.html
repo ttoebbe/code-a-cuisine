@@ -14,7 +14,7 @@
       formControlName="name"
       [attr.maxlength]="maxNameLength"
       [attr.aria-invalid]="isNameInvalid() ? 'true' : null"
-      [attr.aria-describedby]="isNameInvalid() ? 'ingredient-notice' : null"
+      [attr.aria-describedby]="describesName() ? 'ingredient-notice' : null"
       [attr.aria-expanded]="isListboxOpen()"
       [attr.aria-controls]="suggestionListId"
       [attr.aria-activedescendant]="activeOptionId()"
@@ -48,7 +48,7 @@
       placeholder="100"
       formControlName="amount"
       [attr.aria-invalid]="isAmountInvalid() ? 'true' : null"
-      [attr.aria-describedby]="isAmountInvalid() ? 'ingredient-notice' : null"
+      [attr.aria-describedby]="describesAmount() ? 'ingredient-notice' : null"
     />
 
     <span class="ingredient-form__unit">
@@ -69,5 +69,12 @@
     </button>
   </div>
 
-  <p id="ingredient-notice" class="ingredient-form__error" role="alert">{{ noticeText() }}</p>
+  <p
+    id="ingredient-notice"
+    class="ingredient-form__error"
+    [class.ingredient-form__error--neutral]="isNoticeNeutral()"
+    role="alert"
+  >
+    {{ noticeText() }}
+  </p>
 </form>

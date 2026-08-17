@@ -66,6 +66,11 @@ export class GeneratorStateService {
   /** True as soon as the request holds at least one ingredient. */
   readonly hasIngredients = computed(() => this.ingredientList().length > 0);
 
+  /** Names already taken, lower-cased, so the input form can reject duplicates. */
+  readonly ingredientNames = computed(() =>
+    this.ingredientList().map((entry) => entry.name.trim().toLowerCase()),
+  );
+
   /** True once the list reached the limit the workflow accepts. */
   readonly isFull = computed(() => this.ingredientList().length >= MAX_INGREDIENTS);
 

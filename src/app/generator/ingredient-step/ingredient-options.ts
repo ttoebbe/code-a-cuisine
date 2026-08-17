@@ -87,6 +87,19 @@ export function findIngredientSuggestions(term: string): string[] {
 }
 
 /**
+ * Tells whether a name is one of the ingredients this app knows. Drives the
+ * soft spelling hint only: an unknown name stays addable, because the point of
+ * the generator is whatever happens to be in the user's kitchen.
+ * @param name Raw value of the ingredient input.
+ * @returns True when the trimmed name matches an entry, ignoring case.
+ */
+export function isKnownIngredient(name: string): boolean {
+  const needle = name.trim().toLowerCase();
+  if (!needle) return true;
+  return INGREDIENT_NAMES.some((entry) => entry.toLowerCase() === needle);
+}
+
+/**
  * Renders an amount with its unit for the ingredient list, e.g. "150g" or "1".
  * @param amount Numeric quantity.
  * @param unit Measurement unit of the quantity.

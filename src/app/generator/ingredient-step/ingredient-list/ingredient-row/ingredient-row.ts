@@ -15,7 +15,9 @@ import type { IngredientUnit } from '../../../../models/recipe-filters.types';
 import type { RequestIngredient } from '../../../../models/recipe-request.interface';
 import { UNIT_OPTIONS, formatAmount } from '../../ingredient-options';
 import {
-  AMOUNT_ERROR_MESSAGE,
+  amountUnitValidator,
+  buildAmountMessage,
+  hasAmountError,
   parseAmount,
   positiveAmountValidator,
 } from '../../ingredient-validators';
@@ -55,12 +57,14 @@ export class IngredientRow {
   readonly remove = output<void>();
 
   protected readonly unitOptions = UNIT_OPTIONS;
-  protected readonly amountErrorMessage = AMOUNT_ERROR_MESSAGE;
 
-  protected readonly form = this.formBuilder.nonNullable.group({
-    amount: ['', [Validators.required, positiveAmountValidator]],
-    unit: ['g' as IngredientUnit],
-  });
+  protected readonly form = this.formBuilder.nonNullable.group(
+    {
+      amount: ['', [Validators.required, positiveAmountValidator]],
+      unit: ['g' as IngredientUnit],
+    },
+    { validators: [amountUnitValidator] },
+  );
 
   private readonly amountRef = viewChild<ElementRef<HTMLInputElement>>('amountField');
   private readonly editRef = viewChild<ElementRef<HTMLButtonElement>>('editButton');
@@ -109,8 +113,16 @@ export class IngredientRow {
    * @returns Whether the amount currently violates a rule.
    */
   protected isAmountInvalid(): boolean {
-    const { amount } = this.form.controls;
-    return amount.touched && amount.invalid;
+    return hasAmountError(this.form);
+  }
+
+  /**
+   * Message for the first violated amount rule. Shares its wording with the
+   * input form, so the same mistake reads the same in both places.
+   * @returns Error text describing why the amount was rejected.
+   */
+  protected amountErrorMessage(): string {
+    return buildAmountMessage(this.form);
   }
 
   /**

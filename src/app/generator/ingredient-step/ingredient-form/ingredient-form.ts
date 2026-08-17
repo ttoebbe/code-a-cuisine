@@ -2,27 +2,38 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
+import type { AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { IngredientUnit } from '../../../models/recipe-filters.types';
 import type { RequestIngredient } from '../../../models/recipe-request.interface';
-import { UNIT_OPTIONS, findIngredientSuggestions } from '../ingredient-options';
+import { UNIT_OPTIONS, findIngredientSuggestions, isKnownIngredient } from '../ingredient-options';
 import {
   IngredientSuggestions,
   SUGGESTION_LIST_ID,
   buildSuggestionId,
 } from '../ingredient-suggestions/ingredient-suggestions';
 import {
-  AMOUNT_ERROR_MESSAGE,
   MAX_INGREDIENT_NAME_LENGTH,
+  NAME_CHARSET_MESSAGE,
+  NAME_SUBSTANCE_MESSAGE,
+  amountUnitValidator,
   blankNameValidator,
+  buildAmountMessage,
+  hasAmountError,
+  nameCharsetValidator,
+  nameSubstanceValidator,
   parseAmount,
   positiveAmountValidator,
 } from '../ingredient-validators';
+
+/** Hint for a name the autocomplete source does not know. Never blocks adding. */
+const UNKNOWN_NAME_HINT = "We don't know this ingredient — check the spelling.";
 
 /**
  * Input card of step 1: ingredient name with autocomplete, serving size and the
@@ -41,6 +52,9 @@ export class IngredientForm {
   /** True once the list holds as many ingredients as the workflow accepts. */
   readonly isFull = input(false);
 
+  /** Names already in the list, lower-cased, so the same one is not added twice. */
+  readonly takenNames = input<readonly string[]>([]);
+
   /** Emits a validated ingredient once the user adds it. */
   readonly save = output<RequestIngredient>();
 
@@ -48,14 +62,37 @@ export class IngredientForm {
   protected readonly suggestionListId = SUGGESTION_LIST_ID;
   protected readonly maxNameLength = MAX_INGREDIENT_NAME_LENGTH;
 
-  protected readonly form = this.formBuilder.nonNullable.group({
-    name: [
-      '',
-      [Validators.required, blankNameValidator, Validators.maxLength(MAX_INGREDIENT_NAME_LENGTH)],
-    ],
-    amount: ['', [Validators.required, positiveAmountValidator]],
-    unit: ['g' as IngredientUnit],
-  });
+  /**
+   * Rejects a name the list already holds. Lives here instead of in
+   * ingredient-validators because it is the only rule that needs the list.
+   * @param group Group holding the name control.
+   * @returns A duplicateName error, or null when the name is still free.
+   */
+  private readonly duplicateNameValidator = (group: AbstractControl): ValidationErrors | null => {
+    const name = String(group.get('name')?.value ?? '')
+      .trim()
+      .toLowerCase();
+    if (!name) return null;
+    return this.takenNames().includes(name) ? { duplicateName: true } : null;
+  };
+
+  protected readonly form = this.formBuilder.nonNullable.group(
+    {
+      name: [
+        '',
+        [
+          Validators.required,
+          blankNameValidator,
+          nameCharsetValidator,
+          nameSubstanceValidator,
+          Validators.maxLength(MAX_INGREDIENT_NAME_LENGTH),
+        ],
+      ],
+      amount: ['', [Validators.required, positiveAmountValidator]],
+      unit: ['g' as IngredientUnit],
+    },
+    { validators: [amountUnitValidator, this.duplicateNameValidator] },
+  );
 
   private readonly nameTerm = signal('');
   private readonly isOpen = signal(false);
@@ -70,13 +107,25 @@ export class IngredientForm {
   protected readonly isListboxOpen = computed(() => this.isOpen() && this.suggestions().length > 0);
 
   /**
+   * Revalidates once the list changes, so a duplicate message disappears as
+   * soon as the user deletes the row that caused it, without another keystroke.
+   */
+  constructor() {
+    effect(() => {
+      this.takenNames();
+      this.form.updateValueAndValidity({ emitEvent: false });
+    });
+  }
+
+  /**
    * True once the name field has been touched and is rejected. Drives
-   * aria-invalid, so the message is tied to the field it belongs to.
+   * aria-invalid, so the message is tied to the field it belongs to. Covers the
+   * duplicate rule too, which sits on the group but describes the name.
    * @returns Whether the name currently violates a rule.
    */
   protected isNameInvalid(): boolean {
     const { name } = this.form.controls;
-    return name.touched && name.invalid;
+    return name.touched && (name.invalid || this.form.hasError('duplicateName'));
   }
 
   /**
@@ -84,8 +133,7 @@ export class IngredientForm {
    * @returns Whether the amount currently violates a rule.
    */
   protected isAmountInvalid(): boolean {
-    const { amount } = this.form.controls;
-    return amount.touched && amount.invalid;
+    return hasAmountError(this.form);
   }
 
   /** Refreshes the autocomplete term and reopens the listbox while typing. */
@@ -158,27 +206,83 @@ export class IngredientForm {
 
   /**
    * Returns the message for the first violated rule once the user interacted.
+   * The name goes first: it is the field the user fills in first.
    * @returns Error text, or an empty string while the form is acceptable.
    */
   protected errorMessage(): string {
     const { name } = this.form.controls;
-    if (this.isNameInvalid() && name.errors?.['maxlength'])
-      return `Please use at most ${this.maxNameLength} characters.`;
-    if (this.isNameInvalid()) return 'Please enter an ingredient.';
-    if (this.isAmountInvalid()) return AMOUNT_ERROR_MESSAGE;
-    return '';
+    if (!this.isNameInvalid()) return this.amountErrorMessage();
+    if (name.errors?.['maxlength']) return `Please use at most ${this.maxNameLength} characters.`;
+    if (name.errors?.['invalidNameChars']) return NAME_CHARSET_MESSAGE;
+    if (name.errors?.['weakName']) return NAME_SUBSTANCE_MESSAGE;
+    if (name.errors) return 'Please enter an ingredient.';
+    return `${name.value.trim()} is already in your list.`;
   }
 
   /**
-   * Message below the form: the first violated rule, or the limit hint once
-   * the list is full, so the disabled add button explains itself.
+   * Message for the amount field, empty while the amount is acceptable.
+   * @returns Error text describing why the amount was rejected.
+   */
+  private amountErrorMessage(): string {
+    return this.isAmountInvalid() ? buildAmountMessage(this.form) : '';
+  }
+
+  /**
+   * Hint for a name outside the known ingredients. Held back until the name
+   * field is left, so it stays quiet while a known name is still half typed.
+   * @returns Hint text, or an empty string when there is nothing to point out.
+   */
+  protected unknownNameHint(): string {
+    const { name } = this.form.controls;
+    if (!name.touched || name.invalid) return '';
+    return isKnownIngredient(name.value) ? '' : UNKNOWN_NAME_HINT;
+  }
+
+  /**
+   * Message below the form: the first violated rule, the spelling hint, or the
+   * limit hint once the list is full, so the disabled add button explains
+   * itself. Only ever one message, so the reserved height stays sufficient.
    * @returns Text to display, or an empty string when there is nothing to say.
    */
   protected noticeText(): string {
     const error = this.errorMessage();
     if (error !== '') return error;
+    if (this.isHintVisible()) return this.unknownNameHint();
     if (!this.isFull()) return '';
     return 'The ingredient list is full. Remove one to add another.';
+  }
+
+  /** True while the spelling hint is the message the notice actually carries. */
+  private isHintVisible(): boolean {
+    return this.errorMessage() === '' && this.unknownNameHint() !== '';
+  }
+
+  /**
+   * True while the notice states something other than a violated rule, so a
+   * hint is not painted in the error colour.
+   * @returns Whether the notice currently carries a neutral message.
+   */
+  protected isNoticeNeutral(): boolean {
+    return this.errorMessage() === '';
+  }
+
+  /**
+   * True while the notice text is about the name. Only the field the message
+   * belongs to points its aria-describedby at the shared notice, so the other
+   * one is never announced with a message meant for its neighbour.
+   * @returns Whether the current notice describes the name.
+   */
+  protected describesName(): boolean {
+    return this.isNameInvalid() || this.isHintVisible();
+  }
+
+  /**
+   * True while the notice text is about the amount, which errorMessage() only
+   * reaches once the name passes.
+   * @returns Whether the current notice describes the amount.
+   */
+  protected describesAmount(): boolean {
+    return !this.isNameInvalid() && this.isAmountInvalid();
   }
 
   /** Validates the form and emits the ingredient, then returns to a clean state. */

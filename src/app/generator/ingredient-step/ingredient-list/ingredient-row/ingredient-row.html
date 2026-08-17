@@ -40,7 +40,7 @@
     </button>
 
     @if (isAmountInvalid()) {
-      <p class="ingredient-row__error" role="alert">{{ amountErrorMessage }}</p>
+      <p class="ingredient-row__error" role="alert">{{ amountErrorMessage() }}</p>
     }
   </form>
 } @else {
