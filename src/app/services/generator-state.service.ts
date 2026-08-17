@@ -150,17 +150,25 @@ export class GeneratorStateService {
   }
 
   /**
-   * Empties the whole preferences step: both counters go back to their
-   * defaults, the three single-select choices back to "nothing picked". Called
-   * once a run has delivered its suggestions, so the next request does not
-   * silently inherit the settings of the previous one.
+   * Empties the preferences step: both counters go back to their defaults, the
+   * three single-select choices back to "nothing picked".
    */
-  resetPreferences(): void {
+  private resetPreferences(): void {
     this.portionCount.set(PORTIONS_DEFAULT);
     this.cookCount.set(COOKS_DEFAULT);
     this.timeCategoryChoice.set(null);
     this.cuisineChoice.set(null);
     this.dietChoice.set(null);
+  }
+
+  /**
+   * Empties the whole wizard: ingredient list, both counters and the three
+   * preference choices. Called once a run has delivered its suggestions, so
+   * the next request starts blank instead of inheriting the previous one.
+   */
+  resetRequest(): void {
+    this.ingredientList.set([]);
+    this.resetPreferences();
   }
 
   /**
