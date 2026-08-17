@@ -1,0 +1,68 @@
+@if (isEditing()) {
+  <form
+    class="ingredient-row__form"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+    (keydown)="onKeydown($event)"
+    novalidate
+  >
+    <input
+      #amountField
+      class="ingredient-row__amount-field"
+      type="text"
+      inputmode="numeric"
+      autocomplete="off"
+      formControlName="amount"
+      [attr.aria-label]="'Amount for ' + ingredient().name"
+      [attr.aria-invalid]="isAmountInvalid() ? 'true' : null"
+    />
+
+    <span class="ingredient-row__unit">
+      <select
+        class="ingredient-row__unit-select"
+        formControlName="unit"
+        [attr.aria-label]="'Unit for ' + ingredient().name"
+      >
+        @for (option of unitOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </span>
+
+    <span class="ingredient-row__name">{{ ingredient().name }}</span>
+
+    <button
+      type="submit"
+      class="ingredient-row__action"
+      [attr.aria-label]="'Save ' + ingredient().name"
+    >
+      <span class="icon ingredient-row__action-icon ingredient-row__action-icon--save"></span>
+    </button>
+
+    @if (isAmountInvalid()) {
+      <p class="ingredient-row__error" role="alert">{{ amountErrorMessage }}</p>
+    }
+  </form>
+} @else {
+  <span class="ingredient-row__amount">{{ amountLabel() }}</span>
+  <span class="ingredient-row__name">{{ ingredient().name }}</span>
+
+  <button
+    #editButton
+    type="button"
+    class="ingredient-row__action"
+    [attr.aria-label]="'Edit ' + ingredient().name"
+    (click)="edit.emit()"
+  >
+    <span class="icon ingredient-row__action-icon ingredient-row__action-icon--edit"></span>
+  </button>
+}
+
+<button
+  type="button"
+  class="ingredient-row__action"
+  [attr.aria-label]="'Delete ' + ingredient().name"
+  (click)="remove.emit()"
+>
+  <span class="icon ingredient-row__action-icon ingredient-row__action-icon--delete"></span>
+</button>

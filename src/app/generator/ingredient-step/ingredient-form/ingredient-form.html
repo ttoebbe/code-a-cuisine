@@ -62,13 +62,10 @@
     <button
       type="submit"
       class="ingredient-form__submit"
-      [disabled]="isAddBlocked()"
-      [attr.aria-label]="isEditing() ? 'Save ingredient' : 'Add ingredient'"
+      [disabled]="isFull()"
+      aria-label="Add ingredient"
     >
-      <span
-        class="icon ingredient-form__submit-icon"
-        [class.ingredient-form__submit-icon--save]="isEditing()"
-      ></span>
+      <span class="icon ingredient-form__submit-icon"></span>
     </button>
   </div>
 

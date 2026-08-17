@@ -2,28 +2,16 @@
   <h2 class="ingredient-list__title" id="ingredient-list-title">List of your Ingredients</h2>
 
   <ul class="ingredient-list__items">
-    @for (ingredient of ingredients(); track ingredient) {
+    @for (ingredient of ingredients(); track $index) {
       <li class="ingredient-list__item">
-        <span class="ingredient-list__amount">{{ amountLabel(ingredient) }}</span>
-        <span class="ingredient-list__name">{{ ingredient.name }}</span>
-
-        <button
-          type="button"
-          class="ingredient-list__action"
-          [attr.aria-label]="'Edit ' + ingredient.name"
-          (click)="edit.emit($index)"
-        >
-          <span class="icon ingredient-list__action-icon ingredient-list__action-icon--edit"></span>
-        </button>
-
-        <button
-          type="button"
-          class="ingredient-list__action"
-          [attr.aria-label]="'Delete ' + ingredient.name"
-          (click)="remove.emit($index)"
-        >
-          <span class="icon ingredient-list__action-icon ingredient-list__action-icon--delete"></span>
-        </button>
+        <app-ingredient-row
+          [ingredient]="ingredient"
+          [isEditing]="isEditing($index)"
+          (edit)="onEdit($index)"
+          (cancelEdit)="onCancel()"
+          (save)="onSave($index, $event)"
+          (remove)="onRemove($index)"
+        />
       </li>
     }
   </ul>

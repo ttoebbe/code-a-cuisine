@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   output,
@@ -18,6 +17,7 @@ import {
   buildSuggestionId,
 } from '../ingredient-suggestions/ingredient-suggestions';
 import {
+  AMOUNT_ERROR_MESSAGE,
   MAX_INGREDIENT_NAME_LENGTH,
   blankNameValidator,
   parseAmount,
@@ -26,7 +26,7 @@ import {
 
 /**
  * Input card of step 1: ingredient name with autocomplete, serving size and the
- * add button. Doubles as the edit form when the parent hands in an ingredient.
+ * add button. Corrections happen in the list itself, so this only ever adds.
  */
 @Component({
   selector: 'app-ingredient-form',
@@ -38,13 +38,10 @@ import {
 export class IngredientForm {
   private readonly formBuilder = inject(FormBuilder);
 
-  /** Ingredient currently being edited, or null while adding a new one. */
-  readonly editing = input<RequestIngredient | null>(null);
-
   /** True once the list holds as many ingredients as the workflow accepts. */
   readonly isFull = input(false);
 
-  /** Emits a validated ingredient on add or on save. */
+  /** Emits a validated ingredient once the user adds it. */
   readonly save = output<RequestIngredient>();
 
   protected readonly unitOptions = UNIT_OPTIONS;
@@ -72,12 +69,6 @@ export class IngredientForm {
   /** True while the suggestion listbox is visible. */
   protected readonly isListboxOpen = computed(() => this.isOpen() && this.suggestions().length > 0);
 
-  /** True while the form edits an existing entry instead of adding a new one. */
-  protected readonly isEditing = computed(() => this.editing() !== null);
-
-  /** True while nothing may be added; editing an existing entry stays possible. */
-  protected readonly isAddBlocked = computed(() => this.isFull() && !this.isEditing());
-
   /**
    * True once the name field has been touched and is rejected. Drives
    * aria-invalid, so the message is tied to the field it belongs to.
@@ -95,26 +86,6 @@ export class IngredientForm {
   protected isAmountInvalid(): boolean {
     const { amount } = this.form.controls;
     return amount.touched && amount.invalid;
-  }
-
-  /** Keeps the form in step with the entry the parent selected for editing. */
-  constructor() {
-    effect(() => this.applyEditing(this.editing()));
-  }
-
-  /**
-   * Mirrors the parent's edit selection into the form.
-   * @param ingredient Entry to edit, or null to return to the add state.
-   */
-  private applyEditing(ingredient: RequestIngredient | null): void {
-    if (!ingredient) return this.resetForm();
-    this.form.setValue({
-      name: ingredient.name,
-      amount: String(ingredient.amount),
-      unit: ingredient.unit,
-    });
-    this.nameTerm.set(ingredient.name);
-    this.closeSuggestions();
   }
 
   /** Refreshes the autocomplete term and reopens the listbox while typing. */
@@ -194,7 +165,7 @@ export class IngredientForm {
     if (this.isNameInvalid() && name.errors?.['maxlength'])
       return `Please use at most ${this.maxNameLength} characters.`;
     if (this.isNameInvalid()) return 'Please enter an ingredient.';
-    if (this.isAmountInvalid()) return 'Please enter an amount greater than zero.';
+    if (this.isAmountInvalid()) return AMOUNT_ERROR_MESSAGE;
     return '';
   }
 
@@ -206,14 +177,14 @@ export class IngredientForm {
   protected noticeText(): string {
     const error = this.errorMessage();
     if (error !== '') return error;
-    if (!this.isAddBlocked()) return '';
+    if (!this.isFull()) return '';
     return 'The ingredient list is full. Remove one to add another.';
   }
 
   /** Validates the form and emits the ingredient, then returns to a clean state. */
   protected submit(): void {
     this.closeSuggestions();
-    if (this.isAddBlocked()) return;
+    if (this.isFull()) return;
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
     const { name, amount, unit } = this.form.getRawValue();

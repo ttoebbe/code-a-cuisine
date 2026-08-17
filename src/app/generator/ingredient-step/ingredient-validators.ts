@@ -8,6 +8,12 @@ import type { AbstractControl, ValidationErrors } from '@angular/forms';
 export const MAX_INGREDIENT_NAME_LENGTH = 60;
 
 /**
+ * Message for a rejected amount. Shared by the input form and the list row,
+ * which both run positiveAmountValidator and must not drift apart.
+ */
+export const AMOUNT_ERROR_MESSAGE = 'Please enter an amount greater than zero.';
+
+/**
  * Parses the raw amount input into a number. Kept separate from the validator
  * so the form can reuse the exact same interpretation when emitting a result.
  * @param value Raw control value, may contain a comma as decimal separator.
