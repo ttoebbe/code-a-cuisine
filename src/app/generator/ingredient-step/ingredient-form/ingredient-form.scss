@@ -6,7 +6,7 @@
 
 .ingredient-form {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     'name-label'
     'name-field'
@@ -19,7 +19,7 @@
   background: color-mix(in srgb, var(--color-olive-green) 30%, transparent);
 
   @include desktop {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       'name-label size-label'
       'name-field size-field'

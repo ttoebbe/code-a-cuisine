@@ -13,6 +13,7 @@
 
 .results {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     'title'
     'media'
@@ -108,18 +109,18 @@
 .results__list {
   display: grid;
   grid-area: list;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 31px;
   margin: var(--section-gap) 0 0;
   padding: 0;
   list-style: none;
 
   @include desktop {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   @include wide {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

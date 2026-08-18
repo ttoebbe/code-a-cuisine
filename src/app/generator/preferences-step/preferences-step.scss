@@ -12,12 +12,12 @@
 
 .preferences-step__counters {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5);
   margin-bottom: var(--section-gap);
 
   @include desktop {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: var(--space-6);
     padding: 0 var(--space-5);
   }

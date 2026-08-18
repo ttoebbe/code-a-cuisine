@@ -6,19 +6,19 @@
 
 .cuisine-filter__list {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   margin: 0;
   padding: 0;
   list-style: none;
 
   @include desktop {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-7) var(--space-6);
   }
 
   @include wide {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

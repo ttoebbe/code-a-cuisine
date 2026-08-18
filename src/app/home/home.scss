@@ -34,7 +34,7 @@
     --hero-height: calc(100svh - var(--header-height-desktop) - var(--footer-height));
 
     display: grid;
-    grid-template-columns: 1fr var(--plate-inset);
+    grid-template-columns: minmax(0, 1fr) var(--plate-inset);
     align-items: stretch;
     gap: var(--space-6);
     padding-block: var(--space-8);
