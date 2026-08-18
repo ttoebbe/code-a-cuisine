@@ -46,6 +46,13 @@ function buildSpellingHint(match: string): string {
 }
 
 /**
+ * Hint for a name no known ingredient comes close to. States the consequence
+ * instead of doubting the name: the list is a helper, not a menu, so a regional
+ * speciality gets the same neutral note as a typo nothing can be guessed from.
+ */
+const UNLISTED_NAME_HINT = 'Not in our list — we pass it on exactly as typed.';
+
+/**
  * Input card of step 1: ingredient name with autocomplete, serving size and the
  * add button. Corrections happen in the list itself, so this only ever adds.
  */
@@ -241,17 +248,18 @@ export class IngredientForm {
   }
 
   /**
-   * Spelling hint for a name that is one or two edits away from a known
-   * ingredient. Held back until the name field is touched, so it stays quiet
-   * while a name is still half typed, and silent for anything without a close
-   * neighbour, so an unlisted speciality is never questioned.
-   * @returns Hint text, or an empty string when there is nothing to point out.
+   * Hint for a name the list does not hold: the nearest known ingredient when
+   * one is within a typo's reach, otherwise the neutral note that the name goes
+   * out unchanged. Held back until the name field is touched, so it stays quiet
+   * while a name is still half typed.
+   * @returns Hint text, or an empty string for a name the list already knows.
    */
-  protected spellingHint(): string {
+  protected nameHint(): string {
     const { name } = this.form.controls;
     if (!name.touched || name.invalid) return '';
     const match = findClosestIngredient(name.value);
-    return match === null ? '' : buildSpellingHint(match);
+    if (match !== null) return buildSpellingHint(match);
+    return isKnownIngredient(name.value) ? '' : UNLISTED_NAME_HINT;
   }
 
   /**
@@ -263,14 +271,14 @@ export class IngredientForm {
   protected noticeText(): string {
     const error = this.errorMessage();
     if (error !== '') return error;
-    if (this.isHintVisible()) return this.spellingHint();
+    if (this.isHintVisible()) return this.nameHint();
     if (!this.isFull()) return '';
     return 'The ingredient list is full. Remove one to add another.';
   }
 
-  /** True while the spelling hint is the message the notice actually carries. */
+  /** True while the name hint is the message the notice actually carries. */
   private isHintVisible(): boolean {
-    return this.errorMessage() === '' && this.spellingHint() !== '';
+    return this.errorMessage() === '' && this.nameHint() !== '';
   }
 
   /**
