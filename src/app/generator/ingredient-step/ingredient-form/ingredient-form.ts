@@ -12,7 +12,9 @@ import type { AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import type { IngredientUnit } from '../../../models/recipe-filters.types';
 import type { RequestIngredient } from '../../../models/recipe-request.interface';
-import { UNIT_OPTIONS, findIngredientSuggestions, isKnownIngredient } from '../ingredient-options';
+import { RecentIngredientsService } from '../../../services/recent-ingredients.service';
+import { findClosestIngredient, isKnownIngredient } from '../ingredient-matching';
+import { UNIT_OPTIONS, findIngredientSuggestions } from '../ingredient-options';
 import {
   IngredientSuggestions,
   SUGGESTION_LIST_ID,
@@ -32,8 +34,16 @@ import {
   positiveAmountValidator,
 } from '../ingredient-validators';
 
-/** Hint for a name the autocomplete source does not know. Never blocks adding. */
-const UNKNOWN_NAME_HINT = "We don't know this ingredient — check the spelling.";
+/**
+ * Builds the hint for a name that closely resembles a known ingredient. Never
+ * blocks adding: the point of the generator is whatever is in the kitchen, so
+ * an unlisted speciality must stay addable exactly as typed.
+ * @param match Known ingredient the typed name most likely meant.
+ * @returns Hint text naming the suggestion.
+ */
+function buildSpellingHint(match: string): string {
+  return `Did you mean "${match}"?`;
+}
 
 /**
  * Input card of step 1: ingredient name with autocomplete, serving size and the
@@ -48,6 +58,7 @@ const UNKNOWN_NAME_HINT = "We don't know this ingredient — check the spelling.
 })
 export class IngredientForm {
   private readonly formBuilder = inject(FormBuilder);
+  private readonly recentIngredients = inject(RecentIngredientsService);
 
   /** True once the list holds as many ingredients as the workflow accepts. */
   readonly isFull = input(false);
@@ -101,7 +112,9 @@ export class IngredientForm {
   protected readonly activeIndex = signal(-1);
 
   /** Names matching the current input value, capped by the suggestion limit. */
-  protected readonly suggestions = computed(() => findIngredientSuggestions(this.nameTerm()));
+  protected readonly suggestions = computed(() =>
+    findIngredientSuggestions(this.nameTerm(), this.recentIngredients.names()),
+  );
 
   /** True while the suggestion listbox is visible. */
   protected readonly isListboxOpen = computed(() => this.isOpen() && this.suggestions().length > 0);
@@ -228,14 +241,17 @@ export class IngredientForm {
   }
 
   /**
-   * Hint for a name outside the known ingredients. Held back until the name
-   * field is left, so it stays quiet while a known name is still half typed.
+   * Spelling hint for a name that is one or two edits away from a known
+   * ingredient. Held back until the name field is touched, so it stays quiet
+   * while a name is still half typed, and silent for anything without a close
+   * neighbour, so an unlisted speciality is never questioned.
    * @returns Hint text, or an empty string when there is nothing to point out.
    */
-  protected unknownNameHint(): string {
+  protected spellingHint(): string {
     const { name } = this.form.controls;
     if (!name.touched || name.invalid) return '';
-    return isKnownIngredient(name.value) ? '' : UNKNOWN_NAME_HINT;
+    const match = findClosestIngredient(name.value);
+    return match === null ? '' : buildSpellingHint(match);
   }
 
   /**
@@ -247,14 +263,14 @@ export class IngredientForm {
   protected noticeText(): string {
     const error = this.errorMessage();
     if (error !== '') return error;
-    if (this.isHintVisible()) return this.unknownNameHint();
+    if (this.isHintVisible()) return this.spellingHint();
     if (!this.isFull()) return '';
     return 'The ingredient list is full. Remove one to add another.';
   }
 
   /** True while the spelling hint is the message the notice actually carries. */
   private isHintVisible(): boolean {
-    return this.errorMessage() === '' && this.unknownNameHint() !== '';
+    return this.errorMessage() === '' && this.spellingHint() !== '';
   }
 
   /**
@@ -294,7 +310,9 @@ export class IngredientForm {
     const { name, amount, unit } = this.form.getRawValue();
     const parsedAmount = parseAmount(amount);
     if (parsedAmount === null) return;
-    this.save.emit({ name: name.trim(), amount: parsedAmount, unit });
+    const trimmedName = name.trim();
+    this.save.emit({ name: trimmedName, amount: parsedAmount, unit });
+    if (!isKnownIngredient(trimmedName)) this.recentIngredients.remember(trimmedName);
     this.resetForm();
   }
 

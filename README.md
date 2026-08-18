@@ -77,12 +77,18 @@ The full walkthrough â€” Firebase values, rules, index and the local n8n setup â
 
 ## npm scripts
 
-| Command         | Purpose                                 |
-| --------------- | --------------------------------------- |
-| `npm start`     | Dev server on port 4200                 |
-| `npm run build` | Production build into `dist/`           |
-| `npm run watch` | Build in watch mode                     |
-| `npm run lint`  | ESLint including Angular template rules |
+| Command                    | Purpose                                                   |
+| -------------------------- | --------------------------------------------------------- |
+| `npm start`                | Dev server on port 4200                                   |
+| `npm run build`            | Production build into `dist/`                             |
+| `npm run watch`            | Build in watch mode                                       |
+| `npm run lint`             | ESLint including Angular template rules                   |
+| `npm run sync:ingredients` | Refreshes the ingredient autocomplete list from TheMealDB |
+
+`sync:ingredients` is a build-time step, not something the app does at runtime: it writes
+`src/app/generator/ingredient-step/ingredient-names.ts`, which is committed and shipped in the
+bundle. The generator therefore needs no network call for its autocomplete. Run it only when the
+list should be refreshed, then commit the diff.
 
 ## CI and deployment
 
@@ -119,6 +125,7 @@ src/app/
   firebase/      Firestore provider for the app config
   guards/        Route guards for the results page and the cuisine routes
   shared/        Pagination component and formatting helpers for recipe data
+scripts/         Build-time helpers, e.g. the ingredient list sync
 public/          Static assets copied into the build, plus the Apache .htaccess
 n8n/             Both workflows as exported JSON
   deploy/        Compose file and Caddy config for the n8n server
