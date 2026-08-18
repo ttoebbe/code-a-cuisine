@@ -12,6 +12,68 @@ const TARGET_FILE = 'src/app/generator/ingredient-step/ingredient-names.ts';
 /** Longest name still useful as a suggestion. Cuts entries like "Dried leaves of summer savoury". */
 const MAX_NAME_LENGTH = 28;
 
+/**
+ * The hand-picked list this app shipped before the sync existed. TheMealDB is
+ * missing everyday entries like "Pasta", "Cauliflower" and "Bell pepper", and
+ * spells others its own way, so these are merged in rather than replaced. Both
+ * spellings of a name may live here on purpose: "Yoghurt" next to the API's
+ * "Yogurt" keeps either from being flagged as a typo.
+ */
+const CURATED_NAMES = [
+  'Almonds',
+  'Apple',
+  'Aubergine',
+  'Avocado',
+  'Baby spinach',
+  'Bacon',
+  'Basil',
+  'Beef mince',
+  'Bell pepper',
+  'Broccoli',
+  'Butter',
+  'Carrot',
+  'Cauliflower',
+  'Cheddar',
+  'Cherry tomatoes',
+  'Chicken breast',
+  'Chickpeas',
+  'Chili flakes',
+  'Coconut milk',
+  'Cream cheese',
+  'Cucumber',
+  'Egg',
+  'Feta',
+  'Garlic',
+  'Ginger',
+  'Green beans',
+  'Honey',
+  'Kidney beans',
+  'Leek',
+  'Lemon',
+  'Lentils',
+  'Lime',
+  'Mozzarella',
+  'Mushrooms',
+  'Olive oil',
+  'Onion',
+  'Parmesan',
+  'Parsley',
+  'Passionfruit',
+  'Pasta',
+  'Pastrami',
+  'Peas',
+  'Potato',
+  'Rice',
+  'Salmon fillet',
+  'Soy sauce',
+  'Spring onion',
+  'Sweet potato',
+  'Tofu',
+  'Tomato',
+  'Yoghurt',
+  'Zucchini',
+];
+
 /** Floor below which the response counts as broken, so a bad fetch never empties the list. */
 const MIN_EXPECTED_NAMES = 500;
 
@@ -60,13 +122,14 @@ function toSentenceCase(name) {
 }
 
 /**
- * Normalises, filters and deduplicates the raw names.
+ * Normalises, filters and deduplicates the API names together with the curated
+ * ones, so an entry the API lacks never disappears from the suggestions.
  * @param rawNames Names as delivered by the API.
  * @returns Alphabetically sorted, unique names fit for the suggestion list.
  */
 function buildNameList(rawNames) {
   const byKey = new Map();
-  for (const raw of rawNames) {
+  for (const raw of [...rawNames, ...CURATED_NAMES]) {
     const name = toSentenceCase(raw);
     if (name.length < 2 || name.length > MAX_NAME_LENGTH) continue;
     if (!/^[\p{L}\p{N} .,'-]+$/u.test(name)) continue;

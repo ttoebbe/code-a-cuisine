@@ -4,6 +4,9 @@ Two separate paths fan out from the browser. The **generation path** goes throug
 API and back, the **library path** goes straight from the browser to Firestore. They never meet in
 the backend.
 
+A third external source, TheMealDB, appears in the diagram but carries no arrow at runtime: its
+ingredient names are fetched once at build time and committed, so the running app never calls it.
+
 ```mermaid
 flowchart TB
   subgraph browser["Browser — Angular app · web space (dev: localhost:4200)"]
@@ -26,6 +29,11 @@ flowchart TB
     store["Collection recipes · security rules"]
   end
 
+  subgraph build["BUILD TIME ONLY · never reached by the running app"]
+    mealdb["TheMealDB · list.php?i=list"]
+    names["ingredient-names.ts · generated and committed"]
+  end
+
   ui --> apiSvc
   ui --> libSvc
 
@@ -38,6 +46,9 @@ flowchart TB
   libSvc -- "addDoc · automatically for all 3 suggestions" --> store
   libSvc -- "getDocs / getDoc · read the library" --> store
   libSvc -- "updateDoc · likeCount plus 1" --> store
+
+  mealdb -. "npm run sync:ingredients · run by hand" .-> names
+  names -. "compiled into the generator chunk" .-> ui
 ```
 
 ## Where it runs
@@ -67,6 +78,18 @@ directly — everything goes through two services:
 [`RecipeLibraryService`](../src/app/services/recipe-library.service.ts) is the only way into
 Firestore (saving, reading with pagination and category filter, liking).
 
+**Ingredient autocomplete (frontend, no backend).** The suggestions and the spelling hint of step 1
+read from [`ingredient-names.ts`](../src/app/generator/ingredient-step/ingredient-names.ts), a
+generated file holding 1003 names: everything TheMealDB lists, merged with the hand-picked set the
+app shipped before — the API is missing everyday entries like "Pasta", "Cauliflower" and
+"Bell pepper", so it is a base to extend, not a replacement.
+[`ingredient-matching.ts`](../src/app/generator/ingredient-step/ingredient-matching.ts) turns a typed
+name into a hint only when it sits one or two edits away from a listed one — anything without a close
+neighbour is accepted exactly as typed, because the point of the generator is whatever happens to be
+in the kitchen. Names the user adds themselves are remembered per browser in
+[`RecentIngredientsService`](../src/app/services/recent-ingredients.service.ts) and join their own
+suggestions, never anybody else's.
+
 **n8n workflow (Docker).** The webhook takes the POST, a code node validates the payload
 server-side and reserves a quota slot, then an **AI Agent** node runs at most two model calls per
 request (`maxIterations` 2): system and user prompt come from the code node, while the
@@ -85,7 +108,7 @@ n8n alone. The API key lives as an n8n credential, never in the repository and n
 **Firestore (external).** The public library. The app has no sign-in, which is why the
 [security rules](../firestore.rules) carry the entire protection.
 
-## Three decisions that explain the setup
+## Four decisions that explain the setup
 
 **There is no sign-in.** Nobody creates an account, the cookbook is one shared public library, and
 the app ships no auth code at all. That keeps the way in short — the landing page leads straight into
@@ -103,6 +126,14 @@ parallel, exactly once per run. The save is not awaited — navigation and the r
 away. If a write fails, the result stays visible and only the like heart is disabled. The price of
 that decision: the library also holds recipes nobody ever cooked. It sorts by `createdAt` and
 `likeCount` respectively, so the unused ones drift to the back.
+
+**The ingredient list ships in the bundle, not from an API.** `npm run sync:ingredients` pulls the
+names from TheMealDB once and writes a committed TypeScript file; the app itself never calls that
+API. A per-keystroke round trip would be the wrong latency budget for an autocomplete, the key would
+be public in a static bundle anyway, and an outage would take the suggestions down with it. Growing
+the list from the generated recipes instead was considered and dropped: `yourIngredients` echoes back
+what the user typed, so an ignored typo would re-enter the corpus and make itself known — a
+self-checking list cannot be fed by unchecked input.
 
 ## The design references are not in here
 

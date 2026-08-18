@@ -85,7 +85,9 @@ The full walkthrough â€” Firebase values, rules, index and the local n8n setup â
 | `npm run lint`             | ESLint including Angular template rules                   |
 | `npm run sync:ingredients` | Refreshes the ingredient autocomplete list from TheMealDB |
 
-`sync:ingredients` is a build-time step, not something the app does at runtime: it writes
+`sync:ingredients` merges TheMealDB's list with a hand-picked set kept in the script itself, so the
+everyday names the API lacks never drop out. It is a build-time step, not something the app does at
+runtime: it writes
 `src/app/generator/ingredient-step/ingredient-names.ts`, which is committed and shipped in the
 bundle. The generator therefore needs no network call for its autocomplete. Run it only when the
 list should be refreshed, then commit the diff.
