@@ -1,5 +1,6 @@
 import type { AbstractControl, ValidationErrors } from '@angular/forms';
 import type { IngredientUnit } from '../../models/recipe-filters.types';
+import { isInedibleIngredient, isNonEnglishIngredient } from './ingredient-blocklist';
 
 /**
  * Longest ingredient name the workflow accepts. Mirrors MAX_NAME_LENGTH in the
@@ -40,6 +41,12 @@ export const NAME_CHARSET_MESSAGE = "Please use letters, digits, spaces and . , 
 
 /** Message for a name that is too short or holds no letter at all. */
 export const NAME_SUBSTANCE_MESSAGE = `Please use at least ${MIN_INGREDIENT_NAME_LENGTH} characters, including a letter.`;
+
+/** Message for a name that does not describe something edible. */
+export const NAME_INEDIBLE_MESSAGE = 'Please name an ingredient we can actually cook with.';
+
+/** Message for a name written in another language. */
+export const NAME_LANGUAGE_MESSAGE = 'Please write the ingredient in English.';
 
 /** Message for a fractional amount on a unit that only counts whole items. */
 const FRACTIONAL_PIECE_MESSAGE = 'Please enter whole pieces, for example 2.';
@@ -89,6 +96,31 @@ export function nameSubstanceValidator(control: AbstractControl): ValidationErro
   if (!name) return null;
   const isSubstantial = name.length >= MIN_INGREDIENT_NAME_LENGTH && LETTER_PATTERN.test(name);
   return isSubstantial ? null : { weakName: true };
+}
+
+/**
+ * Rejects names that are not food, so no joke recipe is generated from them and
+ * none ever reaches the public library.
+ * @param control Control holding the ingredient name.
+ * @returns An inedibleName error, or null when the name may be cooked with.
+ */
+export function edibleNameValidator(control: AbstractControl): ValidationErrors | null {
+  const name = String(control.value ?? '').trim();
+  if (!name) return null;
+  return isInedibleIngredient(name) ? { inedibleName: true } : null;
+}
+
+/**
+ * Rejects names written in another language. The name travels verbatim into the
+ * prompt and comes back inside the recipe, so a German name here is what makes
+ * a stored recipe bilingual.
+ * @param control Control holding the ingredient name.
+ * @returns A nonEnglishName error, or null when the name is English.
+ */
+export function englishNameValidator(control: AbstractControl): ValidationErrors | null {
+  const name = String(control.value ?? '').trim();
+  if (!name) return null;
+  return isNonEnglishIngredient(name) ? { nonEnglishName: true } : null;
 }
 
 /**

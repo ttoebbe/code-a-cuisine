@@ -1,4 +1,5 @@
 import type { IngredientUnit } from '../../models/recipe-filters.types';
+import { isInedibleIngredient, isNonEnglishIngredient } from './ingredient-blocklist';
 import { INGREDIENT_NAMES } from './ingredient-names';
 
 // Three entries, matching the design and the reserved height of the suggestion
@@ -19,13 +20,26 @@ export const UNIT_OPTIONS: readonly { value: IngredientUnit; label: string }[] =
 const UNIT_SUFFIX: Record<IngredientUnit, string> = { g: 'g', ml: 'ml', piece: '' };
 
 /**
+ * Tells whether a remembered name may still be suggested. Names stored before
+ * the form started rejecting them are dropped here, so no suggestion offers
+ * something the user cannot add.
+ * @param name Name this browser remembers from an earlier session.
+ * @returns Whether the name is still acceptable.
+ */
+function isSuggestable(name: string): boolean {
+  return !isInedibleIngredient(name) && !isNonEnglishIngredient(name);
+}
+
+/**
  * Puts the names this browser remembers in front of the shipped ones, dropping
  * those the static list already carries.
  * @param extraNames Names the user added themselves before.
  * @returns The full pool to search, personal entries first.
  */
 function mergeNames(extraNames: readonly string[]): readonly string[] {
-  const personal = extraNames.filter((name) => !KNOWN_KEYS.has(name.trim().toLowerCase()));
+  const personal = extraNames.filter(
+    (name) => !KNOWN_KEYS.has(name.trim().toLowerCase()) && isSuggestable(name),
+  );
   return [...personal, ...INGREDIENT_NAMES];
 }
 

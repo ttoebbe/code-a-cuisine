@@ -23,10 +23,14 @@ import {
 import {
   MAX_INGREDIENT_NAME_LENGTH,
   NAME_CHARSET_MESSAGE,
+  NAME_INEDIBLE_MESSAGE,
+  NAME_LANGUAGE_MESSAGE,
   NAME_SUBSTANCE_MESSAGE,
   amountUnitValidator,
   blankNameValidator,
   buildAmountMessage,
+  edibleNameValidator,
+  englishNameValidator,
   hasAmountError,
   nameCharsetValidator,
   nameSubstanceValidator,
@@ -103,6 +107,8 @@ export class IngredientForm {
           blankNameValidator,
           nameCharsetValidator,
           nameSubstanceValidator,
+          edibleNameValidator,
+          englishNameValidator,
           Validators.maxLength(MAX_INGREDIENT_NAME_LENGTH),
         ],
       ],
@@ -235,6 +241,8 @@ export class IngredientForm {
     if (name.errors?.['maxlength']) return `Please use at most ${this.maxNameLength} characters.`;
     if (name.errors?.['invalidNameChars']) return NAME_CHARSET_MESSAGE;
     if (name.errors?.['weakName']) return NAME_SUBSTANCE_MESSAGE;
+    if (name.errors?.['inedibleName']) return NAME_INEDIBLE_MESSAGE;
+    if (name.errors?.['nonEnglishName']) return NAME_LANGUAGE_MESSAGE;
     if (name.errors) return 'Please enter an ingredient.';
     return `${name.value.trim()} is already in your list.`;
   }

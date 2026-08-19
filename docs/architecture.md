@@ -90,6 +90,15 @@ in the kitchen. Names the user adds themselves are remembered per browser in
 [`RecentIngredientsService`](../src/app/services/recent-ingredients.service.ts) and join their own
 suggestions, never anybody else's.
 
+Two rules are the exception to that openness, and
+[`ingredient-blocklist.ts`](../src/app/generator/ingredient-step/ingredient-blocklist.ts) holds them:
+a name that is not food ("Baumrinde", "Wespen") and a name written in another language ("Eier",
+"Mehl") are rejected in the form instead of hinted at. Both exist because the name travels verbatim
+into the prompt and comes back inside the recipe, which is then saved automatically — a joke or a
+German name is not a passing annoyance but a permanent entry in the public library. The lists are
+curated and by their nature incomplete: they stop what people actually typed, not everything
+imaginable.
+
 **n8n workflow (Docker).** The webhook takes the POST, a code node validates the payload
 server-side and reserves a quota slot, then an **AI Agent** node runs at most two model calls per
 request (`maxIterations` 2): system and user prompt come from the code node, while the
