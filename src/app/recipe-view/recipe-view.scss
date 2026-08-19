@@ -6,6 +6,8 @@
   background: var(--color-surface);
 
   @include desktop {
+    --page-gutter: max(var(--space-6), (100% - var(--page-max-width)) / 2);
+
     min-height: calc(100vh - var(--header-height-desktop) - var(--footer-height));
   }
 }
