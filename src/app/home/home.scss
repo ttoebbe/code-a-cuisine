@@ -10,7 +10,12 @@
   --plate-track: calc(100svh - var(--footer-height));
   --plate-fit-ratio: 2.192;
   --plate-ratio: 2.192;
-  --plate-diameter: clamp(180px, calc(var(--plate-track) / var(--plate-fit-ratio)), 520px);
+  --plate-diameter-max: 520px;
+  --plate-diameter: clamp(
+    180px,
+    calc(var(--plate-track) / var(--plate-fit-ratio)),
+    var(--plate-diameter-max)
+  );
   --plate-visible: 0.62;
   --plate-visible-max: 34vw;
   --plate-clearance: min(
@@ -42,8 +47,10 @@
   }
 
   @include widescreen {
-    --plate-fit-ratio: 3.161;
+    --plate-fit-ratio: 2.617;
     --plate-ratio: 3.161;
+    --plate-diameter-max: 640px;
+    --stack-bleed-top: 0.0242;
     --plate-clearance: var(--plate-diameter);
   }
 }
@@ -194,6 +201,10 @@
   top: max(0px, calc((var(--plate-track) - var(--stack-height)) / 2));
   width: var(--plate-diameter);
   height: var(--stack-height);
+
+  @include widescreen {
+    top: calc(-1 * var(--stack-height) * var(--stack-bleed-top));
+  }
 }
 
 .hero__plate,
