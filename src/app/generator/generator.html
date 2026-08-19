@@ -11,9 +11,14 @@
   />
 }
 
-<!-- Inert while a run is in flight: the curtain covers the wizard visually, so
-     nothing behind it may still take keyboard focus. -->
-<div class="generator__shell" [attr.inert]="generation.isLoading() ? '' : null">
+<!-- Taken out of the page while a run is in flight: the curtain covers the wizard
+     visually, so nothing behind it may still take keyboard focus or push the
+     document taller than the viewport with scroll that leads nowhere. -->
+<div
+  class="generator__shell"
+  [class.generator__shell--hidden]="generation.isLoading()"
+  [attr.inert]="generation.isLoading() ? '' : null"
+>
   @if (step() === 2) {
     <nav class="generator__nav" aria-label="Wizard steps">
       <button

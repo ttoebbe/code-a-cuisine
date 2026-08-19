@@ -18,6 +18,10 @@
   }
 }
 
+.generator__shell--hidden {
+  display: none;
+}
+
 .generator__nav {
   padding: var(--space-4) var(--page-gutter) 0;
 
