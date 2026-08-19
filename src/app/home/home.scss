@@ -10,13 +10,14 @@
   --plate-track: calc(100svh - var(--footer-height));
   --plate-fit-ratio: 2.192;
   --plate-ratio: 2.192;
-  --plate-diameter: clamp(260px, calc(var(--plate-track) / var(--plate-fit-ratio)), 520px);
+  --plate-diameter: clamp(180px, calc(var(--plate-track) / var(--plate-fit-ratio)), 520px);
   --plate-visible: 0.62;
   --plate-visible-max: 34vw;
   --plate-clearance: min(
     calc(var(--plate-diameter) * var(--plate-visible)),
     var(--plate-visible-max)
   );
+  --hero-unit: min(1px, calc(100svh / 960));
   --hero-band: calc((var(--page-max-width) - var(--content-max-width)) / 2);
   --hero-edge: max(0px, calc(var(--page-gutter) - var(--hero-band)));
   --plate-inset: max(0px, calc(var(--plate-clearance) + var(--hero-edge) - var(--page-gutter)));
@@ -37,7 +38,7 @@
     grid-template-columns: minmax(0, 1fr) var(--plate-inset);
     align-items: stretch;
     gap: var(--space-6);
-    padding-block: var(--space-8);
+    padding-block: max(var(--space-5), calc(64 * var(--hero-unit)));
   }
 
   @include widescreen {
@@ -61,6 +62,7 @@
   @include desktop {
     min-height: 0;
     padding-right: 0;
+    gap: max(var(--space-5), calc(64 * var(--hero-unit)));
   }
 }
 
@@ -72,6 +74,7 @@
 
   @include desktop {
     margin-block: auto;
+    gap: max(var(--space-3), calc(24 * var(--hero-unit)));
   }
 }
 
@@ -81,6 +84,8 @@
 
   @include desktop {
     font: var(--font-h3);
+    font-size: max(18px, calc(48 * var(--hero-unit)));
+    line-height: 1.25;
   }
 }
 
@@ -92,6 +97,8 @@
 
   @include desktop {
     font: var(--font-h1);
+    font-size: min(calc(104 * var(--hero-unit)), 13.5cqw);
+    line-height: 1.15;
   }
 }
 
@@ -137,6 +144,7 @@
 
   @include desktop {
     font: 500 32px/1.04 var(--font-family-brand);
+    font-size: max(20px, calc(32 * var(--hero-unit)));
   }
 }
 
