@@ -20,10 +20,13 @@
          than the viewport; from 1440px plates three to five sit above their
          Figma offsets so all four joints overlap by the same amount. The
          diameter floor stays low so short notebook viewports shrink the stack
-         instead of slicing the last plate. From 1440px the stack is
-         deliberately taller than its track, so the first and last plate bleed
-         past the top and bottom edge the way the Figma widescreen frame shows
-         them. -->
+         instead of slicing the last plate. On phones the track ends at the
+         footer, as the Figma mobile frame shows it; from 768px it is the full
+         page height, so the column runs across the header and the footer band
+         and the legal links move next to the copyright to stay clear of it.
+         --stack-bleed-top splits the difference between track and stack, so
+         from 1440px, where the stack is taller than its track, the first and
+         last plate bleed past both edges. -->
     <div class="hero__stack">
       <span class="hero__plate hero__plate--1"></span>
       <span class="hero__plate hero__plate--2"></span>

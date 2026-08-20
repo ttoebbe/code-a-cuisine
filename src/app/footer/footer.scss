@@ -1,8 +1,7 @@
 .footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-5);
   padding: var(--space-4) var(--page-gutter);
   background: var(--shell-bg);
   color: var(--shell-fg);
@@ -10,10 +9,14 @@
 }
 
 .footer__copyright {
+  position: relative;
+  z-index: 1;
   font: inherit;
 }
 
 .footer__nav {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: var(--space-4);
