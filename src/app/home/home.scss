@@ -7,10 +7,10 @@
 .hero {
   --hero-height: calc(100svh - var(--header-height-mobile) - var(--footer-height));
 
-  --plate-track: calc(100svh - var(--footer-height));
+  --plate-track: 100svh;
   --plate-fit-ratio: 2.192;
   --plate-ratio: 2.192;
-  --plate-diameter-max: 520px;
+  --plate-diameter-max: 960px;
   --stack-bleed-top: 0.5;
   --plate-diameter: clamp(
     180px,
@@ -39,8 +39,6 @@
 
   @include desktop {
     --hero-height: calc(100svh - var(--header-height-desktop) - var(--footer-height));
-    --plate-track: 100svh;
-    --plate-diameter-max: 960px;
 
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--plate-inset);

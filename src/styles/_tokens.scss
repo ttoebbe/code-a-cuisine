@@ -82,6 +82,12 @@
   --page-gutter: var(--space-5);
 }
 
+@include phone {
+  :root {
+    --footer-height: 100px;
+  }
+}
+
 @include desktop {
   :root {
     --section-gap: var(--space-8);

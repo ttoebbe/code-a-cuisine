@@ -1,3 +1,5 @@
+@use '../../styles/mixins' as *;
+
 .footer {
   display: flex;
   align-items: center;
@@ -6,6 +8,12 @@
   background: var(--shell-bg);
   color: var(--shell-fg);
   font: var(--font-small-text);
+
+  @include phone {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
 }
 
 .footer__copyright {
