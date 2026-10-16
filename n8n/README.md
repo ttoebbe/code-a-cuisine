@@ -17,10 +17,11 @@ How the workflow talks to the frontend is described in
 
 ## Importing
 
-n8n runs locally in Docker on `http://localhost:5678` (compose file under `~/n8n`). How to set up
-the server instance is in [`docs/deployment.md`](../docs/deployment.md), the compose and Caddy files
-for it live in [`deploy/`](deploy/) — on the live instance the import goes through the **UI** route
-below, because the CLI one drops the workflow to inactive.
+n8n runs locally in Docker on `http://localhost:5678` (compose file under `~/n8n`). In production it
+runs on the operator's own n8n server; what that instance needs and how a change gets there is in
+[`docs/deployment.md`](../docs/deployment.md) — on the live instance the import goes through the
+**UI** route below, because the CLI one drops the workflow to inactive. The compose and Caddy files
+in [`deploy/`](deploy/) describe the former VPS setup and are no longer used in production.
 
 **Via CLI**, local only (in Git Bash, set `MSYS_NO_PATHCONV=1` or the paths get rewritten):
 
@@ -106,9 +107,7 @@ volume. It resets itself at UTC midnight: the counters are read lazily, so an en
 day counts as zero on the next request. Deleting the file is the manual shortcut when you do not
 want to wait — it is recreated on the next run.
 
-The command differs per environment, because the container is only called `n8n` locally. On the VPS
-Compose names it after the project directory (`code-a-cuisine-n8n-1`), so `docker exec n8n` there
-fails with `No such container` — address the **service** through `docker compose` instead.
+The file is the same everywhere; only the way into the container differs per environment.
 
 **Locally** (Git Bash, container `n8n`):
 
@@ -122,17 +121,10 @@ Without `MSYS_NO_PATHCONV` Git Bash turns the container path into a Windows one,
 nothing and still exits 0 — the reset looks like it worked while the counters stay put. The check
 line above is quoted, so it survives either way.
 
-**On the production VPS** (over SSH as `root@<server-ip>`, verified 2026-08-05):
+**In production** n8n runs on the operator's own n8n server. How to get a shell into that container
+is documented in the operator's private infrastructure repository; the reset itself is the same
+`rm -f /home/node/.n8n/quota-state.json` inside it, followed by the same check.
 
-```bash
-cd /opt/code-a-cuisine
-docker compose exec n8n rm -f /home/node/.n8n/quota-state.json
-docker compose exec n8n sh -c 'ls /home/node/.n8n/ | grep -c quota-state.json'   # 0 = reset
-```
-
-`docker compose` resolves the service through the compose file, so the `cd` is part of the
-procedure — from anywhere else it aborts with `no configuration file provided`. `MSYS_NO_PATHCONV`
-is not needed here: the SSH session is a plain Linux shell, nothing rewrites the path.
-
-That file access needs `NODE_FUNCTION_ALLOW_BUILTIN=fs` in the `docker-compose.yml` — under `~/n8n`
-locally, in [`deploy/docker-compose.yml`](deploy/docker-compose.yml) on the server.
+That file access needs `NODE_FUNCTION_ALLOW_BUILTIN=fs` in the n8n environment — in the
+`docker-compose.yml` under `~/n8n` locally, and on the production instance as listed in
+[`docs/deployment.md`](../docs/deployment.md#what-the-server-has-to-provide).

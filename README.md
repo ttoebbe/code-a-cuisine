@@ -15,32 +15,35 @@ account to create before cooking. That decision moves the entire protection into
 
 ```mermaid
 flowchart LR
-  ng["Angular build · Hetzner web space<br/>code-a-cuisine.thomas-toebbe.de"]
-  n8n["n8n behind Caddy · Hetzner Cloud VPS<br/>n8n.thomas-toebbe.de"]
+  ng["Angular app in the browser<br/>code-a-cuisine.thomas-toebbe.de"]
+  web["nginx · the operator's own server<br/>serves the build"]
+  n8n["n8n · the operator's own n8n server<br/>not public"]
   ai["Google Gemini · external"]
   fs["Firestore · external"]
 
-  ng -- "POST RecipeRequest" --> n8n
+  ng -- "POST RecipeRequest · same origin" --> web
+  web -- "forwards only /webhook/generate-recipe" --> n8n
   n8n -- "AI Agent · one Gemini call" --> ai
   ai -- "3 recipes as JSON" --> n8n
-  n8n -- "HTTP 200 with envelope" --> ng
+  n8n -- "HTTP 200 with envelope, via nginx" --> ng
   ng -- "save, read, like" --> fs
 ```
 
-| Part           | Where it runs                                 | Gets there via                      |
-| -------------- | --------------------------------------------- | ----------------------------------- |
-| Frontend       | Hetzner web space (Apache), static build      | `deploy-frontend.yml` → SFTP mirror |
-| Generation     | Hetzner Cloud VPS, n8n in Docker behind Caddy | manual import in the n8n editor     |
-| Recipe library | Firebase Firestore, collection `recipes`      | nothing to deploy, console only     |
+| Part           | Where it runs                                    | Gets there via                        |
+| -------------- | ------------------------------------------------ | ------------------------------------- |
+| Frontend       | the operator's own server, nginx, static build   | the operator's deploy script, by hand |
+| Generation     | the operator's own n8n server, behind that nginx | manual import in the n8n editor       |
+| Recipe library | Firebase Firestore, collection `recipes`         | nothing to deploy, console only       |
 
 The frontend is a plain static bundle — the Angular CLI build (esbuild/Vite under the hood) produces
-HTML, JS and CSS, and Apache serves them with an `.htaccess` for the SPA rewrite. There is no server
-of our own in front of the app.
+HTML, JS and CSS. The web server that serves it also forwards the one webhook path to n8n, so the
+browser only ever calls its own origin and the production build carries no n8n host at all.
 
 The two paths never meet in the backend: n8n does **not** write to Firestore. The frontend talks to
 Firestore directly and creates the three suggestions itself as soon as the response arrives.
 
-Full walkthrough, secrets and the one-time server setup: **[docs/deployment.md](docs/deployment.md)**.
+What the server has to provide, how a deployment runs and what to check afterwards:
+**[docs/deployment.md](docs/deployment.md)**.
 
 ## Tech stack
 
@@ -51,8 +54,8 @@ Full walkthrough, secrets and the one-time server setup: **[docs/deployment.md](
 ## Local development
 
 Development runs entirely on your machine — including n8n, which the dev build calls on
-`http://localhost:5678` instead of the VPS. Nothing here touches the live site; that only moves when
-something lands on `main`.
+`http://localhost:5678` instead of the production webhook. Nothing here touches the live site; that
+only moves when the operator deploys a commit.
 
 ```bash
 npm install
@@ -64,13 +67,13 @@ npm start           # http://localhost:4200
 npm hook does it for you. Until the `TODO-…` placeholders are replaced the app still runs, only the
 Cookbook shows its error state.
 
-| Concern          | Development                              | Production                                |
-| ---------------- | ---------------------------------------- | ----------------------------------------- |
-| App              | `ng serve` on `localhost:4200`           | static build on the web space             |
-| Environment file | `environment.ts`                         | `environment.prod.ts` (swapped at build)  |
-| Webhook          | `http://localhost:5678/webhook/…`        | `https://n8n.thomas-toebbe.de/webhook/…`  |
-| Firebase config  | copied by hand from the example          | written from the `FIREBASE_CONFIG` secret |
-| Quota per IP     | everything lands in the bucket `unknown` | real client IP via `x-forwarded-for`      |
+| Concern          | Development                              | Production                                          |
+| ---------------- | ---------------------------------------- | --------------------------------------------------- |
+| App              | `ng serve` on `localhost:4200`           | static build on the operator's own server           |
+| Environment file | `environment.ts`                         | `environment.prod.ts` (swapped at build)            |
+| Webhook          | `http://localhost:5678/webhook/…`        | `/webhook/…`, same origin, forwarded to n8n         |
+| Firebase config  | copied by hand from the example          | the operator's filled-in copy, used by the build    |
+| Quota per IP     | everything lands in the bucket `unknown` | real client IP via `x-forwarded-for` from the proxy |
 
 The full walkthrough — Firebase values, rules, index and the local n8n setup — is in
 **[docs/installation.md](docs/installation.md)**.
@@ -94,19 +97,21 @@ list should be refreshed, then commit the diff.
 
 ## CI and deployment
 
-GitHub Actions runs the same three commands on every push and pull request. The deployment is started
-by hand, so merging into `main` verifies the code without publishing it:
+GitHub Actions only checks; it deploys nothing and needs no secrets:
 
-| Workflow              | Runs on                           | Does                                        |
-| --------------------- | --------------------------------- | ------------------------------------------- |
-| `ci.yml`              | push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build` |
-| `deploy-frontend.yml` | manually only                     | builds and uploads to the web space         |
+| Workflow | Runs on                           | Does                                        |
+| -------- | --------------------------------- | ------------------------------------------- |
+| `ci.yml` | push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build` |
 
-The n8n side has no workflow of its own: the JSONs in [n8n/](n8n/) are imported in the n8n editor via
-**Import from File**, which keeps the live workflow active and its webhook registered — the CLI
-import does not.
+The deployment is started by hand by the operator: a script in the operator's private infrastructure
+repository builds a given commit locally and ships the build output to the server. Merging into
+`main` therefore verifies the code without publishing it.
 
-The nine required secrets, where each one comes from and the one-time server setup are in
+The n8n side has no workflow of its own either: the JSONs in [n8n/](n8n/) are imported in the n8n
+editor via **Import from File**, which keeps the live workflow active and its webhook registered —
+the CLI import does not.
+
+Details, the GitHub secrets left over from the old setup and what the server has to provide are in
 **[docs/deployment.md](docs/deployment.md)**.
 
 ## Project structure
@@ -128,12 +133,12 @@ src/app/
   guards/        Route guards for the results page and the cuisine routes
   shared/        Pagination component and formatting helpers for recipe data
 scripts/         Build-time helpers, e.g. the ingredient list sync
-public/          Static assets copied into the build, plus the Apache .htaccess
+public/          Static assets copied into the build
 n8n/             Both workflows as exported JSON
-  deploy/        Compose file and Caddy config for the n8n server
+  deploy/        Compose file and Caddy config of the former VPS, no longer used
 docs/            Installation, architecture, webhook interface, Firebase, deployment
 .github/
-  workflows/     CI plus the two deployment workflows
+  workflows/     CI: lint and build
 ```
 
 ## Documentation

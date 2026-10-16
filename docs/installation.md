@@ -25,7 +25,7 @@ for you, and without the file the app does not compile:
 cp src/environments/firebase.config.example.ts src/environments/firebase.config.ts
 ```
 
-In CI and in the frontend deployment the same file is written from a secret instead; see
+CI copies the example as-is, the production build uses the operator's filled-in copy; see
 [firebase.md](firebase.md).
 
 Then fill in the six values from the Firebase console (**Project settings → Your apps → Web app →
@@ -77,5 +77,6 @@ npm start           # http://localhost:4200
 ## Going live
 
 The app is already deployed at <https://code-a-cuisine.thomas-toebbe.de>. Publishing a new version is
-a manual step — the `deploy-frontend.yml` workflow is started from the **Actions** tab. How that
-works, which secrets it needs, and how the two servers were set up: **[deployment.md](deployment.md)**.
+a manual step by the operator: a script in the operator's private infrastructure repository builds a
+given commit and ships it to the operator's own server. GitHub Actions only lints and builds. What
+the server has to provide and how a deployment runs: **[deployment.md](deployment.md)**.

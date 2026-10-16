@@ -9,13 +9,13 @@ ingredient names are fetched once at build time and committed, so the running ap
 
 ```mermaid
 flowchart TB
-  subgraph browser["Browser — Angular app · web space (dev: localhost:4200)"]
+  subgraph browser["Browser — Angular app · served by the operator's own server (dev: localhost:4200)"]
     ui["Generator wizard and recipe view"]
     apiSvc["RecipeApiService · wraps the webhook call"]
     libSvc["RecipeLibraryService · wraps Firestore"]
   end
 
-  subgraph n8nbox["n8n in Docker · VPS behind Caddy (dev: localhost:5678)"]
+  subgraph n8nbox["n8n · the operator's own n8n server, behind the site's web server (dev: localhost:5678)"]
     hook["Webhook POST /webhook/generate-recipe"]
     guard["Validation and quota"]
     mapai["Unpack and check the answer"]
@@ -53,19 +53,20 @@ flowchart TB
 
 ## Where it runs
 
-The same two paths run in both environments; only the two hosts differ, and the frontend learns which
-one to call from `environment.recipeWebhookUrl` alone.
+The same two paths run in both environments; only the hosts differ, and the frontend learns where to
+call from `environment.recipeWebhookUrl` alone.
 
-| Piece     | Development                    | Production                                     |
-| --------- | ------------------------------ | ---------------------------------------------- |
-| Angular   | `ng serve` on `localhost:4200` | static build on the Hetzner web space (Apache) |
-| n8n       | Docker on `localhost:5678`     | Docker on a Hetzner Cloud VPS, Caddy in front  |
-| Gemini    | external, same key             | external, same key                             |
-| Firestore | external, same project         | external, same project                         |
+| Piece     | Development                    | Production                                                 |
+| --------- | ------------------------------ | ---------------------------------------------------------- |
+| Angular   | `ng serve` on `localhost:4200` | static build, served by nginx on the operator's own server |
+| n8n       | Docker on `localhost:5678`     | the operator's own n8n server, behind that nginx           |
+| Gemini    | external, same key             | external, same key                                         |
+| Firestore | external, same project         | external, same project                                     |
 
-Caddy is not decoration: the site is served over HTTPS, so a call to an `http` webhook would be
-blocked as mixed content. It also terminates TLS, hides the n8n editor UI behind a 404 for everything
-outside `/webhook/*`, and sets `x-forwarded-for` — which is what makes the per-IP quota work at all.
+The web server in front is not decoration. It serves the site over HTTPS and forwards exactly
+`/webhook/generate-recipe` to n8n, so the browser calls its own origin: no mixed content, no CORS
+preflight, and nothing else of n8n — the editor included — is reachable from outside. It also sets
+`x-forwarded-for` from the real client address, which is what makes the per-IP quota work at all.
 Details in [deployment.md](deployment.md).
 
 ## The building blocks
@@ -155,5 +156,5 @@ documents depends on them.
 
 - [docs/n8n-webhook.md](n8n-webhook.md) — webhook interface, error codes, quota
 - [docs/firebase.md](firebase.md) — Firestore schema, rules, indexes, test data
-- [docs/deployment.md](deployment.md) — how the two halves get onto their hosts
+- [docs/deployment.md](deployment.md) — what the server provides and how a deployment runs
 - [n8n/README.md](../n8n/README.md) — importing the workflows and creating the credentials

@@ -6,10 +6,14 @@ This page covers the rest: the endpoint, the error codes, and the rules that liv
 
 ## Endpoint
 
-| Environment | URL                                                    | File                              |
-| ----------- | ------------------------------------------------------ | --------------------------------- |
-| Dev         | `http://localhost:5678/webhook/generate-recipe`        | `src/environments/environment.ts` |
-| Prod        | `https://n8n.thomas-toebbe.de/webhook/generate-recipe` | `environment.prod.ts`             |
+| Environment | URL                                             | File                              |
+| ----------- | ----------------------------------------------- | --------------------------------- |
+| Dev         | `http://localhost:5678/webhook/generate-recipe` | `src/environments/environment.ts` |
+| Prod        | `/webhook/generate-recipe` (same origin)        | `environment.prod.ts`             |
+
+In production the URL is relative: the browser calls
+`https://code-a-cuisine.thomas-toebbe.de/webhook/generate-recipe`, and the web server that serves the
+site forwards exactly that path to n8n. n8n itself is not public.
 
 `POST`, `Content-Type: application/json`, and the frontend waits at most 90 s
 (`environment.webhookTimeoutMs`). The endpoint is only ever called through `RecipeApiService`, never
@@ -85,12 +89,14 @@ keeps no counters of its own.
 - The slot is reserved **before** the LLM call — otherwise repeated failed attempts would eat into
   the budget.
 - The counters live in `/home/node/.n8n/quota-state.json` on the n8n data volume. Resetting them
-  early means deleting that file, with a different command locally than on the VPS — see
+  early means deleting that file, with a different command locally than in production — see
   [n8n/README.md](../n8n/README.md#resetting-the-quota).
 
 > Without a proxy in front, the browser sets no `x-forwarded-for`, so on `localhost` every request
 > ends up in the IP bucket `unknown`. The system-wide limit still applies and is the hard ceiling.
-> Deployed, Caddy sits in front and sets the header, so the per-IP cap works as intended.
+> Deployed, the site's web server sits in front and sets the header from the real client address,
+> replacing whatever the client sent — the quota key is its first entry, so the per-IP cap works as
+> intended and cannot be dodged with a forged header.
 
 ## What else is decided inside n8n
 
@@ -111,6 +117,11 @@ deployed frontend (`https://code-a-cuisine.thomas-toebbe.de`); both respond node
 `headers.origin` back into `Access-Control-Allow-Origin` as long as it is on the allow list. Without
 those headers Chrome blocks the call and the frontend shows the generic `internal_error` dialog.
 
+That matters for local development, where the dev server on `localhost:4200` calls n8n on
+`localhost:5678` across origins. In production the call is same-origin, so the browser sends no
+preflight and CORS cannot block it; the deployed origin stays on the list all the same, so the
+respond nodes keep echoing it back.
+
 The allow list appears in three places that have to stay in step: `allowedOrigins` on the webhook
 node, `ALLOWED_ORIGINS` in the **Validate & rate limit** code node, and the origin check in both
 respond nodes. [deployment.md](deployment.md) lists them alongside the files to change.
@@ -125,15 +136,17 @@ curl -X POST http://localhost:5678/webhook/generate-recipe \
   -d '{"ingredients":[{"name":"Pasta","amount":200,"unit":"g"}],"portions":2,"cooks":2,"timeCategory":"quick","cuisine":"italian","diet":"vegetarian"}'
 ```
 
-Against the deployed one, with an `Origin` header — without it the respond nodes fall back to the
-first entry of the allow list and you learn nothing about CORS:
+Against the deployed one, through the site's own web server and with the `Origin` header the
+browser sends as well:
 
 ```bash
-curl -X POST https://n8n.thomas-toebbe.de/webhook/generate-recipe \
+curl -X POST https://code-a-cuisine.thomas-toebbe.de/webhook/generate-recipe \
   -H "Content-Type: application/json" \
   -H "Origin: https://code-a-cuisine.thomas-toebbe.de" \
   -d '{"ingredients":[{"name":"Pasta","amount":200,"unit":"g"}],"portions":2,"cooks":2,"timeCategory":"quick","cuisine":"italian","diet":"vegetarian"}'
 ```
 
-A `404` here means the workflow is inactive — check the toggle in the n8n editor, see
-[deployment.md](deployment.md). Each successful call spends one of the twelve daily system slots.
+A `404` here means the workflow is inactive (check the toggle in the n8n editor) or the web server
+does not forward the path; a `502` or `504` means it cannot reach n8n or gives up too early — see
+[deployment.md](deployment.md#troubleshooting). Each successful call spends one of the twelve daily
+system slots.

@@ -20,24 +20,20 @@ as the placeholders are still in place the app runs normally, only the library s
 
 ### The same file in CI and in the deployment
 
-A clean checkout has no `firebase.config.ts`, so both GitHub workflows create one — and they do it
-differently on purpose:
+A clean checkout has no `firebase.config.ts`, so CI and the production build each bring their own —
+and they do it differently on purpose:
 
-| Where                 | How the file is created                        | Why                                                            |
-| --------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
-| `ci.yml`              | copies the example as-is, placeholders and all | it only has to prove the code compiles, and it deploys nothing |
-| `deploy-frontend.yml` | writes the `FIREBASE_CONFIG` secret into it    | the bundle goes online and has to talk to the real project     |
+| Where                        | Where the file comes from                      | Why                                                            |
+| ---------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
+| `ci.yml`                     | copies the example as-is, placeholders and all | it only has to prove the code compiles, and it deploys nothing |
+| the operator's deploy script | the operator's local, filled-in copy           | the bundle goes online and has to talk to the real project     |
 
-The deployment refuses to run on a missing secret, on something that does not export `firebaseConfig`,
-or on a value that still holds `TODO-` placeholders. Falling back to the example would put a site
-online that loads fine and whose cookbook silently talks to a project that does not exist — a failure
-that looks like a bug in the app for as long as it takes to check the network tab.
+The production build must never fall back to the example. That would put a site online that loads
+fine and whose cookbook silently talks to a project that does not exist — a failure that looks like a
+bug in the app for as long as it takes to check the network tab.
 
-Storing the secret is one command:
-
-```bash
-gh secret set FIREBASE_CONFIG < src/environments/firebase.config.ts
-```
+The `FIREBASE_CONFIG` repository secret that used to feed the build is no longer read by any
+workflow; see [deployment.md](deployment.md#secrets).
 
 > The web config is not technically a secret — it ends up in the JS bundle with every deployment. We
 > still keep it out of the public repository. The protection that actually works is the security

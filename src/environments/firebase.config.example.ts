@@ -7,10 +7,10 @@
  * configuration > Config) — no npm script creates the copy for you, and the
  * build fails on the missing import until it exists.
  *
- * In GitHub Actions the file is generated instead: ci.yml copies this example
- * as-is because it only compiles, while deploy-frontend.yml writes the
- * FIREBASE_CONFIG secret and refuses to deploy a config that still holds the
- * TODO- placeholders below. See docs/firebase.md.
+ * In GitHub Actions ci.yml copies this example as-is because it only has to
+ * compile. The production build runs on the operator's workstation with the
+ * filled-in copy and must never ship the TODO- placeholders below. See
+ * docs/firebase.md.
  */
 export const firebaseConfig = {
   apiKey: 'TODO-firebase-api-key',
