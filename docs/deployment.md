@@ -101,8 +101,8 @@ from a fresh export.
 3. Activate the main workflow with the toggle. The files are exported with `"active": false` on
    purpose — activation belongs to the instance — so this is a one-off step.
 4. Set **Timeout** and **Error Workflow** as in step 4 above. The UI import also hands the workflow
-   a random id instead of the `codeacuisine-*` one from the file, so the handler has to be picked
-   from the dropdown.
+   a random id instead of the live one from the file, so the handler has to be picked from the
+   dropdown.
 
 ### Smoke test
 

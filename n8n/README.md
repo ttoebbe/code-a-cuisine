@@ -31,7 +31,7 @@ docker cp n8n/error-handler.workflow.json   n8n:/tmp/
 docker cp n8n/generate-recipe.workflow.json n8n:/tmp/
 docker exec n8n n8n import:workflow --input=/tmp/error-handler.workflow.json
 docker exec n8n n8n import:workflow --input=/tmp/generate-recipe.workflow.json
-docker exec n8n n8n update:workflow --id=codeacuisine-generate-recipe --active=true
+docker exec n8n n8n update:workflow --id=HQyWcoikP46KEtXV --active=true
 docker restart n8n          # needed so the production webhook URL gets registered
 ```
 
@@ -50,12 +50,14 @@ docker restart n8n          # needed so the production webhook URL gets register
 > Nothing flags them as missing — the workflow imports and runs. A hanging Gemini call then blocks
 > until the instance default cuts it off, and a failed run mails nobody.
 
-The workflow IDs in the files (`codeacuisine-generate-recipe`, `codeacuisine-error-handler`) only
-hold for the **CLI** import, which takes the id from the JSON — that is what lets
-`settings.errorWorkflow` name the error handler in the first place. The UI import assigns a random
-id instead (`HQyWcoikP46KEtXV` and the like), so on a UI-imported instance that reference is dead
-twice over: the setting never arrives, and the id it names does not exist either. Hence the dropdown
-above.
+The files carry the IDs of the live instance — `HQyWcoikP46KEtXV` for Generate Recipe,
+`u8z3TkSejl81nLNF` for the error handler — and so do the credential references inside them. The
+**CLI** import takes the id from the JSON, so it updates the live workflow in place instead of
+creating a second one with the same webhook path, and `settings.errorWorkflow` keeps pointing at the
+error handler. The UI import assigns a random id instead, so on a UI-imported instance that reference
+is dead twice over: the setting never arrives, and the id it names does not exist either. Hence the
+dropdown above. On a fresh local instance the credential IDs differ as well; pick both credentials
+once in the imported nodes.
 
 ## Export hygiene
 
