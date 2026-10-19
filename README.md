@@ -29,11 +29,11 @@ flowchart LR
   ng -- "save, read, like" --> fs
 ```
 
-| Part           | Where it runs                                    | Gets there via                        |
-| -------------- | ------------------------------------------------ | ------------------------------------- |
-| Frontend       | the operator's own server, nginx, static build   | the operator's deploy script, by hand |
-| Generation     | the operator's own n8n server, behind that nginx | manual import in the n8n editor       |
-| Recipe library | Firebase Firestore, collection `recipes`         | nothing to deploy, console only       |
+| Part           | Where it runs                                    | Gets there via                   |
+| -------------- | ------------------------------------------------ | -------------------------------- |
+| Frontend       | the operator's own server, nginx, static build   | the Deploy button, target `site` |
+| Generation     | the operator's own n8n server, behind that nginx | the Deploy button, target `n8n`  |
+| Recipe library | Firebase Firestore, collection `recipes`         | nothing to deploy, console only  |
 
 The frontend is a plain static bundle — the Angular CLI build (esbuild/Vite under the hood) produces
 HTML, JS and CSS. The web server that serves it also forwards the one webhook path to n8n, so the
@@ -97,21 +97,16 @@ list should be refreshed, then commit the diff.
 
 ## CI and deployment
 
-GitHub Actions only checks; it deploys nothing and needs no secrets:
+| Workflow     | Runs on                           | Does                                                                                       |
+| ------------ | --------------------------------- | ------------------------------------------------------------------------------------------ |
+| `ci.yml`     | push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build`                                                |
+| `deploy.yml` | started by hand only              | checks and builds a commit of `main`, then sets the release mark `live-site` or `live-n8n` |
 
-| Workflow | Runs on                           | Does                                        |
-| -------- | --------------------------------- | ------------------------------------------- |
-| `ci.yml` | push and pull request, any branch | `npm ci` → `npm run lint` → `npm run build` |
-
-The deployment is started by hand by the operator: a script in the operator's private infrastructure
-repository builds a given commit locally and ships the build output to the server. Merging into
+The servers are not reachable from GitHub: they pick the release mark up themselves within two
+minutes, and the Deploy run waits until the live site or the n8n server confirms it. Merging into
 `main` therefore verifies the code without publishing it.
 
-The n8n side has no workflow of its own either: the JSONs in [n8n/](n8n/) are imported in the n8n
-editor via **Import from File**, which keeps the live workflow active and its webhook registered —
-the CLI import does not.
-
-Details, the GitHub secrets left over from the old setup and what the server has to provide are in
+Details, the one secret the Deploy workflow needs and what the server has to provide are in
 **[docs/deployment.md](docs/deployment.md)**.
 
 ## Project structure

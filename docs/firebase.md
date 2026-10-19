@@ -23,10 +23,10 @@ as the placeholders are still in place the app runs normally, only the library s
 A clean checkout has no `firebase.config.ts`, so CI and the production build each bring their own —
 and they do it differently on purpose:
 
-| Where                        | Where the file comes from                      | Why                                                            |
-| ---------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
-| `ci.yml`                     | copies the example as-is, placeholders and all | it only has to prove the code compiles, and it deploys nothing |
-| the operator's deploy script | the operator's local, filled-in copy           | the bundle goes online and has to talk to the real project     |
+| Where        | Where the file comes from                         | Why                                                            |
+| ------------ | ------------------------------------------------- | -------------------------------------------------------------- |
+| `ci.yml`     | copies the example as-is, placeholders and all    | it only has to prove the code compiles, and it deploys nothing |
+| `deploy.yml` | the secret `FIREBASE_CONFIG`, checked for `TODO-` | the bundle goes online and has to talk to the real project     |
 
 The production build must never fall back to the example. That would put a site online that loads
 fine and whose cookbook silently talks to a project that does not exist — a failure that looks like a

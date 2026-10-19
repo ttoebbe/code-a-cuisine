@@ -49,18 +49,25 @@ On the n8n instance:
 
 ## How a deployment happens
 
-Two steps, and only the second one moves the live site:
+Two workflows, and only the second one moves the live site:
 
 1. **CI checks.** [ci.yml](../.github/workflows/ci.yml) runs on every push and pull request, any
    branch: `npm ci` → `npm run lint` → `npm run build`. It writes the _example_ Firebase config and
    deploys nothing, so it needs no secrets.
-2. **The operator deploys by hand.** A script in the private infrastructure repository takes the
-   commit to ship, builds it on the operator's workstation (`npm ci` and `npm run build`, with the
-   local, gitignored `src/environments/firebase.config.ts`) and copies
-   `dist/code-a-cuisine/browser/` onto the server.
+2. **The Deploy button.** [deploy.yml](../.github/workflows/deploy.yml) runs only when started by
+   hand — GitHub → **Actions** → **Deploy** → **Run workflow**, from the browser or the GitHub app.
+   Target `site`; `commit` empty for the newest `main`, or the hash of a commit on `main` to go
+   back. It writes the real Firebase config from the secret `FIREBASE_CONFIG`, runs `npm ci`, lint
+   and build, refuses a bundle with `TODO-` or the old n8n host, and attaches the packed build with
+   its checksum to the pre-release `live-site`. Only then a second job — no repository code, no npm
+   package — sets a new annotated tag `live-site` on the commit.
 
-GitHub Actions no longer deploys anything — the server is not reachable from GitHub, and that is
-intended. Merging into `main` stays a code decision, publishing a separate and deliberate one.
+The server is not reachable from GitHub, and that is intended: it asks for `live-site` every two
+minutes, downloads the build of a new tag, checks checksum and contents once more and switches in
+one step. It writes `release.txt` with commit and tag; the run waits until
+`https://code-a-cuisine.thomas-toebbe.de/release.txt` names its tag, so green means live — after
+about six minutes. A failing deploy is tried three times, then the server waits for the next tag.
+Merging into `main` stays a code decision, publishing a separate and deliberate one.
 
 The build has to use the filled-in `firebase.config.ts`, never the example. A bundle built from the
 `TODO-` placeholders loads fine and its cookbook silently talks to a Firebase project that does not
@@ -68,24 +75,16 @@ exist.
 
 ### Updating the n8n workflows
 
-The workflow JSONs live in [n8n/](../n8n/) and are versioned like the rest of the code. Getting a
-change onto the live instance is a manual import:
+The workflow JSONs live in [n8n/](../n8n/) and are versioned like the rest of the code. A change
+goes live with the same **Deploy** button, target `n8n`. The run checks that both files carry the
+ids of the live workflows, use only the Gemini and SMTP credentials, and that Generate Recipe keeps
+its 80-second timeout and the live error handler; then it sets a new annotated tag `live-n8n`.
 
-1. Open the SSH tunnel to the n8n server (the command is in the private infrastructure repository),
-   so the editor answers on `http://localhost:5678` — it is not reachable from outside.
-2. In the editor, open the **live** workflow and choose **Import from File** (⋯ menu, top right).
-   Point it at the file from `n8n/`.
-3. Save.
-4. **Workflow → Settings**: check **Timeout** (80 seconds) and **Error Workflow**
-   (_Code a Cuisine — Error Handler_). The import ignores everything under the JSON's `settings`
-   key, so a change made there reaches the instance only if you repeat it here by hand — see
-   [n8n/README.md](../n8n/README.md#importing).
-
-Importing onto the existing workflow this way **keeps it active and keeps its webhook registered**,
-so the live site never sees a gap. That is the whole reason this is not automated: the n8n CLI
-(`n8n import:workflow`) carries no active flag, so every CLI import drops the workflow to inactive
-and the webhook answers 404 until someone flips it back — a failure the frontend can only report as
-a generic `internal_error`.
+The n8n server picks the tag up, imports with the CLI only the workflows that differ from the
+running ones — the CLI import keeps id and settings from the JSON — publishes again what was
+published and restarts n8n once. The webhook is gone for about 30 seconds; the frontend reports
+that as a failed generation. If anything fails after the import, the server puts the previous
+workflows back. It reports the result as commit status `kiflow`, and the run waits for it.
 
 The direction matters too. The repository is the source of truth, so an edit made in the editor has
 to be exported back into `n8n/*.workflow.json` and committed, or the next import silently reverts it.
@@ -119,29 +118,23 @@ twelve daily system slots.
 
 ## Secrets
 
-No workflow reads a secret any more; CI needs none. These are still stored on the repository and
-are **to be deleted by the operator** once the move is complete:
+CI needs no secret. The Deploy workflow needs exactly one:
 
-| Secret            | Belonged to                       |
-| ----------------- | --------------------------------- |
-| `FIREBASE_CONFIG` | the removed `deploy-frontend.yml` |
-| `SFTP_HOST`       | the removed `deploy-frontend.yml` |
-| `SFTP_USER`       | the removed `deploy-frontend.yml` |
-| `SFTP_PASSWORD`   | the removed `deploy-frontend.yml` |
-| `SFTP_PORT`       | the removed `deploy-frontend.yml` |
-| `SFTP_REMOTE_DIR` | the removed `deploy-frontend.yml` |
+| Secret            | Holds                                                               | Read by                     |
+| ----------------- | ------------------------------------------------------------------- | --------------------------- |
+| `FIREBASE_CONFIG` | the contents of the filled-in `src/environments/firebase.config.ts` | `deploy.yml`, target `site` |
 
-`VPS_HOST`, `VPS_USER` and `VPS_SSH_KEY` from the even older `deploy-n8n.yml` are already gone.
-`gh secret list` prints the names that are left. The `production` environment the deploy workflow
-created holds no secrets; it only keeps the old runs under **Deployments**.
+Its values are public anyway — they end up in the bundle every visitor downloads; the API key is
+restricted to the site's referrer. The secret only keeps them out of the repository. GitHub holds no
+key for the servers: they fetch from GitHub, never the other way round.
 
 What the live setup needs lives outside GitHub:
 
-| Value                         | Where it lives                                                  |
-| ----------------------------- | --------------------------------------------------------------- |
-| Firebase web config           | `src/environments/firebase.config.ts` on the operator's machine |
-| Gemini API key, SMTP password | n8n credentials on the n8n server                               |
-| n8n encryption key            | the n8n server's environment                                    |
+| Value                         | Where it lives                                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------- |
+| Firebase web config           | the secret `FIREBASE_CONFIG`, and `src/environments/firebase.config.ts` on the operator's machine |
+| Gemini API key, SMTP password | n8n credentials on the n8n server                                                                 |
+| n8n encryption key            | the n8n server's environment                                                                      |
 
 ---
 

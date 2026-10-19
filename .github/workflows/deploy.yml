@@ -1,0 +1,290 @@
+# The deploy button. Checks and builds the chosen commit of main and, only when
+# every check passes, sets the release mark the servers pull on their own: a new
+# annotated tag `live-site` for the site, whose build waits as a file on the
+# pre-release `live-site`, and `live-n8n` for the workflows in n8n/. GitHub never
+# reaches the servers and holds no key for them. The run waits until the live
+# site names the mark in /release.txt, or until the n8n server reports back as
+# commit status `kiflow`. How the servers pull: docs/deployment.md.
+
+name: Deploy
+
+# Manual only: a deployment is a decision, not a side effect of a push.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: What goes live
+        type: choice
+        options:
+          - site
+          - n8n
+        default: site
+      commit:
+        description: Commit of main as hash, empty for the newest (to go back, the older one)
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+# Two runs for the same target would race for the mark, so they queue.
+concurrency:
+  group: deploy-${{ inputs.target }}
+  cancel-in-progress: false
+
+env:
+  SITE_URL: https://code-a-cuisine.thomas-toebbe.de
+  DIST_DIR: dist/code-a-cuisine/browser
+  # The workflows the n8n server takes from this repository, as file:id, and
+  # the credentials they may use. The server holds the same lists and refuses
+  # anything else.
+  N8N_WORKFLOWS: generate-recipe:HQyWcoikP46KEtXV error-handler:u8z3TkSejl81nLNF
+  N8N_CREDENTIALS: ZLxjCB6nGcW2enHx awfz0MxXceEOFHgp
+
+jobs:
+  check:
+    name: Check and build the commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      sha: ${{ steps.commit.outputs.sha }}
+
+    steps:
+      - name: Only from main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Deploy runs from main only, not from $GITHUB_REF."
+          exit 1
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Only a hash reaches the shell, and only a commit that is part of main
+      # can go live — the way back included.
+      - name: Resolve the commit
+        id: commit
+        env:
+          WANTED: ${{ inputs.commit }}
+        run: |
+          set -euo pipefail
+          if [ -n "$WANTED" ] && ! [[ "$WANTED" =~ ^[0-9a-f]{7,40}$ ]]; then
+            echo "::error::commit has to be a hash, for example c312325."
+            exit 1
+          fi
+          sha="$(git rev-parse --verify "${WANTED:-origin/main}^{commit}")"
+          if ! git merge-base --is-ancestor "$sha" origin/main; then
+            echo "::error::$sha is not part of main."
+            exit 1
+          fi
+          git checkout --quiet "$sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Commit: \`$sha\`" >> "$GITHUB_STEP_SUMMARY"
+
+      # firebase.config.ts is gitignored, so it comes from a secret here. The
+      # example values would build a site that loads fine and whose cookbook
+      # talks to a project that does not exist, so they fail the run.
+      - name: Write the Firebase config
+        if: inputs.target == 'site'
+        env:
+          FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FIREBASE_CONFIG:-}" ]; then
+            echo "::error::FIREBASE_CONFIG is not set. Store the contents of src/environments/firebase.config.ts as a repository secret."
+            exit 1
+          fi
+          printf '%s\n' "$FIREBASE_CONFIG" > src/environments/firebase.config.ts
+          if ! grep -q 'export const firebaseConfig' src/environments/firebase.config.ts; then
+            echo "::error::FIREBASE_CONFIG does not look like firebase.config.ts — it has to export firebaseConfig."
+            exit 1
+          fi
+          if grep -q 'TODO-' src/environments/firebase.config.ts; then
+            echo "::error::FIREBASE_CONFIG still holds the placeholder values from firebase.config.example.ts."
+            exit 1
+          fi
+
+      - name: Set up Node
+        if: inputs.target == 'site'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        if: inputs.target == 'site'
+        run: npm ci
+
+      - name: Lint
+        if: inputs.target == 'site'
+        run: npm run lint
+
+      - name: Build
+        if: inputs.target == 'site'
+        run: npm run build
+
+      # The server checks the same once more before it switches.
+      - name: Check and pack the build
+        if: inputs.target == 'site'
+        env:
+          SHA: ${{ steps.commit.outputs.sha }}
+        run: |
+          set -euo pipefail
+          if [ ! -f "$DIST_DIR/index.html" ] || [ ! -f "$DIST_DIR/favicon.ico" ]; then
+            echo "::error::The build has no index.html or favicon.ico."
+            exit 1
+          fi
+          for text in TODO- n8n.thomas-toebbe.de; do
+            if grep -rqF "$text" "$DIST_DIR"; then
+              echo "::error::The build contains $text."
+              exit 1
+            fi
+          done
+          name="site-${SHA:0:12}.tar.gz"
+          mkdir -p packed
+          tar -czf "packed/$name" -C "$DIST_DIR" .
+          (cd packed && sha256sum "$name" > "$name.sha256")
+
+      - name: Keep the build for the release job
+        if: inputs.target == 'site'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: site
+          path: packed/
+          retention-days: 1
+          if-no-files-found: error
+
+      # Each file has to be valid JSON, carry the id of the live workflow and use
+      # only the known credentials; a file with another id would land next to
+      # the live workflow instead of replacing it. The CLI import takes the
+      # settings along, so timeout and error workflow are checked too.
+      - name: Check the workflows
+        if: inputs.target == 'n8n'
+        run: |
+          set -euo pipefail
+          for pair in $N8N_WORKFLOWS; do
+            file="n8n/${pair%%:*}.workflow.json"
+            id="${pair##*:}"
+            if ! jq -e --arg id "$id" '.id == $id and (.nodes | type == "array")' "$file" > /dev/null; then
+              echo "::error::$file does not carry the workflow id $id."
+              exit 1
+            fi
+            for credential in $(jq -r '[.nodes[] | (.credentials // {}) | .[] | .id] | unique | .[]' "$file"); do
+              if [[ " $N8N_CREDENTIALS " != *" $credential "* ]]; then
+                echo "::error::$file uses the unknown credential $credential."
+                exit 1
+              fi
+            done
+          done
+          if ! jq -e '.settings.executionTimeout == 80 and .settings.errorWorkflow == "u8z3TkSejl81nLNF"' \
+            n8n/generate-recipe.workflow.json > /dev/null; then
+            echo "::error::generate-recipe needs the timeout of 80 s and the live error handler."
+            exit 1
+          fi
+
+  # Runs no code of the repository and no npm package: only this job can write
+  # tags and releases.
+  release:
+    name: Set the mark and wait until it is live
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write
+      statuses: read
+
+    steps:
+      - name: Fetch the build
+        if: inputs.target == 'site'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: site
+          path: packed
+
+      # One pre-release holds the build files; the newest three builds stay.
+      # The file goes up before the mark moves, so the server always finds it.
+      - name: Upload the build
+        if: inputs.target == 'site'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.check.outputs.sha }}
+        run: |
+          set -euo pipefail
+          if ! gh release view live-site --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create live-site --repo "$GITHUB_REPOSITORY" --target "$SHA" --prerelease \
+              --title "Live site" --notes "Build files the web server pulls. Managed by the Deploy workflow."
+          fi
+          gh release upload live-site packed/* --repo "$GITHUB_REPOSITORY" --clobber
+
+      # A new annotated tag on every run, so the same commit can go live again;
+      # the servers remember the tag object, not the commit.
+      - name: Set the release mark
+        id: mark
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.check.outputs.sha }}
+          TAG: live-${{ inputs.target }}
+        run: |
+          set -euo pipefail
+          echo "since=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          mark="$(gh api "repos/$GITHUB_REPOSITORY/git/tags" -f tag="$TAG" -f object="$SHA" -f type=commit \
+            -f message="Deploy run $GITHUB_RUN_ID" --jq .sha)"
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" > /dev/null 2>&1; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$TAG" -f sha="$mark" -F force=true > /dev/null
+          else
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$mark" > /dev/null
+          fi
+          echo "mark=$mark" >> "$GITHUB_OUTPUT"
+          echo "Mark \`$TAG\`: \`$mark\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Wait for the site
+        if: inputs.target == 'site'
+        env:
+          MARK: ${{ steps.mark.outputs.mark }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 40); do
+            live="$(curl -fsS --max-time 10 "$SITE_URL/release.txt" || true)"
+            if grep -qx "$MARK" <<< "$live"; then
+              echo "Live after $attempt checks." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::The site does not name the mark after 10 minutes. The server keeps trying three times, then waits for the next mark."
+          exit 1
+
+      - name: Remove older builds
+        if: inputs.target == 'site'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          old="$(gh release view live-site --repo "$GITHUB_REPOSITORY" --json assets \
+            --jq '.assets | sort_by(.createdAt) | reverse | .[6:] | .[].name')"
+          for name in $old; do
+            gh release delete-asset live-site "$name" --repo "$GITHUB_REPOSITORY" --yes
+          done
+
+      # The n8n server posts pending first, then success or failure.
+      - name: Wait for the n8n server
+        if: inputs.target == 'n8n'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.check.outputs.sha }}
+          SINCE: ${{ steps.mark.outputs.since }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            state="$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/statuses" --jq \
+              "[.[] | select(.context == \"kiflow\" and .created_at >= \"$SINCE\")][0] | (.state // \"\") + \" \" + (.description // \"\")")"
+            case "$state" in
+              success*) echo "n8n: ${state#success }" >> "$GITHUB_STEP_SUMMARY"; exit 0 ;;
+              failure*|error*) echo "::error::n8n: ${state#* }"; exit 1 ;;
+            esac
+            sleep 15
+          done
+          echo "::error::No answer from the n8n server after 30 minutes."
+          exit 1

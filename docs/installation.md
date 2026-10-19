@@ -77,6 +77,6 @@ npm start           # http://localhost:4200
 ## Going live
 
 The app is already deployed at <https://code-a-cuisine.thomas-toebbe.de>. Publishing a new version is
-a manual step by the operator: a script in the operator's private infrastructure repository builds a
-given commit and ships it to the operator's own server. GitHub Actions only lints and builds. What
+the **Deploy** button in GitHub Actions: it lints and builds a commit of `main` and sets a release
+mark the operator's server picks up. What
 the server has to provide and how a deployment runs: **[deployment.md](deployment.md)**.

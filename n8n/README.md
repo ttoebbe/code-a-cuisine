@@ -19,8 +19,8 @@ How the workflow talks to the frontend is described in
 
 n8n runs locally in Docker on `http://localhost:5678` (compose file under `~/n8n`). In production it
 runs on the operator's own n8n server; what that instance needs and how a change gets there is in
-[`docs/deployment.md`](../docs/deployment.md) — on the live instance the import goes through the
-**UI** route below, because the CLI one drops the workflow to inactive. The compose and Caddy files
+[`docs/deployment.md`](../docs/deployment.md) — on the live instance a change goes in with the
+**Deploy** button, target `n8n`; the server imports with the CLI and publishes again. The compose and Caddy files
 in [`deploy/`](deploy/) describe the former VPS setup and are no longer used in production.
 
 **Via CLI**, local only (in Git Bash, set `MSYS_NO_PATHCONV=1` or the paths get rewritten):
